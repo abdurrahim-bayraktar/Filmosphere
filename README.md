@@ -8,10 +8,10 @@
 - **Ahsen Beyza Özkul** | [ahsenozkul](https://github.com/ahsenbeyza) | API Integration, Documentation  
 - **Abdurrahim Bayraktar** | [abdurrahim-bayraktar](https://github.com/abdurrahim-bayraktar) | Database Management, Backend Development  
 - **Alp Emre Zaimoğlu** | [alpemrezaimoglu](https://github.com/alpemrezaimoglu) | Frontend Development, Testing, Performance Optimization  
-- **Bartu Sadıkoğlu** | | User Management, Authentication System  
+- **Bartu Sadıkoğlu** |[itu-itis-sadikoglu22](https://github.com/itu-itis-sadikoglu22)| User Management, Authentication System  
 - **Batuhan Berk Balcı** | [batuhanberkbalci](https://github.com/batuhanberkbalci) | Backend Support, Project Configuration  
-- **Emir Köse** | | Movie Metadata Integration, API Data Handling  
-- **Yasin Günay** | | Frontend Components, Security  
+- **Emir Köse** |[Em1rK0se](https://github.com/Em1rK0se)| Movie Metadata Integration, API Data Handling  
+- **Yasin Günay** |[itu-itis22-gunayy21](https://github.com/itu-itis22-gunayy21)| Frontend Components, Security  
 
 ## Technology Stack
 
