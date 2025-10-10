@@ -13,8 +13,6 @@
 - **Emir Köse** | | Movie Metadata Integration, API Data Handling  
 - **Yasin Günay** | | Frontend Components, Security  
 
-**GitHub Repo URL**: [Insert GitHub Repo URL Here]
-
 ## Technology Stack
 
 ### Project/Configuration Management
