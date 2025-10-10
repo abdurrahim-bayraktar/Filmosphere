@@ -5,7 +5,7 @@
 **Project Title**: Filmosphere  
 **Team Name**: Mühendisler  
 **Team Members**:  
-- **Ahsen Beyza Özkul** | [ahsenozkul](https://github.com/ahsenozkul) | API Integration, Documentation  
+- **Ahsen Beyza Özkul** | [ahsenozkul](https://github.com/ahsenbeyza) | API Integration, Documentation  
 - **Abdurrahim Bayraktar** | [abdurrahim-bayraktar](https://github.com/abdurrahim-bayraktar) | Database Management, Backend Development  
 - **Alp Emre Zaimoğlu** | [alpemrezaimoglu](https://github.com/alpemrezaimoglu) | Frontend Development, Testing, Performance Optimization  
 - **Bartu Sadıkoğlu** | | User Management, Authentication System  
