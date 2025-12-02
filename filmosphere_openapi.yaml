@@ -1,0 +1,160 @@
+openapi: 3.0.3
+info:
+  title: Filmosphere API
+  version: "1.0.0"
+  description: |
+    Backend aggregator for film detail pages. Aggregates data from imdbapi.dev, kinocheck, and watchmode.
+servers:
+  - url: http://localhost:3000
+paths:
+  /film/{imdbId}:
+    get:
+      summary: Get aggregated film details
+      parameters:
+        - name: imdbId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: tt1375666
+      responses:
+        '200':
+          description: Aggregated film data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FilmDetail'
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+components:
+  schemas:
+    Image:
+      type: object
+      properties:
+        url:
+          type: string
+        width:
+          type: integer
+        height:
+          type: integer
+        type:
+          type: string
+    Person:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        characters:
+          type: array
+          items:
+            type: string
+    Rating:
+      type: object
+      properties:
+        aggregateRating:
+          type: number
+        voteCount:
+          type: integer
+    Trailer:
+      type: object
+      properties:
+        youtube_video_id:
+          type: string
+        title:
+          type: string
+        thumbnail:
+          type: string
+        published:
+          type: string
+    StreamingSource:
+      type: object
+      properties:
+        source_id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+        region:
+          type: string
+        web_url:
+          type: string
+    IMDbMetadata:
+      type: object
+      properties:
+        id:
+          type: string
+        primaryTitle:
+          type: string
+        originalTitle:
+          type: string
+        releaseYear:
+          type: integer
+        runtimeSeconds:
+          type: integer
+        genres:
+          type: array
+          items:
+            type: string
+        plot:
+          type: string
+        primaryImage:
+          $ref: '#/components/schemas/Image'
+        rating:
+          $ref: '#/components/schemas/Rating'
+        originCountries:
+          type: array
+          items:
+            type: string
+        spokenLanguages:
+          type: array
+          items:
+            type: string
+    FilmDetail:
+      type: object
+      properties:
+        imdbId:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/IMDbMetadata'
+        credits:
+          type: object
+          properties:
+            cast:
+              type: array
+              items:
+                $ref: '#/components/schemas/Person'
+            crew:
+              type: array
+              items:
+                $ref: '#/components/schemas/Person'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+        videos:
+          type: array
+          items:
+            type: object
+        parentsGuide:
+          type: object
+        certificates:
+          type: array
+          items:
+            type: object
+        releaseDates:
+          type: array
+          items:
+            type: object
+        trailer:
+          $ref: '#/components/schemas/Trailer'
+        streaming:
+          type: array
+          items:
+            $ref: '#/components/schemas/StreamingSource'
