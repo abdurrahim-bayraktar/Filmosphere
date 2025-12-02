@@ -123,7 +123,7 @@ SPECTACULAR_SETTINGS = {
 }
 
 IMDBAPI_BASE = env("IMDBAPI_BASE", default="https://api.imdbapi.dev")
-KINO_BASE = env("KINO_BASE", default="https://api.kinocheck.de")
+KINO_BASE = env("KINO_BASE", default="https://api.kinocheck.com")
 KINO_API_KEY = env("KINO_API_KEY", default="")
 WATCHMODE_BASE = env("WATCHMODE_BASE", default="https://api.watchmode.com/v1")
 WATCHMODE_API_KEY = env("WATCHMODE_API_KEY", default="")

@@ -27,6 +27,11 @@ class KinoCheckService:
         headers = {"X-Api-Key": settings.KINO_API_KEY}
         try:
             data = self.http_client.get("/movies", params=params, headers=headers)
+            # Check if response contains an error (KinoCheck returns 200 with error object)
+            if data and isinstance(data, dict):
+                error_msg = data.get("message", "").lower()
+                if data.get("error") or "not found" in error_msg or "invalid api key" in error_msg:
+                    return None
             # Contract: return None if no trailer found
             return data or None
         except Exception:
