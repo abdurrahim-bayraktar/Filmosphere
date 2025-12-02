@@ -14,11 +14,24 @@ class KinoCheckService:
         self.http_client = http_client or HttpClient(base_url=settings.KINO_BASE)
 
     def get_trailer(self, imdb_id: str) -> Optional[Dict[str, Any]]:
-        """Return trailer information for a given IMDb id if available."""
-        params = {"imdb_id": imdb_id, "api_key": settings.KINO_API_KEY}
-        data = self.http_client.get("/trailer", params=params)
-        # Contract: return None if no trailer found
-        return data or None
+        """Return trailer information for a given IMDb id if available.
+        
+        Uses KinoCheck API endpoint: GET /movies?imdb_id={imdb_id}&language=en&categories=Trailer
+        with X-Api-Key header.
+        """
+        params = {
+            "imdb_id": imdb_id,
+            "language": "en",
+            "categories": "Trailer"
+        }
+        headers = {"X-Api-Key": settings.KINO_API_KEY}
+        try:
+            data = self.http_client.get("/movies", params=params, headers=headers)
+            # Contract: return None if no trailer found
+            return data or None
+        except Exception:
+            # If API call fails, return None instead of raising
+            return None
 
 
 
