@@ -1,0 +1,394 @@
+{
+	"info": {
+		"_postman_id": "70e6a89d-02fd-4a42-adb3-e1d7792f4cce",
+		"name": "Filmosphere - Film Detail APIs",
+		"description": "Postman collection for Filmosphere: unified film detail endpoint and external API templates (IMDbAPI.dev, KinoCheck, Watchmode)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "50515769",
+		"_collection_link": "https://filmosphereproject-4517976.postman.co/workspace/Filmosphere-Project's-Workspace~e62602f6-6008-43db-87b8-e83b8af9eb66/collection/50515769-70e6a89d-02fd-4a42-adb3-e1d7792f4cce?action=share&source=collection_link&creator=50515769"
+	},
+	"item": [
+		{
+			"name": "Filmosphere - Search Films",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{BASE_URL}}/api/search?q={{FILM_SEARCH_QUERY}}",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"api",
+						"search"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "{{FILM_SEARCH_QUERY}}"
+						}
+					]
+				},
+				"description": "Search films via Filmosphere backend (uses IMDbService.search)."
+			},
+			"response": []
+		},
+		{
+			"name": "Filmosphere - Get Film (aggregator)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{BASE_URL}}/api/films/{{FILM_IMDB_ID}}",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"api",
+						"films",
+						"{{FILM_IMDB_ID}}"
+					]
+				},
+				"description": "Unified backend endpoint that aggregates IMDb metadata, credits, images, videos, parents guide, certificates, release dates, KinoCheck trailer, and Watchmode streaming (TR)."
+			},
+			"response": []
+		},
+		{
+			"name": "Filmosphere - Get Trailer Only",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{BASE_URL}}/api/films/{{FILM_IMDB_ID}}/trailer",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"api",
+						"films",
+						"{{FILM_IMDB_ID}}",
+						"trailer"
+					]
+				},
+				"description": "Returns only the trailer portion of the aggregated payload."
+			},
+			"response": []
+		},
+		{
+			"name": "Filmosphere - Get Streaming Only",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{BASE_URL}}/api/films/{{FILM_IMDB_ID}}/streaming",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"api",
+						"films",
+						"{{FILM_IMDB_ID}}",
+						"streaming"
+					]
+				},
+				"description": "Returns only the Watchmode streaming sources (region=TR) from the aggregated payload."
+			},
+			"response": []
+		},
+		{
+			"name": "IMDbAPI - Get Title Metadata",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{IMDBAPI_BASE}}/titles/{{FILM_IMDB_ID}}",
+					"host": [
+						"{{IMDBAPI_BASE}}"
+					],
+					"path": [
+						"titles",
+						"{{FILM_IMDB_ID}}"
+					]
+				},
+				"description": "Primary metadata endpoint from imdbapi.dev"
+			},
+			"response": []
+		},
+		{
+			"name": "IMDbAPI - Credits",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{IMDBAPI_BASE}}/titles/{{FILM_IMDB_ID}}/credits",
+					"host": [
+						"{{IMDBAPI_BASE}}"
+					],
+					"path": [
+						"titles",
+						"{{FILM_IMDB_ID}}",
+						"credits"
+					]
+				},
+				"description": "Cast & crew"
+			},
+			"response": []
+		},
+		{
+			"name": "IMDbAPI - Images",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{IMDBAPI_BASE}}/titles/{{FILM_IMDB_ID}}/images",
+					"host": [
+						"{{IMDBAPI_BASE}}"
+					],
+					"path": [
+						"titles",
+						"{{FILM_IMDB_ID}}",
+						"images"
+					]
+				},
+				"description": "Posters and stills"
+			},
+			"response": []
+		},
+		{
+			"name": "IMDbAPI - Videos",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{IMDBAPI_BASE}}/titles/{{FILM_IMDB_ID}}/videos",
+					"host": [
+						"{{IMDBAPI_BASE}}"
+					],
+					"path": [
+						"titles",
+						"{{FILM_IMDB_ID}}",
+						"videos"
+					]
+				},
+				"description": "Additional clips (non-trailer)"
+			},
+			"response": []
+		},
+		{
+			"name": "KinoCheck - Get Trailer by IMDb ID",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Api-Key",
+						"value": "{{KINO_API_KEY}}"
+					}
+				],
+				"url": {
+					"raw": "{{KINO_BASE}}/movies?imdb_id={{FILM_IMDB_ID}}&language=en&categories=Trailer",
+					"host": [
+						"{{KINO_BASE}}"
+					],
+					"path": [
+						"movies"
+					],
+					"query": [
+						{
+							"key": "imdb_id",
+							"value": "{{FILM_IMDB_ID}}"
+						},
+						{
+							"key": "language",
+							"value": "en"
+						},
+						{
+							"key": "categories",
+							"value": "Trailer"
+						}
+					]
+				},
+				"description": "KinoCheck returns trailer (preferred) and additional video resources."
+			},
+			"response": []
+		},
+		{
+			"name": "Watchmode - Lookup Watchmode ID (by IMDb ID)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{WATCHMODE_BASE}}/search?apiKey={{WATCHMODE_API_KEY}}&search_field=imdb_id&search_value={{FILM_IMDB_ID}}",
+					"host": [
+						"{{WATCHMODE_BASE}}"
+					],
+					"path": [
+						"search"
+					],
+					"query": [
+						{
+							"key": "apiKey",
+							"value": "{{WATCHMODE_API_KEY}}"
+						},
+						{
+							"key": "search_field",
+							"value": "imdb_id"
+						},
+						{
+							"key": "search_value",
+							"value": "{{FILM_IMDB_ID}}"
+						}
+					]
+				},
+				"description": "Step 1: get the Watchmode internal title id"
+			},
+			"response": []
+		},
+		{
+			"name": "Watchmode - Get Sources (Turkey)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{WATCHMODE_BASE}}/title/:watchmode_id/sources?apiKey={{WATCHMODE_API_KEY}}&regions=TR",
+					"host": [
+						"{{WATCHMODE_BASE}}"
+					],
+					"path": [
+						"title",
+						":watchmode_id",
+						"sources"
+					],
+					"query": [
+						{
+							"key": "apiKey",
+							"value": "{{WATCHMODE_API_KEY}}"
+						},
+						{
+							"key": "regions",
+							"value": "TR"
+						}
+					],
+					"variable": [
+						{
+							"key": "watchmode_id"
+						}
+					]
+				},
+				"description": "Step 2: replace :watchmode_id with id returned by lookup request."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_URL",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "IMDBAPI_BASE",
+			"value": "https://api.imdbapi.dev"
+		},
+		{
+			"key": "KINO_BASE",
+			"value": "https://api.kinocheck.com"
+		},
+		{
+			"key": "WATCHMODE_BASE",
+			"value": "https://api.watchmode.com/v1"
+		},
+		{
+			"key": "WATCHMODE_API_KEY",
+			"value": "<YOUR_WATCHMODE_KEY>"
+		},
+		{
+			"key": "KINO_API_KEY",
+			"value": "<OPTIONAL_KINO_KEY>"
+		},
+		{
+			"key": "FILM_IMDB_ID",
+			"value": "tt33464366"
+		},
+		{
+			"key": "FILM_SEARCH_QUERY",
+			"value": "Inception"
+		}
+	]
+}
