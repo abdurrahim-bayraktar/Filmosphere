@@ -60,16 +60,3 @@
 - Payment systems or subscriptions  
 - AI-based sentiment analysis of reviews  
 
-## Project Feature Milestones
-
-| **Completed Feature**                              | **Estimated Completion Date** |
-|----------------------------------------------------|-------------------------------|
-| Project setup (GitHub repo, Django project, Postgres DB) | 20 Oct 2025                 |
-| Authentication (login, register, logout)            | 27 Oct 2025                 |
-| Movie data integration (API connections with KinoCheck, Watchmode, IMDB) | 3 Nov 2025 |
-| Film info & list pages (frontend + backend integration) | 10 Nov 2025               |
-| Rating & review system (CRUD)                      | 17 Nov 2025                 |
-| Profile page with watched movies                   | 24 Nov 2025                 |
-| Recommendation system (DeepSeek API integration)    | 1 Dec 2025                  |
-| Friend system & favorites feature                   | 8 Dec 2025                  |
-
