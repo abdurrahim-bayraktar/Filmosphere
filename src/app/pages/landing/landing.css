@@ -1,0 +1,173 @@
+/* Two-panel fullscreen layout */
+.login-page {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background: #000;
+}
+
+/* LEFT PANEL */
+.left-panel {
+  width: 45%;
+  background: linear-gradient(to right, #000 0%, #0a0a0a 60%, transparent 100%);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Login box */
+.login-box {
+  background: rgba(20, 20, 20, 0.95);
+  padding: 45px;
+  width: 75%;
+  max-width: 380px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.6);
+}
+
+.login-title {
+  color: white;
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.brand {
+  color: #e50914; /* Red brand color */
+  margin-top: -5px;
+  letter-spacing: 2px;
+}
+
+/* INPUTS – DEFAULT, HOVER, FOCUS */
+
+input[pInputText] {
+  width: 100%;
+  background: #222;
+  border: 1px solid #444;   /* Default gray border */
+  padding: 12px;
+  color: white;
+  border-radius: 6px;
+  transition: 0.25s;
+}
+
+/* INPUT hover & focus (red border) */
+input[pInputText]:hover,
+input[pInputText]:focus {
+  border-color: #e50914 !important;
+  box-shadow: 0 0 4px rgba(229, 9, 20, 0.7);
+  outline: none;
+}
+
+/* SIGN IN BUTTON */
+
+.btn-signin {
+  background: #e50914 !important;
+  color: white !important;
+  border: 1px solid #444;    /* Default gray border */
+  font-weight: bold;
+  padding: 12px;
+  border-radius: 6px;
+  transition: 0.25s;
+}
+
+/* Hover effect */
+/* FORCE red border on hover for PrimeNG button */
+:host ::ng-deep .btn-signin:hover {
+  border: 1px solid #e50914 !important;
+  box-shadow: 0 0 6px rgba(229, 9, 20, 0.8) !important;
+}
+
+
+/* Focus with red border (for TAB navigation) */
+.btn-signin:focus,
+.btn-signin:focus-visible {
+  outline: none;
+  border: 2px solid #e50914 !important;
+  box-shadow: 0 0 6px rgba(229, 9, 20, 0.8);
+}
+
+/* TEXT LINKS */
+
+.forgot {
+  color: #bbb;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.forgot:hover {
+  color: white;
+}
+
+.signup-text {
+  color: #999;
+  font-size: 0.87rem;
+  margin-top: 10px;
+}
+
+.signup-link {
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.signup-link:hover {
+  text-decoration: underline;
+}
+
+/* RIGHT PANEL (BACKGROUND + LOGO) */
+
+.right-panel {
+  width: 55%;
+  background: url('/assets/img/filmosphere-bg.jpg') center/cover no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+/* Dark overlay */
+.right-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* Logo area */
+.logo-wrapper {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  animation: fadeUp 1.8s ease;
+}
+
+/* Film icon */
+.film-icon {
+  font-size: 3.5rem;
+  color: #e50914;
+  margin-bottom: 10px;
+}
+
+/* Main logo */
+.brand-logo {
+  color: #e50914;
+  font-size: 4rem;
+  letter-spacing: 6px;
+  margin-bottom: 10px;
+}
+
+/* Slogan */
+.slogan {
+  color: #ddd;
+  font-size: 1.2rem;
+}
+
+/* Animation */
+@keyframes fadeUp {
+  0% { opacity: 0; transform: translateY(25px); }
+  100% { opacity: 1; transform: translateY(0); }
+}

@@ -1,0 +1,77 @@
+.su-wrapper {
+  height: 100vh;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.su-box {
+  background: rgba(20, 20, 20, 0.95);
+  padding: 40px;
+  width: 350px;
+  border-radius: 12px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.6);
+  text-align: center;
+}
+
+.su-title {
+  color: white;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+}
+
+.su-input {
+  width: 100%;
+  background: #222;
+  border: 1px solid #444;
+  padding: 12px;
+  color: white;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  transition: 0.25s;
+}
+
+.su-input:hover,
+.su-input:focus {
+  border-color: #e50914 !important;
+  box-shadow: 0 0 4px rgba(229, 9, 20, 0.7);
+}
+
+.su-btn {
+  background: #e50914 !important;
+  border: none !important;
+  font-weight: bold;
+  padding: 12px;
+}
+
+.su-back {
+  margin-top: 20px;
+  color: #ccc;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.su-back:hover {
+  color: white;
+}
+
+/* PrimeNG button ROOT element */
+:host ::ng-deep .su-btn.p-button {
+  border: 1px solid #e50914 !important;
+}
+
+/* Hover */
+:host ::ng-deep .su-btn.p-button:hover {
+  border-color: #e50914 !important;
+  box-shadow: 0 0 6px rgba(229, 9, 20, 0.8) !important;
+}
+
+/* Focus (TAB ile seçilince) */
+:host ::ng-deep .su-btn.p-button:focus,
+:host ::ng-deep .su-btn.p-button:focus-visible {
+  border: 2px solid #e50914 !important;
+  outline: none !important;
+  box-shadow: 0 0 6px rgba(229, 9, 20, 0.8) !important;
+}
+

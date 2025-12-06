@@ -1,0 +1,168 @@
+/* NAVBAR styles */
+.navbar {
+  height: 70px;
+  background: #111;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 1px solid #333;
+}
+
+.logo {
+  margin: 0;
+  color:red; /* Red color */
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-icon {
+  font-size: 1.6rem;
+  color: white;
+}
+
+.username {
+  font-size: 1rem;
+  color: #ddd;
+}
+
+
+/* HOME CONTAINER styles */
+.home-container {
+  padding: 30px 40px;
+  background: #000;
+  min-height: calc(100vh - 70px);
+}
+
+
+/* SECTION styles */
+.section {
+  margin-bottom: 35px;
+}
+
+.section-title {
+  font-size: 1.4rem;
+  color: white;
+  margin-bottom: 15px;
+}
+
+
+/* MOVIE CARD styles */
+.movie-card {
+  width: 220px;
+  height: 330px;
+  border-radius: 8px;
+  background: #222;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+}
+
+.movie-card:hover {
+  transform: scale(1.18); /* Zoom effect */
+  z-index: 20;
+  box-shadow: 0 0 25px rgba(255,255,255,0.18);
+}
+
+.movie-poster {
+  width: 100%;
+  height: 85%;
+  object-fit: cover;
+}
+
+.movie-title {
+  padding: 6px;
+  font-size: 1rem;
+  text-align: center;
+  color: #ddd;
+}
+
+
+/* PRIME NG CAROUSEL FIXES */
+
+/* Item width and margin */
+:host ::ng-deep .p-carousel-item {
+  flex: 0 0 230px !important;
+  width: 230px !important;
+  max-width: 230px !important;
+  padding: 0 !important;
+  margin: 0 8px !important;
+}
+
+/* Internal padding reset */
+:host ::ng-deep .p-carousel-items-content {
+  padding: 0 !important;
+  margin: 0 !important;
+  gap: 0 !important;
+}
+
+/* Item container alignment */
+:host ::ng-deep .p-carousel-items-container {
+  display: flex !important;
+  gap: 0 !important;
+}
+
+/* Arrow buttons style */
+:host ::ng-deep .p-carousel-next,
+:host ::ng-deep .p-carousel-prev {
+  color: white !important;
+  background: rgba(0,0,0,0.45) !important;
+  border: none !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  transition: 0.2s ease;
+}
+
+:host ::ng-deep .p-carousel-next:hover,
+:host ::ng-deep .p-carousel-prev:hover {
+  background: rgba(255,255,255,0.20) !important;
+}
+
+/* Active indicator style */
+:host ::ng-deep .p-carousel-indicator-button.p-highlight {
+  background-color: #e50914 !important;
+  width: 18px !important;
+  height: 6px !important;
+  border-radius: 10px !important;
+}
+
+/* Inactive indicator style */
+:host ::ng-deep .p-carousel-indicator-button {
+  background-color: #555 !important; 
+  width: 10px !important;
+  height: 10px !important;
+  border-radius: 50% !important;
+  opacity: 0.6;
+}
+
+/* Inactive indicator hover effect */
+:host ::ng-deep .p-carousel-indicator-button:hover {
+  opacity: 1 !important;
+}
+
+
+/* RESPONSIVE adjustments */
+@media (max-width: 900px) {
+  /* Card size for medium screens */
+  .movie-card {
+    width: 180px;
+    height: 280px;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Card size for small screens */
+  .movie-card {
+    width: 150px;
+    height: 240px;
+  }
+}

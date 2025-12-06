@@ -1,0 +1,40 @@
+<div class="su-wrapper">
+  <div class="su-box">
+
+    <h2 class="su-title">Create an Account</h2>
+
+    <input
+      pInputText
+      placeholder="Email"
+      [(ngModel)]="email"
+      type="email"
+      class="su-input"
+    />
+
+    <input
+      pInputText
+      placeholder="Password"
+      [(ngModel)]="password"
+      type="password"
+      class="su-input"
+    />
+
+    <input
+      pInputText
+      placeholder="Confirm Password"
+      [(ngModel)]="confirmPassword"
+      type="password"
+      class="su-input"
+    />
+
+    <button
+      pButton
+      label="Sign Up"
+      class="su-btn"
+      style="width: 100%; margin-top: 15px;"
+    ></button>
+
+    <p class="su-back" routerLink="/">Already have an account? Sign In</p>
+
+  </div>
+</div>
