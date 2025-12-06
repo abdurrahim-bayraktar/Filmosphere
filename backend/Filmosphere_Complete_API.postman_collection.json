@@ -1,0 +1,1552 @@
+{
+	"info": {
+		"_postman_id": "filmosphere-complete",
+		"name": "Filmosphere API - Complete",
+		"description": "Complete API collection for Filmosphere - Authentication, Films, Search, Ratings, Mood Tracking, Recommendations, Lists, IMDb Extended API, KinoCheck Extended API, Following System, Spoiler Protection (FR06), and Badge System (FR05)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"access_token\", jsonData.tokens.access);",
+									"    pm.collectionVariables.set(\"refresh_token\", jsonData.tokens.refresh);",
+									"    console.log(\"Tokens saved!\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"password\": \"testpass123\",\n    \"password_confirm\": \"testpass123\",\n    \"display_name\": \"Test User\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "register", ""]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"access_token\", jsonData.tokens.access);",
+									"    pm.collectionVariables.set(\"refresh_token\", jsonData.tokens.refresh);",
+									"    console.log(\"Tokens saved!\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"password\": \"testpass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login", ""]
+						}
+					}
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"access_token\", jsonData.access);",
+									"    console.log(\"Access token refreshed!\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refresh\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/token/refresh/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "token", "refresh", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. User Profiles",
+			"item": [
+				{
+					"name": "Get Current User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/users/me/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "users", "me", ""]
+						}
+					}
+				},
+				{
+					"name": "Get User Profile by Username",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/users/{{username}}/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "users", "{{username}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"display_name\": \"Updated Name\",\n    \"bio\": \"This is my updated bio\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/users/me/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "users", "me", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Film Search",
+			"item": [
+				{
+					"name": "Search Films",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/search?q={{search_query}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "search"],
+							"query": [
+								{
+									"key": "q",
+									"value": "{{search_query}}",
+									"description": "Search query (film title)"
+								}
+							]
+						},
+						"description": "Search for films by title. Returns list of films with IMDb IDs."
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Film Details",
+			"item": [
+				{
+					"name": "Get Film Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}"]
+						},
+						"description": "Get full film details including metadata, rating statistics, and user's rating (if authenticated)"
+					}
+				},
+				{
+					"name": "Get Film Trailer",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/trailer",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "trailer"]
+						},
+						"description": "Get trailer information for a film"
+					}
+				},
+				{
+					"name": "Get Film Streaming Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/streaming",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "streaming"]
+						},
+						"description": "Get streaming platform availability for a film"
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Film Ratings",
+			"item": [
+				{
+					"name": "Rate Film - Overall Only",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"overall_rating\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/rate",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "rate"]
+						},
+						"description": "Quick rating with overall score only (FR10.4)"
+					}
+				},
+				{
+					"name": "Rate Film - All Aspects",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"plot_rating\": 5,\n    \"acting_rating\": 4,\n    \"cinematography_rating\": 5,\n    \"soundtrack_rating\": 3,\n    \"originality_rating\": 4,\n    \"direction_rating\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/rate",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "rate"]
+						},
+						"description": "Rate all aspects. Overall calculated automatically (FR10.3)"
+					}
+				},
+				{
+					"name": "Rate Film - Partial Aspects",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"plot_rating\": 5,\n    \"acting_rating\": 4,\n    \"cinematography_rating\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/rate",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "rate"]
+						},
+						"description": "Rate only some aspects. Overall calculated from provided aspects"
+					}
+				},
+				{
+					"name": "Get My Rating for Film",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/rate",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "rate"]
+						},
+						"description": "Get your rating for a specific film"
+					}
+				},
+				{
+					"name": "Update Rating",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"plot_rating\": 5,\n    \"acting_rating\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/rate",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "rate"]
+						},
+						"description": "Update existing rating (partial update supported)"
+					}
+				},
+				{
+					"name": "Delete Rating",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/rate",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "rate"]
+						},
+						"description": "Delete your rating for a film"
+					}
+				},
+				{
+					"name": "Get All Ratings for Film",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/ratings",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "ratings"]
+						},
+						"description": "Get all ratings for a film with average statistics"
+					}
+				}
+			]
+		},
+		{
+			"name": "6. User Ratings",
+			"item": [
+				{
+					"name": "Get User's All Ratings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/users/{{username}}/ratings/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "users", "{{username}}", "ratings", ""]
+						},
+						"description": "Get all ratings by a specific user"
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Mood Tracking (FR09)",
+			"item": [
+				{
+					"name": "Log Mood Before Watching",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mood_before\": \"bored\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/mood",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "mood"]
+						},
+						"description": "Log your mood before watching a film (FR09.1). Mood options: happy, sad, excited, calm, anxious, bored, energetic, relaxed, stressed, neutral"
+					}
+				},
+				{
+					"name": "Log Mood After Watching",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mood_after\": \"excited\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/mood",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "mood"]
+						},
+						"description": "Log your mood after watching a film (FR09.2). Updates existing mood log if already created."
+					}
+				},
+				{
+					"name": "Log Both Moods",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mood_before\": \"bored\",\n    \"mood_after\": \"excited\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/mood",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "mood"]
+						},
+						"description": "Log both before and after moods at once"
+					}
+				},
+				{
+					"name": "Get My Mood for Film",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/mood",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "mood"]
+						},
+						"description": "Get your mood log for a specific film"
+					}
+				}
+			]
+		},
+		{
+			"name": "8. Recommendations (FR11)",
+			"item": [
+				{
+					"name": "Get Personalized Recommendations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/recommendations/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "recommendations", ""]
+						},
+						"description": "Get personalized film recommendations based on your ratings, mood logs, and viewing history (FR11.1, FR11.2, FR11.3). Returns film titles with IMDb IDs and links to film pages."
+					}
+				}
+			]
+		},
+		{
+			"name": "9. Lists (FR03)",
+			"item": [
+				{
+					"name": "Get All Lists",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/lists/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lists", ""]
+						},
+						"description": "Get all lists - your own lists and public lists from other users (FR03)."
+					}
+				},
+				{
+					"name": "Create List",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"My Top 10 Horror Films\",\n    \"description\": \"A curated list of my favorite horror movies\",\n    \"is_public\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/lists/create/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lists", "create", ""]
+						},
+						"description": "Create a new named film list (FR03.1)."
+					}
+				},
+				{
+					"name": "Get List Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/lists/{{list_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lists", "{{list_id}}"]
+						},
+						"description": "Get details of a specific list including all films (FR03.1)."
+					}
+				},
+				{
+					"name": "Update List",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Updated List Title\",\n    \"description\": \"Updated description\",\n    \"is_public\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/lists/{{list_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lists", "{{list_id}}"]
+						},
+						"description": "Update a list's title, description, or visibility (FR03.1). Only the list owner can update."
+					}
+				},
+				{
+					"name": "Delete List",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/lists/{{list_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lists", "{{list_id}}"]
+						},
+						"description": "Delete an entire list (FR03.4). Only the list owner can delete."
+					}
+				},
+				{
+					"name": "Add Film to List",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"imdb_id\": \"{{imdb_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/lists/{{list_id}}/films",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lists", "{{list_id}}", "films"]
+						},
+						"description": "Add one or more films to a list (FR03.2)."
+					}
+				},
+				{
+					"name": "Remove Film from List",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/lists/{{list_id}}/films/{{imdb_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "lists", "{{list_id}}", "films", "{{imdb_id}}"]
+						},
+						"description": "Remove a film from a list (FR03.3)."
+					}
+				},
+				{
+					"name": "Get User's Lists",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{username}}/lists/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "{{username}}", "lists", ""]
+						},
+						"description": "Get all lists created by a specific user. Shows all lists if viewing your own profile, or only public lists if viewing another user's profile."
+					}
+				}
+			]
+		},
+		{
+			"name": "10. IMDb Extended API",
+			"item": [
+				{
+					"name": "Search Movies (GraphQL)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"query\": \"avengers\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/search/graphql",
+							"host": ["{{base_url}}"],
+							"path": ["api", "search", "graphql"]
+						},
+						"description": "Search movies using GraphQL query format."
+					}
+				},
+				{
+					"name": "Get Film Credits",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/credits",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "credits"]
+						},
+						"description": "Get full cast and credits for a film."
+					}
+				},
+				{
+					"name": "Get Release Dates",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/release-dates",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "release-dates"]
+						},
+						"description": "Get release date information for a film."
+					}
+				},
+				{
+					"name": "Get Alternate Titles (AKAs)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/akas",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "akas"]
+						},
+						"description": "Get different names/alternate titles (AKAs) for a film."
+					}
+				},
+				{
+					"name": "Get Season Count",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/seasons",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "seasons"]
+						},
+						"description": "Get season count for a TV series."
+					}
+				},
+				{
+					"name": "Get Episodes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/episodes",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "episodes"]
+						},
+						"description": "Get episodes for a TV series."
+					}
+				},
+				{
+					"name": "Get Images",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/images",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "images"]
+						},
+						"description": "Get image gallery for a film."
+					}
+				},
+				{
+					"name": "Get Videos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/videos",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "videos"]
+						},
+						"description": "Get related videos for a film."
+					}
+				},
+				{
+					"name": "Get Award Nominations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/award-nominations",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "award-nominations"]
+						},
+						"description": "Get award nominations for a film."
+					}
+				},
+				{
+					"name": "Get Parents Guide",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/parents-guide",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "parents-guide"]
+						},
+						"description": "Get parents guide information for a film."
+					}
+				},
+				{
+					"name": "Get Certificates",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/certificates",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "certificates"]
+						},
+						"description": "Get certification information for a film."
+					}
+				},
+				{
+					"name": "Get Company Credits",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/company-credits",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "company-credits"]
+						},
+						"description": "Get company credits for a film."
+					}
+				},
+				{
+					"name": "Get Box Office Data",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/box-office",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "box-office"]
+						},
+						"description": "Get box office data for a film."
+					}
+				}
+			]
+		},
+		{
+			"name": "11. KinoCheck Extended API",
+			"item": [
+				{
+					"name": "Get Latest Trailers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/kinocheck/trailers/latest",
+							"host": ["{{base_url}}"],
+							"path": ["api", "kinocheck", "trailers", "latest"]
+						},
+						"description": "Get latest trailers from KinoCheck."
+					}
+				},
+				{
+					"name": "Get Trending Trailers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/kinocheck/trailers/trending",
+							"host": ["{{base_url}}"],
+							"path": ["api", "kinocheck", "trailers", "trending"]
+						},
+						"description": "Get trending trailers from KinoCheck."
+					}
+				},
+				{
+					"name": "Get Trailers by Genre",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/kinocheck/trailers?genres=Action",
+							"host": ["{{base_url}}"],
+							"path": ["api", "kinocheck", "trailers"],
+							"query": [
+								{
+									"key": "genres",
+									"value": "Action"
+								}
+							]
+						},
+						"description": "Get trailers filtered by genre from KinoCheck."
+					}
+				},
+				{
+					"name": "Get Movie by KinoCheck ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/kinocheck/movies?id=ly4",
+							"host": ["{{base_url}}"],
+							"path": ["api", "kinocheck", "movies"],
+							"query": [
+								{
+									"key": "id",
+									"value": "ly4"
+								}
+							]
+						},
+						"description": "Get movie details by KinoCheck movie ID."
+					}
+				}
+			]
+		},
+		{
+			"name": "12. Following System",
+			"item": [
+				{
+					"name": "Follow User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{username}}/follow",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "{{username}}", "follow"]
+						},
+						"description": "Follow a user. This creates a follower relationship."
+					}
+				},
+				{
+					"name": "Unfollow User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{username}}/follow",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "{{username}}", "follow"]
+						},
+						"description": "Unfollow a user."
+					}
+				},
+				{
+					"name": "Get User's Followers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{username}}/followers",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "{{username}}", "followers"]
+						},
+						"description": "Get all users who follow this user."
+					}
+				},
+				{
+					"name": "Get Users User is Following",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{username}}/following",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "{{username}}", "following"]
+						},
+						"description": "Get all users that this user is following."
+					}
+				},
+				{
+					"name": "Check Follow Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{username}}/follow-status",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "{{username}}", "follow-status"]
+						},
+						"description": "Check if current user follows another user, and get follower/following counts."
+					}
+				}
+			]
+		},
+		{
+			"name": "13. Spoiler Protection (FR06)",
+			"item": [
+				{
+					"name": "Create Review with Manual Spoiler",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Great film!\",\n    \"content\": \"The ending was shocking!\",\n    \"rating\": 5,\n    \"is_spoiler\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/reviews/create",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "reviews", "create"]
+						},
+						"description": "Create a review and manually mark it as a spoiler (FR06.1)."
+					}
+				},
+				{
+					"name": "Create Review (Auto-Detect Spoiler)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Spoiler Alert!\",\n    \"content\": \"I can't believe the main character dies at the end!\",\n    \"rating\": 4\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/reviews/create",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "reviews", "create"]
+						},
+						"description": "Create a review - system will auto-detect if it contains spoilers (FR06.2)."
+					}
+				},
+				{
+					"name": "Get Reviews (Spoilers Hidden)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/reviews",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "reviews"]
+						},
+						"description": "Get all reviews for a film. Spoilers are hidden by default (FR06.3)."
+					}
+				},
+				{
+					"name": "Get Reviews (Show Spoilers)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/reviews?show_spoiler=true",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "reviews"],
+							"query": [
+								{
+									"key": "show_spoiler",
+									"value": "true"
+								}
+							]
+						},
+						"description": "Get all reviews with spoilers revealed (FR06.4)."
+					}
+				}
+			]
+		},
+		{
+			"name": "14. Badge System (FR05)",
+			"item": [
+				{
+					"name": "Get All Badges",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/badges/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "badges", ""]
+						},
+						"description": "Get all available badges (default and custom). Use ?is_custom=true or ?is_custom=false to filter."
+					}
+				},
+				{
+					"name": "Get My Badge Progress",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/badges/progress",
+							"host": ["{{base_url}}"],
+							"path": ["api", "badges", "progress"]
+						},
+						"description": "Get your progress towards all badges (FR05.1)."
+					}
+				},
+				{
+					"name": "Get User's Badges",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{username}}/badges",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "{{username}}", "badges"]
+						},
+						"description": "Get all badges earned by a user (FR05.3)."
+					}
+				},
+				{
+					"name": "Create Custom Badge/Challenge",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Watch 100 Horror Films\",\n    \"description\": \"Watch 100 horror films this year\",\n    \"criteria_type\": \"films_watched\",\n    \"criteria_value\": 100,\n    \"icon_url\": \"https://example.com/horror-icon.png\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/badges/create",
+							"host": ["{{base_url}}"],
+							"path": ["api", "badges", "create"]
+						},
+						"description": "Create a custom badge/challenge for yourself."
+					}
+				},
+				{
+					"name": "Manually Check and Award Badges",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/badges/award",
+							"host": ["{{base_url}}"],
+							"path": ["api", "badges", "award"]
+						},
+						"description": "Manually trigger badge checking. Badges are automatically checked when you create reviews, rate films, etc. (FR05.2)."
+					}
+				}
+			]
+		},
+		{
+			"name": "15. Watched Films",
+			"item": [
+				{
+					"name": "Mark Film as Watched",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/watched",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "watched"]
+						},
+						"description": "Mark a film as watched. Automatically checks and awards badges."
+					}
+				},
+				{
+					"name": "Mark Film as Unwatched",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/unwatched",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "unwatched"]
+						},
+						"description": "Remove a film from your watched list."
+					}
+				},
+				{
+					"name": "Check if Film is Watched",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/films/{{imdb_id}}/watched-status",
+							"host": ["{{base_url}}"],
+							"path": ["api", "films", "{{imdb_id}}", "watched-status"]
+						},
+						"description": "Check if you have watched a specific film."
+					}
+				},
+				{
+					"name": "Get User's Watched Films",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{username}}/watched",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "{{username}}", "watched"]
+						},
+						"description": "Get all films watched by a user. Shows all watched films for any user."
+					}
+				}
+			]
+		},
+		{
+			"name": "16. Comment Moderation",
+			"item": [
+				{
+					"name": "Flag Comment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reason\": \"inappropriate\",\n    \"description\": \"This comment contains offensive content\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/reviews/{{review_id}}/flag",
+							"host": ["{{base_url}}"],
+							"path": ["api", "reviews", "{{review_id}}", "flag"]
+						},
+						"description": "Flag a comment for review. Reasons: spam, inappropriate, harassment, hate_speech, other."
+					}
+				},
+				{
+					"name": "Unflag Comment",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/reviews/{{review_id}}/unflag",
+							"host": ["{{base_url}}"],
+							"path": ["api", "reviews", "{{review_id}}", "unflag"]
+						},
+						"description": "Remove your flag from a comment."
+					}
+				},
+				{
+					"name": "Get Flagged Comments (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/reviews/flagged?status=pending",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "reviews", "flagged"],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending",
+									"description": "Filter: pending, flagged, or all"
+								}
+							]
+						},
+						"description": "Get all flagged comments for admin review. Requires staff permissions."
+					}
+				},
+				{
+					"name": "Approve Comment (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"approve\",\n    \"reason\": \"Content is appropriate\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/reviews/{{review_id}}/moderate",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "reviews", "{{review_id}}", "moderate"]
+						},
+						"description": "Approve a comment (admin only). Requires staff permissions."
+					}
+				},
+				{
+					"name": "Reject Comment (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"reject\",\n    \"reason\": \"Contains inappropriate content\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/reviews/{{review_id}}/moderate",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "reviews", "{{review_id}}", "moderate"]
+						},
+						"description": "Reject a comment (admin only). Requires staff permissions."
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string",
+			"description": "API base URL"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string",
+			"description": "JWT access token (auto-saved from login/register)"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string",
+			"description": "JWT refresh token (auto-saved from login/register)"
+		},
+		{
+			"key": "username",
+			"value": "testuser",
+			"type": "string",
+			"description": "Username for user-specific endpoints"
+		},
+		{
+			"key": "imdb_id",
+			"value": "tt0111161",
+			"type": "string",
+			"description": "IMDb ID for film endpoints (e.g., tt0111161 for The Shawshank Redemption)"
+		},
+		{
+			"key": "search_query",
+			"value": "shawshank",
+			"type": "string",
+			"description": "Search query for film search"
+		},
+		{
+			"key": "list_id",
+			"value": "1",
+			"type": "string",
+			"description": "List ID for list management endpoints"
+		}
+	]
+}
+

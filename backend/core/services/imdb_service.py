@@ -72,5 +72,45 @@ class IMDbService:
         """Fetch release date information for a film."""
         return self.http_client.get(f"/titles/{imdb_id}/releaseDates")
 
+    def get_akas(self, imdb_id: str) -> Dict[str, Any]:
+        """Fetch different names/alternate titles (AKAs) for a film."""
+        return self.http_client.get(f"/titles/{imdb_id}/akas")
+
+    def get_seasons(self, imdb_id: str) -> Dict[str, Any]:
+        """Fetch season count for a TV series."""
+        return self.http_client.get(f"/titles/{imdb_id}/seasons")
+
+    def get_episodes(self, imdb_id: str) -> Dict[str, Any]:
+        """Fetch episodes for a TV series."""
+        return self.http_client.get(f"/titles/{imdb_id}/episodes")
+
+    def get_award_nominations(self, imdb_id: str) -> Dict[str, Any]:
+        """Fetch award nominations for a film."""
+        return self.http_client.get(f"/titles/{imdb_id}/awardNominations")
+
+    def get_company_credits(self, imdb_id: str) -> Dict[str, Any]:
+        """Fetch company credits for a film."""
+        return self.http_client.get(f"/titles/{imdb_id}/companyCredits")
+
+    def get_box_office(self, imdb_id: str) -> Dict[str, Any]:
+        """Fetch box office data for a film."""
+        return self.http_client.get(f"/titles/{imdb_id}/boxOffice")
+
+    def search_movies_graphql(self, query: str) -> Dict[str, Any]:
+        """Search movies using GraphQL query (alternative search method).
+        
+        Args:
+            query: Search term (e.g., "avengers")
+        
+        Returns:
+            GraphQL response with movie results
+        """
+        # Build GraphQL query string
+        graphql_query_string = f'query {{ movies(query: "{query}") {{ results {{ imdbId title year type }} }} }}'
+        graphql_payload = {
+            "query": graphql_query_string
+        }
+        return self.http_client.post("/titles", json=graphql_payload)
+
 
 

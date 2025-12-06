@@ -47,6 +47,21 @@ class HttpClient:
         response.raise_for_status()
         return response.json()
 
+    def post(self, url: str, json: Optional[Dict[str, Any]] = None, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+        """Perform a POST request and return the decoded JSON payload.
+
+        Args:
+            url: Relative or absolute URL to fetch.
+            json: Optional JSON body to send.
+            headers: Optional HTTP headers.
+
+        Returns:
+            Parsed JSON response as a dictionary.
+        """
+        response = self._client.post(url, json=json, headers=headers)
+        response.raise_for_status()
+        return response.json()
+
     def close(self) -> None:
         """Close the underlying HTTP client."""
         self._client.close()

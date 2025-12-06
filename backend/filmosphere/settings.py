@@ -31,14 +31,18 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "allauth",
     "allauth.account",
+    "corsheaders",
+    "rest_framework_simplejwt",
     "core",
     "films",
     "api",
+    "users",
 ]
 
 SITE_ID = 1
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -107,6 +111,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+    ],
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
     ],
@@ -127,8 +137,37 @@ KINO_BASE = env("KINO_BASE", default="https://api.kinocheck.com")
 KINO_API_KEY = env("KINO_API_KEY", default="")
 WATCHMODE_BASE = env("WATCHMODE_BASE", default="https://api.watchmode.com/v1")
 WATCHMODE_API_KEY = env("WATCHMODE_API_KEY", default="")
+DEEPSEEK_API_KEY = env("DEEPSEEK_API_KEY", default="")
+DEEPSEEK_BASE = env("DEEPSEEK_BASE", default="https://api.deepseek.com/v1")
 CACHE_TTL_HOURS = env.int("CACHE_TTL_HOURS", default=24)
 HTTP_TIMEOUT = env.int("HTTP_TIMEOUT", default=10)
 HTTP_RETRIES = env.int("HTTP_RETRIES", default=3)
+
+# CORS Settings
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+# JWT Settings
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+}
+
+# Comment Moderation Settings
+COMMENT_BLACKLIST = [
+    # Add blacklisted words/phrases here
+    # Example: "spam", "scam", etc.
+    # Can be overridden via environment variable
+]
+COMMENT_BLACKLIST = env.list("COMMENT_BLACKLIST", default=COMMENT_BLACKLIST)
 
 

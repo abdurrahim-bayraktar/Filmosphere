@@ -1,8 +1,24 @@
-version: "3.9"
-
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: filmosphere_postgres
+    environment:
+      POSTGRES_USER: filmouser
+      POSTGRES_PASSWORD: filmopass
+      POSTGRES_DB: filmosphere
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U filmouser"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   web:
     build: .
+    container_name: filmosphere_web
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
@@ -10,26 +26,19 @@ services:
       - "8000:8000"
     env_file:
       - .env
-    depends_on:
-      - postgres
-
-  postgres:
-    image: postgres:16
     environment:
-      POSTGRES_DB: filmosphere
-      POSTGRES_USER: filmouser
-      POSTGRES_PASSWORD: filmopass
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  # redis:
-  #   image: redis:7
-  #   ports:
-  #     - "6379:6379"
+      - DATABASE_URL=postgres://filmouser:filmopass@postgres:5432/filmosphere
+      - DJANGO_DEBUG=True
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   postgres_data:
-
 
