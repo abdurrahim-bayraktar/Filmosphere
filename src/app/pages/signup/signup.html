@@ -3,6 +3,15 @@
 
     <h2 class="su-title">Create an Account</h2>
 
+    <!-- USERNAME FIELD (backend-required) -->
+    <input
+      pInputText
+      placeholder="Username"
+      [(ngModel)]="username"
+      type="text"
+      class="su-input"
+    />
+
     <input
       pInputText
       placeholder="Email"
@@ -32,9 +41,10 @@
       label="Sign Up"
       class="su-btn"
       style="width: 100%; margin-top: 15px;"
+      (click)="register()"
     ></button>
 
-    <p class="su-back" routerLink="/">Already have an account? Sign In</p>
+    <a class="su-back" routerLink="/">Already have an account? Sign In</a>
 
   </div>
 </div>

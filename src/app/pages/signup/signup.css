@@ -50,6 +50,7 @@
   color: #ccc;
   cursor: pointer;
   transition: 0.2s;
+  display: block;
 }
 
 .su-back:hover {

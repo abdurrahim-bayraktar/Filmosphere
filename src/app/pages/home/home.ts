@@ -1,9 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { CarouselModule } from 'primeng/carousel';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { HeroComponent } from "../../components/hero/hero";
 import { MovieModalComponent } from "../../components/movie-modal/movie-modal";
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { AvatarModule } from 'primeng/avatar';
+import { MenuItem } from 'primeng/api';
+import { MenuModule } from 'primeng/menu';
+import { PopoverModule } from 'primeng/popover';
+import { Popover } from 'primeng/popover';
+import { FormsModule } from '@angular/forms';
+import { SearchService } from '../../services/search.service';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 
 @Component({
   selector: 'app-home',
@@ -13,15 +23,87 @@ import { MovieModalComponent } from "../../components/movie-modal/movie-modal";
     ButtonModule,
     CommonModule,
     HeroComponent,
-    MovieModalComponent
+    MovieModalComponent,
+    HttpClientModule,
+    AvatarModule,
+    PopoverModule,
+    MenuModule,
+    RouterLink,
+    FormsModule,
+    AutoCompleteModule
   ],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
+
+  @ViewChild('profileMenu') profileMenu!: Popover;
+
+  user: any = null;
+  avatarLabel: string = "";
+  avatarImage: string | null = null;
+
+  menuItems: MenuItem[] = [];
 
   modalVisible = false;
   selectedMovie: any = null;
+
+  searchQuery = "";
+  searchResults: any[] = [];
+
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private searchService: SearchService
+  ) { }
+
+  ngOnInit() {
+    this.loadUser();
+    this.setupMenuItems();
+  }
+
+  setupMenuItems() {
+    this.menuItems = [
+      { label: 'My Profile', icon: 'pi pi-user', routerLink: ['/profile'] },
+      { label: 'Settings', icon: 'pi pi-cog', routerLink: ['/settings'] },
+      { separator: true },
+      { label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() }
+    ];
+  }
+
+  loadUser() {
+    const cached = localStorage.getItem("user_profile");
+
+    if (cached) {
+      const usr = JSON.parse(cached);
+      this.user = usr;
+      this.avatarImage = usr.profile?.avatar || null;
+      this.avatarLabel = usr.username[0]?.toUpperCase() || "U";
+    }
+
+    const token = localStorage.getItem("access");
+    if (!token) return;
+
+    this.http.get("http://127.0.0.1:8000/api/auth/me/", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .subscribe({
+        next: (res: any) => {
+          this.user = res;
+          this.avatarImage = res.profile?.avatar || null;
+          this.avatarLabel = res.username[0]?.toUpperCase() || "U";
+          localStorage.setItem("user_profile", JSON.stringify(res));
+        }
+      });
+  }
+
+  logout() {
+    localStorage.removeItem('access');
+    localStorage.removeItem('refresh');
+    this.user = { username: "Guest" };
+    this.avatarLabel = "G";
+    this.router.navigate(['/']);
+  }
 
   openMovieDetail(movie: any) {
     this.selectedMovie = movie;
@@ -32,21 +114,26 @@ export class HomeComponent {
     this.modalVisible = false;
   }
 
-  trendingMovies = [
-    { title: "Inception", poster: "https://image.tmdb.org/t/p/w500/qmDpIHrmpJINaRKAfWQfftjCdyi.jpg", description: "A thief who steals corporate secrets..." },
-    { title: "Interstellar", poster: "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg", description: "A team travels through a wormhole..." },
-    { title: "The Dark Knight", poster: "https://image.tmdb.org/t/p/w500/1hRoyzDtpgMU7Dz4JF22RANzQO7.jpg", description: "Batman faces the Joker..." }
-  ];
+  onSearchChange(event: any) {
+    const query = event.query;
 
-  topRatedMovies = [
-    { title: "Fight Club", poster: "https://image.tmdb.org/t/p/w500/bptfVGEQuv6vDTIMVCHjJ9Dz8PX.jpg", description: "An insomniac forms a fight club." },
-    { title: "The Godfather", poster: "https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg", description: "Mafia family epic." },
-    { title: "Pulp Fiction", poster: "https://image.tmdb.org/t/p/w500/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg", description: "Nonlinear crime stories." }
-  ];
+    if (query.length < 2) {
+      this.searchResults = [];
+      return;
+    }
 
-  actionMovies = [
-    { title: "John Wick", poster: "https://image.tmdb.org/t/p/w500/fZPSd91yGE9fCcCe6OoQr6E3Bev.jpg", description: "Legendary assassin returns." },
-    { title: "Mad Max", poster: "https://image.tmdb.org/t/p/w500/8tZYtuWezp8JbcsvHYO0O46tFbo.jpg", description: "Post-apocalyptic mayhem." },
-    { title: "Gladiator", poster: "https://image.tmdb.org/t/p/w500/pRho4REuXkFzfrVN7Od8VY6F4gl.jpg", description: "Roman general becomes gladiator." }
-  ];
+    this.searchService.searchIMDB(query).subscribe(results => {
+      this.searchResults = results.map(movie => ({
+        title: movie.title,
+        poster: movie.image || "https://via.placeholder.com/80x120",
+        id: movie.imdb_id,
+        year: movie.year
+      }));
+    });
+
+  }
+
+  trendingMovies: any[] = [];
+  topRatedMovies: any[] = [];
+  actionMovies: any[] = [];
 }

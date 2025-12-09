@@ -12,7 +12,7 @@
         <input pInputText placeholder="Password" [(ngModel)]="password" type="password" />
       </div>
 
-      <button pButton label="Sign In" class="btn-signin"></button>
+      <button pButton label="Sign In" class="btn-signin" (click)="login()"></button>
 
       <a class="forgot" routerLink="/forgot-password">Forgot your password?</a>
 
