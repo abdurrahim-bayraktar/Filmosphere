@@ -1,0 +1,104 @@
+<div class="navbar">
+  <div class="navbar-left">
+    <h1 class="logo">FILMOSPHERE</h1>
+  </div>
+
+  <div class="navbar-search">
+  <p-autoComplete
+      [(ngModel)]="searchQuery"
+      [suggestions]="searchResults"
+      (completeMethod)="onSearchChange($event)"
+      field="title"
+      [dropdown]="false"
+      [forceSelection]="false"
+      placeholder="Search movies..."
+      [minLength]="2"
+      [style]="{ width: '350px' }"
+      (onSelect)="openMovieDetail($event)"
+  >
+      <ng-template let-movie pTemplate="item">
+        <div class="search-item">
+          <img [src]="movie.poster" class="search-thumb" />
+          <span class="search-title">{{ movie.title }}</span>
+        </div>
+      </ng-template>
+  </p-autoComplete>
+</div>
+
+
+  <div class="navbar-right profile-menu-trigger" (click)="profileMenu.toggle($event)">
+    <p-avatar 
+      *ngIf="avatarImage"
+      [image]="avatarImage"
+      shape="circle"
+      style="width:40px; height:40px;">
+    </p-avatar>
+
+    <p-avatar 
+      *ngIf="!avatarImage && avatarLabel"
+      [label]="avatarLabel"
+      shape="circle"
+      style="background:#e50914; color:white; width:40px; height:40px;">
+    </p-avatar>
+
+    <span class="username">{{ user?.username || 'Guest' }}</span>
+    <i class="pi pi-chevron-down dropdown-arrow"></i>
+  </div>
+</div>
+
+
+<div class="home-container">
+
+  <app-hero></app-hero>
+
+  <div class="section">
+    <h2 class="section-title">Trending Now</h2>
+
+    <p-carousel [value]="trendingMovies" [numVisible]="6" [numScroll]="4" [circular]="true" class="movie-carousel">
+      <ng-template let-movie pTemplate="item">
+        <div class="movie-card" (click)="openMovieDetail(movie)">
+          <img [src]="movie.poster" class="movie-poster" />
+          <div class="movie-title">{{ movie.title }}</div>
+        </div>
+      </ng-template>
+    </p-carousel>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">Top Rated</h2>
+
+    <p-carousel [value]="topRatedMovies" [numVisible]="6" [numScroll]="4" [circular]="true" class="movie-carousel">
+      <ng-template let-movie pTemplate="item">
+        <div class="movie-card" (click)="openMovieDetail(movie)">
+          <img [src]="movie.poster" class="movie-poster" />
+          <div class="movie-title">{{ movie.title }}</div>
+        </div>
+      </ng-template>
+    </p-carousel>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">Action Movies</h2>
+
+    <p-carousel [value]="actionMovies" [numVisible]="6" [numScroll]="4" [circular]="true" class="movie-carousel">
+      <ng-template let-movie pTemplate="item">
+        <div class="movie-card" (click)="openMovieDetail(movie)">
+          <img [src]="movie.poster" class="movie-poster" />
+          <div class="movie-title">{{ movie.title }}</div>
+        </div>
+      </ng-template>
+    </p-carousel>
+  </div>
+
+</div>
+
+
+<app-movie-modal 
+  [visible]="modalVisible" 
+  [movie]="selectedMovie"
+  (close)="closeMovieDetail()">
+</app-movie-modal>
+
+<p-popover #profileMenu appendTo="body" [style]="{width: '230px'}" styleClass="profile-dropdown-panel">
+    <p-menu [model]="menuItems"></p-menu>
+</p-popover>

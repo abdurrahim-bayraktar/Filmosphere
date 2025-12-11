@@ -1,0 +1,37 @@
+<div class="login-page">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="login-box">
+
+      <h1 class="login-title">Sign In</h1>
+      <h3 class="brand">FILMOSPHERE</h3>
+
+      <input pInputText placeholder="Email or phone number" [(ngModel)]="email" />
+      <div class="password-wrapper">
+        <input pInputText placeholder="Password" [(ngModel)]="password" type="password" />
+      </div>
+
+      <button pButton label="Sign In" class="btn-signin" (click)="login()"></button>
+
+      <a class="forgot" routerLink="/forgot-password">Forgot your password?</a>
+
+
+      <p class="signup-text">
+        New to Filmosphere?
+        <a class="signup-link" routerLink="/signup">Create an account</a>
+      </p>
+
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="logo-wrapper">
+      <div class="film-icon">🎞️</div>
+      <h1 class="brand-logo">FILMOSPHERE</h1>
+      <p class="slogan">Unlimited movies, series and much more.</p>
+    </div>
+  </div>
+
+</div>

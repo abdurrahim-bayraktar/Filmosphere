@@ -1,0 +1,24 @@
+<div class="overlay" *ngIf="visible" (click)="onClose()"></div>
+
+<div class="modal" *ngIf="visible">
+
+    <button class="close-btn" (click)="onClose()">✕</button>
+
+    <div class="modal-content">
+
+        <img class="modal-poster" [src]="movie?.poster" alt="Movie Poster">
+
+        <div class="modal-info">
+            <h2 class="modal-title">{{ movie?.title }}</h2>
+
+            <p class="modal-desc">
+                {{ movie?.description || "No description available." }}
+            </p>
+
+            <button pButton label="Watch Trailer" class="trailer-btn"></button>
+            <button pButton label="Play Movie" class="play-btn"></button>
+        </div>
+
+    </div>
+
+</div>

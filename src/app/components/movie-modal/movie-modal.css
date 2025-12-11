@@ -1,0 +1,107 @@
+/* Backdrop dimming - Styles for the semi-transparent background overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px); /* Blur effect on content behind the modal */
+  z-index: 900;
+}
+
+/* Modal box container - Styles for the main modal dialog */
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 65%;
+  max-width: 900px;
+  transform: translate(-50%, -50%); /* Centering the modal */
+  background: #111;
+  padding: 25px;
+  border-radius: 12px;
+  z-index: 999;
+  animation: fadeIn 0.3s ease; /* Apply fade-in animation */
+  color: white;
+}
+
+/* Content side-by-side layout - Flex layout for poster and info */
+.modal-content {
+  display: flex;
+  gap: 25px;
+}
+
+.modal-poster {
+  width: 300px;
+  height: 440px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.modal-info {
+  flex: 1; /* Allows info section to take remaining space */
+}
+
+.modal-title {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #e50914; /* Red color */
+}
+
+.modal-desc {
+  color: #ccc;
+  margin-bottom: 25px;
+}
+
+/* Button styles */
+.trailer-btn {
+  background: #e50914 !important;
+  margin-right: 10px;
+}
+
+/* Trailer Button Hover and Focus Style */
+.trailer-btn:hover,
+.trailer-btn:focus {
+  background: #b80711 !important; /* Darker Red */
+  outline: none;
+}
+
+.play-btn {
+  background: #444 !important;
+}
+
+/* Play Button Hover and Focus Style */
+.play-btn:hover,
+.play-btn:focus {
+  background: #333 !important; /* Darker Gray */
+  outline: none;
+}
+
+/* Close button style */
+.close-btn {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  background: transparent;
+  border: none;
+  font-size: 1.8rem;
+  color: white;
+  cursor: pointer;
+}
+
+/* Trailer Button Styles (Red) - Ensures border matches background */
+.trailer-btn {
+  background: #e50914 !important;
+  margin-right: 10px;
+  border: 1px solid #e50914 !important;
+}
+
+/* Play Button Styles (Dark Gray) - Ensures border matches background */
+.play-btn {
+  background: #444 !important;
+  border: 1px solid #444 !important;
+}
+
+/* Fade-in animation definition */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -48%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}

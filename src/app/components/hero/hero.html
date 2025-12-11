@@ -1,0 +1,23 @@
+<div class="hero" *ngIf="heroMovie" 
+     [style.backgroundImage]="'url(' + heroMovie.backdrop + ')'">
+
+  <div class="overlay"></div>
+
+  <div class="hero-content">
+    <h1 class="hero-title">{{ heroMovie.title }}</h1>
+
+    <p class="hero-description">
+      {{ heroMovie.overview }}
+    </p>
+
+    <div class="hero-buttons">
+      <button class="btn play-btn">
+        <i class="pi pi-play"></i> Play
+      </button>
+
+      <button class="btn info-btn">
+        <i class="pi pi-info-circle"></i> More Info
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,103 @@
+<div class="profile-container">
+
+    <div class="profile-card">
+
+        <!-- AVATAR SECTION -->
+        <div class="avatar-section">
+            <div class="avatar-display" (click)="openAvatarSelection()">
+
+                <p-avatar *ngIf="avatarImage" [image]="avatarImage" shape="circle" size="xlarge">
+                </p-avatar>
+
+                <p-avatar *ngIf="!avatarImage" [label]="avatarLabel" shape="circle" size="xlarge"
+                    style="background:#e50914; color:white;">
+                </p-avatar>
+
+                <div class="edit-icon"><i class="pi pi-pencil"></i></div>
+            </div>
+        </div>
+
+        <!-- USER INFO -->
+        <h2 class="username">{{ user?.username }}</h2>
+        <p class="email">{{ user?.email }}</p>
+
+        <!-- BIO -->
+        <div class="bio-section">
+            <h3>Biography</h3>
+
+            <p *ngIf="!editMode">{{ user?.profile?.bio || "No bio yet." }}</p>
+
+            <div *ngIf="editMode">
+                <textarea [(ngModel)]="bioToEdit" name="bio" rows="5" class="bio-textarea">
+</textarea>
+
+            </div>
+        </div>
+
+        <!-- FAVORITE MOVIES -->
+        <div class="favorites">
+            <h3>Favorite Movies</h3>
+            <ul>
+                <li>{{ user?.profile?.favorite_movie_1 || "-" }}</li>
+                <li>{{ user?.profile?.favorite_movie_2 || "-" }}</li>
+                <li>{{ user?.profile?.favorite_movie_3 || "-" }}</li>
+            </ul>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="action-buttons">
+
+            <p-button *ngIf="!editMode" label="Edit Profile" icon="pi pi-pencil" (click)="enableEditMode()"
+                styleClass="p-button-danger p-button-sm">
+            </p-button>
+
+            <p-button *ngIf="editMode" label="Save Changes" icon="pi pi-check" (click)="saveProfile()"
+                styleClass="save-changes-btn p-button-sm mr-2">
+            </p-button>
+
+
+            <p-button *ngIf="editMode" label="Cancel" icon="pi pi-times" (click)="cancelEdit()"
+                styleClass="p-button-secondary p-button-sm">
+            </p-button>
+
+        </div>
+
+        <!-- BACK TO HOME BUTTON -->
+        <div style="text-align:center; margin-top:25px;">
+            <p-button label="Back to Home" icon="pi pi-arrow-left" styleClass="p-button-secondary p-button-sm"
+                (click)="goHome()">
+            </p-button>
+        </div>
+
+    </div>
+</div>
+
+
+
+<!-- AVATAR SELECTION DIALOG -->
+<p-dialog header="Select New Avatar" [(visible)]="avatarModalVisible" [modal]="true"
+    [style]="{ width: '500px', height: '350px' }">
+
+    <div class="avatar-select-container">
+
+        <p-select [options]="availableAvatars" [(ngModel)]="selectedAvatar" optionLabel="name"
+            [style]="{ width: '100%' }">
+
+            <ng-template pTemplate="item" let-item>
+                <div class="avatar-option">
+                    <p-avatar [image]="item.url" shape="circle" size="large"></p-avatar>
+                    <span class="avatar-name">{{ item.name }}</span>
+                </div>
+            </ng-template>
+
+        </p-select>
+
+    </div>
+
+    <ng-template pTemplate="footer">
+        <p-button label="Cancel" icon="pi pi-times" (click)="cancelEdit()" styleClass="cancel-btn p-button-sm">
+        </p-button>
+
+
+        <p-button label="Save Avatar" icon="pi pi-check" (click)="saveAvatar()" styleClass="save-avatar-btn">
+        </p-button>
