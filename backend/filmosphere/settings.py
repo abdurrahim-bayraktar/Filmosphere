@@ -76,10 +76,22 @@ ASGI_APPLICATION = "filmosphere.asgi.application"
 
 DATABASES = {
     "default": env.db(
-        "DATABASE_URL",
+       "DATABASE_URL",
         default="postgres://filmouser:filmopass@localhost:5432/filmosphere",
     )
 }
+#simdilik atamin kutahya eskisehir savasindan once yaptigi taktigi yapiyorum geri cekilir gibi yapıyorum anlık bypass ediyorum anlık sqlite kullanımı
+#edit: geri cekilme basarili ust blogu yoruma almıstım anlık test icin simdi geri actim
+
+
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': BASE_DIR / 'db.sqlite3',
+#    }
+#}
+#bu blogu silcez uste geri donmek icin unutma
+#edit: evet misyonu tamamladı belki bidaha lazim olursa diye silmiyorum yorumda kalsin
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -123,6 +135,10 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "60/min",
     },
+    #test yapmak icin asagiyi ekliyorum
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication', ),
 }
 
 SPECTACULAR_SETTINGS = {
