@@ -18,43 +18,42 @@ import { InputTextModule } from 'primeng/inputtext';
   ]
 })
 export class LandingComponent {
-  email: string = '';
+  username: string = '';
   password: string = '';
 
   constructor(private http: HttpClient, private router: Router) {}
 
   login() {
     const payload = {
-      username: this.email,   // email OR username field
+      username: this.username,   // email OR username field
       password: this.password
     };
 
-    this.http.post("http://127.0.0.1:8000/api/auth/login/", payload)
-      .subscribe({
-        next: (res: any) => {
+    this.http.post<any>("http://127.0.0.1:8000/api/auth/login/", payload)
+  .subscribe({
+    next: (res) => {
 
-          // ------------------------------
-          // SAVE TOKENS
-          // ------------------------------
-          localStorage.setItem("access", res.access);
-          localStorage.setItem("refresh", res.refresh);
+      // ------------------------------
+      // SAVE TOKENS (DOĞRU)
+      // ------------------------------
+      localStorage.setItem("access", res.tokens.access);
+      localStorage.setItem("refresh", res.tokens.refresh);
 
-          // ------------------------------
-          // SAVE USER INFO
-          // backend now returns: res.user = { id, username, email }
-          // ------------------------------
-          if (res.user) {
-            localStorage.setItem("username", res.user.username);
-            localStorage.setItem("email", res.user.email);
-            localStorage.setItem("user_id", res.user.id);
-          }
+      // ------------------------------
+      // SAVE USER INFO
+      // ------------------------------
+      if (res.user) {
+        localStorage.setItem("username", res.user.username);
+        localStorage.setItem("email", res.user.email);
+        localStorage.setItem("user_id", res.user.id.toString());
+      }
 
-          this.router.navigate(['/home']);
-        },
-        error: (err) => {
-          console.error(err);
-          alert("Invalid login credentials");
-        }
-      });
+      this.router.navigate(['/home']);
+    },
+    error: () => {
+      alert("Invalid login credentials");
+    }
+  });
+
   }
 }
