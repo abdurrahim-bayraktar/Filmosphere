@@ -1,5 +1,6 @@
-
-# Python
+# ==========================
+# PYTHON / BACKEND (Django)
+# ==========================
 __pycache__/
 *.py[cod]
 *.pyc
@@ -9,8 +10,6 @@ __pycache__/
 *.so
 *.egg
 *.egg-info/
-dist/
-build/
 .pytest_cache/
 .mypy_cache/
 .coverage
@@ -32,18 +31,45 @@ ENV/
 *.db
 db.sqlite3
 
-# IDE
+# Django (Removed leading slashes to match inside backend/)
+staticfiles/
+media/
+*.log
+
+# ==========================
+# JAVASCRIPT / FRONTEND (Angular)
+# ==========================
+
+# Compiled output (Removed leading slash so it catches frontend/dist)
+dist/
+tmp/
+out-tsc/
+bazel-out/
+
+# Node (Removed leading slash so it catches frontend/node_modules)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Angular (CRITICAL FIX: Removed leading slash)
+.angular/
+
+# ==========================
+# IDE & EDITOR / MISC
+# ==========================
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 .DS_Store
-
-# Django
-/staticfiles/
-/media/
-*.log
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.history/*
 
 # Docker
 .dockerignore
@@ -51,48 +77,9 @@ db.sqlite3
 # Project specific
 *.docx
 *.doc
-
-
-# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
-
-# Compiled output
-/dist
-/tmp
-/out-tsc
-/bazel-out
-
-# Node
-/node_modules
-npm-debug.log
-yarn-error.log
-
-# IDEs and editors
-.idea/
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# Visual Studio Code
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-.history/*
-
-# Miscellaneous
-/.angular/cache
-.sass-cache/
 /connect.lock
 /coverage
 /libpeerconnection.log
 testem.log
 /typings
-
-# System files
-.DS_Store
 Thumbs.db
-

@@ -4,6 +4,7 @@ import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password
 import { HomeComponent } from './pages/home/home';
 import { LandingComponent } from './pages/landing/landing';
 import { ProfileComponent } from './pages/profile/profile'; 
+import { FilmDetailComponent } from './pages/film-details/film-details';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -12,6 +13,7 @@ export const routes: Routes = [
 
   { path: 'home', component: HomeComponent },
 
-  {  path: 'profile',component: ProfileComponent 
-  }
+  {  path: 'profile',component: ProfileComponent },
+  {path: 'film-details/:id',component: FilmDetailComponent},
+  
 ];
