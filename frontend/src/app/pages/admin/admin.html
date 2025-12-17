@@ -1,0 +1,354 @@
+<div class="navbar">
+  <div class="navbar-left">
+    <h1 class="logo" routerLink="/home" style="cursor: pointer;">FILMOSPHERE</h1>
+  </div>
+
+  <div class="navbar-right">
+    <span class="admin-badge">ADMIN</span>
+  </div>
+
+  <div class="navbar-right profile-menu-trigger" (click)="profileMenu.toggle($event)">
+    <p-avatar 
+      *ngIf="avatarImage"
+      [image]="avatarImage"
+      shape="circle"
+      style="width:40px; height:40px;">
+    </p-avatar>
+
+    <p-avatar 
+      *ngIf="!avatarImage && avatarLabel"
+      [label]="avatarLabel"
+      shape="circle"
+      style="background:#e50914; color:white; width:40px; height:40px;">
+    </p-avatar>
+
+    <span class="username">{{ user?.username || 'Guest' }}</span>
+    <i class="pi pi-chevron-down dropdown-arrow"></i>
+  </div>
+</div>
+
+<p-popover #profileMenu>
+  <p-menu [model]="menuItems" [popup]="false"></p-menu>
+</p-popover>
+
+<div class="admin-container">
+  <div class="admin-content" *ngIf="isAdmin && user">
+    <h2 class="section-title">Admin Dashboard</h2>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value">{{ adminStats.totalUsers }}</div>
+        <div class="stat-label">Total Users</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">🎬</div>
+        <div class="stat-value">{{ adminStats.totalFilms }}</div>
+        <div class="stat-label">Total Films</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">💬</div>
+        <div class="stat-value">{{ adminStats.totalReviews }}</div>
+        <div class="stat-label">Total Reviews</div>
+      </div>
+    </div>
+
+    <!-- Admin Actions Grid -->
+    <div class="admin-actions-grid">
+      
+      <!-- User Management -->
+      <div class="action-card">
+        <h3 class="card-title">
+          <i class="pi pi-users"></i> User Management
+        </h3>
+        <div class="card-content">
+          <div class="search-bar">
+            <input pInputText placeholder="Search users..." [(ngModel)]="userSearchTerm" class="search-input" />
+          </div>
+          <div class="user-list">
+            <div class="user-item" *ngFor="let user of users">
+              <div class="user-info">
+                <strong>{{ user.username }}</strong>
+                <span class="user-email">{{ user.email }}</span>
+                <span class="user-date">Joined: {{ user.joined }}</span>
+              </div>
+              <div class="user-actions">
+                <p-button 
+                  label="Ban" 
+                  icon="pi pi-ban" 
+                  severity="warn" 
+                  [outlined]="true"
+                  size="small"
+                  (onClick)="banUser(user)">
+                </p-button>
+                <p-button 
+                  label="Delete" 
+                  icon="pi pi-trash" 
+                  severity="danger" 
+                  [outlined]="true"
+                  size="small"
+                  (onClick)="deleteUser(user)">
+                </p-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Comments -->
+      <div class="action-card">
+        <h3 class="card-title">
+          <i class="pi pi-comments"></i> Recent Comments
+        </h3>
+        <div class="card-content">
+          <div class="comment-list">
+            <div class="comment-item" *ngFor="let comment of recentComments">
+              <div class="comment-header">
+                <strong>{{ comment.user }}</strong>
+                <span class="comment-date">{{ comment.date }}</span>
+              </div>
+              <div class="comment-film">Film: {{ comment.film }}</div>
+              <div class="comment-text">{{ comment.comment }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mood Tracking Analysis -->
+      <div class="action-card">
+        <h3 class="card-title">
+          <i class="pi pi-chart-bar"></i> Mood Tracking Analysis
+        </h3>
+        <div class="card-content">
+          <div class="mood-chart">
+            <div class="mood-item">
+              <div class="mood-label">Happy</div>
+              <p-progressBar [value]="moodData.happy" [showValue]="true"></p-progressBar>
+            </div>
+            <div class="mood-item">
+              <div class="mood-label">Sad</div>
+              <p-progressBar [value]="moodData.sad" [showValue]="true"></p-progressBar>
+            </div>
+            <div class="mood-item">
+              <div class="mood-label">Excited</div>
+              <p-progressBar [value]="moodData.excited" [showValue]="true"></p-progressBar>
+            </div>
+            <div class="mood-item">
+              <div class="mood-label">Neutral</div>
+              <p-progressBar [value]="moodData.neutral" [showValue]="true"></p-progressBar>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Film Management -->
+      <div class="action-card">
+        <h3 class="card-title">
+          <i class="pi pi-film"></i> Film Management
+        </h3>
+        <div class="card-content">
+          <div class="film-actions-header">
+            <p-button 
+              label="Add New Film" 
+              icon="pi pi-plus" 
+              (onClick)="openFilmDialog()">
+            </p-button>
+          </div>
+          <div class="film-list">
+            <div class="film-item" *ngFor="let film of films">
+              <div class="film-info">
+                <strong>{{ film.title }}</strong>
+                <span>IMDB: {{ film.imdb_id }}</span>
+                <span>Year: {{ film.year }}</span>
+              </div>
+              <div class="film-actions">
+                <p-button 
+                  label="Edit" 
+                  icon="pi pi-pencil" 
+                  [outlined]="true"
+                  size="small"
+                  (onClick)="openFilmDialog(film)">
+                </p-button>
+                <p-button 
+                  label="Delete" 
+                  icon="pi pi-trash" 
+                  severity="danger"
+                  [outlined]="true"
+                  size="small"
+                  (onClick)="deleteFilm(film)">
+                </p-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Badge Management -->
+      <div class="action-card">
+        <h3 class="card-title">
+          <i class="pi pi-star"></i> Badge Management
+        </h3>
+        <div class="card-content">
+          <div class="badge-stats">
+            <div class="badge-stat-item">
+              <div class="stat-number">{{ badgeStats.totalBadges }}</div>
+              <div class="stat-label">Total Badges</div>
+            </div>
+            <div class="badge-stat-item">
+              <div class="stat-number">{{ badgeStats.activeBadges }}</div>
+              <div class="stat-label">Active Badges</div>
+            </div>
+            <div class="badge-stat-item">
+              <div class="stat-number">{{ badgeStats.customBadges }}</div>
+              <div class="stat-label">Custom Badges</div>
+            </div>
+          </div>
+          <div class="badge-overview">
+            <p>Badge system overview and statistics will be displayed here.</p>
+            <p-button label="View All Badges" icon="pi pi-list" [outlined]="true"></p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flagged Content -->
+      <div class="action-card">
+        <h3 class="card-title">
+          <i class="pi pi-flag"></i> Flagged Content
+        </h3>
+        <div class="card-content">
+          <div class="flagged-list">
+            <div class="flagged-item" *ngFor="let item of flaggedContent">
+              <div class="flagged-header">
+                <p-tag [value]="item.type" [severity]="item.status === 'pending' ? 'warn' : 'info'"></p-tag>
+                <span class="flagged-date">{{ item.date }}</span>
+              </div>
+              <div class="flagged-content">
+                <strong>User:</strong> {{ item.user }}<br>
+                <strong>Content:</strong> {{ item.content }}
+              </div>
+              <div class="flagged-actions" *ngIf="item.status === 'pending'">
+                <p-button 
+                  label="Approve" 
+                  icon="pi pi-check" 
+                  severity="success"
+                  size="small"
+                  (onClick)="approveContent(item)">
+                </p-button>
+                <p-button 
+                  label="Reject" 
+                  icon="pi pi-times" 
+                  severity="danger"
+                  size="small"
+                  (onClick)="rejectContent(item)">
+                </p-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommendation Engine -->
+      <div class="action-card">
+        <h3 class="card-title">
+          <i class="pi pi-cog"></i> Recommendation Engine
+        </h3>
+        <div class="card-content">
+          <div class="engine-status">
+            <div class="status-indicator">
+              <p-tag 
+                [value]="engineStatus.status.toUpperCase()" 
+                [severity]="engineStatus.status === 'running' ? 'success' : engineStatus.status === 'error' ? 'danger' : 'warn'">
+              </p-tag>
+            </div>
+            <div class="status-info">
+              <div class="info-row">
+                <strong>Last Run:</strong> {{ engineStatus.lastRun }}
+              </div>
+              <div class="info-row">
+                <strong>Next Run:</strong> {{ engineStatus.nextRun }}
+              </div>
+              <div class="info-row">
+                <strong>Processed Users:</strong> {{ engineStatus.processedUsers }}
+              </div>
+              <div class="info-row">
+                <strong>Recommendations Generated:</strong> {{ engineStatus.recommendationsGenerated }}
+              </div>
+            </div>
+            <div class="engine-actions">
+              <p-button 
+                *ngIf="engineStatus.status !== 'running'"
+                label="Start Engine" 
+                icon="pi pi-play" 
+                severity="success"
+                (onClick)="startEngine()">
+              </p-button>
+              <p-button 
+                *ngIf="engineStatus.status === 'running'"
+                label="Stop Engine" 
+                icon="pi pi-stop" 
+                severity="danger"
+                (onClick)="stopEngine()">
+              </p-button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Logs -->
+      <div class="action-card full-width">
+        <h3 class="card-title">
+          <i class="pi pi-file"></i> System Logs
+        </h3>
+        <div class="card-content">
+          <div class="logs-container">
+            <div class="log-item" *ngFor="let log of systemLogs">
+              <p-tag 
+                [value]="log.level" 
+                [severity]="log.level === 'ERROR' ? 'danger' : log.level === 'WARN' ? 'warn' : 'info'">
+              </p-tag>
+              <span class="log-message">{{ log.message }}</span>
+              <span class="log-timestamp">{{ log.timestamp }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Film Dialog -->
+    <p-dialog 
+      header="{{ editingFilm ? 'Edit Film' : 'Add New Film' }}" 
+      [(visible)]="filmDialogVisible" 
+      [style]="{width: '500px'}"
+      [modal]="true">
+      <div class="film-form">
+        <div class="form-field">
+          <label>Title</label>
+          <input pInputText [(ngModel)]="newFilm.title" placeholder="Film Title" />
+        </div>
+        <div class="form-field">
+          <label>IMDB ID</label>
+          <input pInputText [(ngModel)]="newFilm.imdb_id" placeholder="tt1234567" />
+        </div>
+        <div class="form-field">
+          <label>Year</label>
+          <input pInputText [(ngModel)]="newFilm.year" placeholder="2024" />
+        </div>
+        <div class="form-field">
+          <label>Description</label>
+          <textarea pTextarea [(ngModel)]="newFilm.description" rows="5" placeholder="Film description..."></textarea>
+        </div>
+      </div>
+      <ng-template pTemplate="footer">
+        <p-button label="Cancel" icon="pi pi-times" [outlined]="true" (onClick)="filmDialogVisible = false"></p-button>
+        <p-button label="Save" icon="pi pi-check" (onClick)="saveFilm()"></p-button>
+      </ng-template>
+    </p-dialog>
+  </div>
+
+  <div *ngIf="!isAdmin" class="loading-message">
+    <p>Checking permissions...</p>
+  </div>
+</div>
