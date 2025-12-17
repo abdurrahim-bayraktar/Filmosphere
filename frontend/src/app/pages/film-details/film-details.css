@@ -1,0 +1,212 @@
+/* --- Main Layout --- */
+.film-page-container {
+  background: black;
+  min-height: 100vh;
+  padding-top: 80px; /* Matching profile example */
+  padding-bottom: 50px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* --- Backdrop Effect --- */
+.backdrop-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 600px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.backdrop-image {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center top;
+  opacity: 0.25; /* Dimmed background */
+  filter: blur(20px);
+  mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+}
+
+.backdrop-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent 0%, #000 90%);
+}
+
+/* --- Poster --- */
+.poster-card {
+  width: 230px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* --- Typography --- */
+.section-title {
+  color: #e50914; /* Red accent from profile */
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid #333;
+  padding-bottom: 5px;
+  display: inline-block;
+}
+
+/* --- PrimeNG Button Overrides --- */
+/* Action Buttons (Watch/Like) - Outlined style */
+:host ::ng-deep .action-btn.p-button.p-button-outlined {
+    color: #ccc !important;
+    border: 1px solid #444 !important;
+    background: rgba(0,0,0,0.5) !important;
+}
+:host ::ng-deep .action-btn.p-button.p-button-outlined:hover {
+    color: white !important;
+    border-color: #e50914 !important;
+    background: #111 !important;
+}
+
+/* List Button - Secondary style */
+:host ::ng-deep .list-btn.p-button-secondary {
+    background-color: #222 !important;
+    border: 1px solid #333 !important;
+    color: #aaa !important;
+}
+:host ::ng-deep .list-btn.p-button-secondary:hover {
+    background-color: #333 !important;
+    color: white !important;
+}
+
+/* --- PrimeNG Tag Override --- */
+:host ::ng-deep .custom-tag .p-tag {
+    background: #222 !important;
+    color: #ccc !important;
+    border: 1px solid #333;
+    font-weight: normal;
+    font-size: 0.75rem;
+}
+
+/* --- PrimeNG Rating Overrides --- */
+/* Gold Stars for Average */
+:host ::ng-deep .gold-stars .p-rating .p-rating-item.p-rating-item-active .p-rating-icon {
+    color: #28a745 !important; /* Green like Letterboxd average or Gold #ffc107 */
+}
+/* Blue/Green Stars for User Interaction */
+:host ::ng-deep .blue-stars .p-rating .p-rating-item.p-rating-item-active .p-rating-icon {
+    color: #3b82f6 !important; /* Blue for user rating */
+}
+/* General Rating Styles */
+:host ::ng-deep .p-rating .p-rating-item .p-rating-icon {
+    color: #444; /* Empty star color */
+}
+:host ::ng-deep .p-rating .p-rating-item:hover .p-rating-icon {
+    color: #e50914 !important; /* Hover color */
+}
+
+/* --- PrimeNG TabView Overrides --- */
+/* Target the Tab List (Navigation) */
+:host ::ng-deep .custom-tabs .p-tablist-tab-list {
+    background: transparent !important;
+    border-bottom: 1px solid #333 !important;
+}
+
+/* Target the individual Tab buttons */
+:host ::ng-deep .custom-tabs .p-tab {
+    background: transparent !important;
+    color: #aaa !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    transition: color 0.2s;
+    padding: 1rem;
+    cursor: pointer;
+}
+
+/* Target the Active Tab */
+:host ::ng-deep .custom-tabs .p-tab-active {
+    color: #e50914 !important;
+    border-color: #e50914 !important;
+}
+
+/* Target the Content Panels */
+:host ::ng-deep .custom-tabs .p-tabpanels {
+    background: transparent !important;
+    padding: 1rem 0 !important;
+    color: #ccc !important;
+}
+
+/* --- Select (formerly Dropdown) Overrides --- */
+:host ::ng-deep .custom-dropdown {
+    background: #222;
+    border: 1px solid #444;
+}
+
+/* Update selector from .p-dropdown-label to .p-select-label */
+:host ::ng-deep .custom-dropdown .p-select-label {
+    color: #ddd;
+    font-size: 0.9rem;
+}
+
+:host ::ng-deep .custom-dropdown:not(.p-disabled):hover {
+    border-color: #666;
+}
+
+/* Update selector from .p-dropdown-panel to .p-select-overlay (or p-select-list) */
+:host ::ng-deep .p-select-overlay {
+    background: #222;
+    border: 1px solid #444;
+}
+
+/* Update item selectors */
+:host ::ng-deep .p-select-overlay .p-select-option {
+    color: #ddd;
+}
+
+:host ::ng-deep .p-select-overlay .p-select-option:hover,
+:host ::ng-deep .p-select-overlay .p-select-option.p-focus {
+    background: #333;
+    color: white;
+}
+
+/* --- Dialog Overrides --- */
+:host ::ng-deep .dark-dialog .p-dialog-header,
+:host ::ng-deep .dark-dialog .p-dialog-content {
+    background: #111;
+    color: white;
+    border: 1px solid #333;
+}
+:host ::ng-deep .dark-dialog .p-dialog-header {
+    border-bottom: 1px solid #222;
+}
+
+/* --- Cast Card Image Enforcing --- */
+/* This forces the container to a fixed size */
+.cast-image-wrapper {
+    width: 112px !important;  /* Fixed width (~7rem) */
+    height: 160px !important; /* Fixed height (~10rem) */
+    margin: 0 auto 10px auto; /* Center horizontally + bottom margin */
+    position: relative;
+    overflow: hidden;
+    background-color: #000;
+    border-radius: 4px;       /* Optional: rounded corners */
+}
+
+/* This forces the image to fill the container and crop */
+.cast-image-wrapper img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important; /* This prevents stretching */
+    display: block;
+}
+
+/* Make the text container neat */
+.cast-text {
+    padding: 0 5px;
+    width: 100%;
+    overflow: hidden;
+}

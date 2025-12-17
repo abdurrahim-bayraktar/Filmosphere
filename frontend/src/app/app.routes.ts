@@ -5,6 +5,7 @@ import { HomeComponent } from './pages/home/home';
 import { LandingComponent } from './pages/landing/landing';
 import { ProfileComponent } from './pages/profile/profile';
 import { AdminComponent } from './pages/admin/admin';
+import { FilmDetailComponent } from './pages/film-details/film-details';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -15,4 +16,6 @@ export const routes: Routes = [
 
   { path: 'profile', component: ProfileComponent },
   { path: 'admin', component: AdminComponent }
+  {path: 'film-details/:id',component: FilmDetailComponent},
+  
 ];

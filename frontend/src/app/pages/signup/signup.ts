@@ -34,7 +34,8 @@ export class SignupComponent {
     const payload = {
       username: this.username,
       email: this.email,
-      password: this.password
+      password: this.password,
+      password_confirm: this.confirmPassword
     };
 
     this.http.post("http://127.0.0.1:8000/api/auth/register/", payload)
@@ -49,4 +50,22 @@ export class SignupComponent {
         }
       });
   }
+  //login() {
+  //const payload = {
+    //email: this.email,
+    //password: this.password
+  //};
+
+  //this.http.post("http://127.0.0.1:8000/api/token/", payload)
+    //.subscribe({
+      //next: (res: any) => {
+        //localStorage.setItem("access", res.access);
+        //localStorage.setItem("refresh", res.refresh);
+        //this.router.navigate(['/']); 
+     // },
+      //error: () => {
+        //alert("Login failed");
+      //}
+    //});
 }
+
