@@ -18,13 +18,18 @@ import { InputTextModule } from 'primeng/inputtext';
   ]
 })
 export class LandingComponent {
+<<<<<<< HEAD
   username: string = '';
+=======
+  email: string = '';
+>>>>>>> feature/frontend-ui
   password: string = '';
 
   constructor(private http: HttpClient, private router: Router) {}
 
   login() {
     const payload = {
+<<<<<<< HEAD
       username: this.username,   // email OR username field
       password: this.password
     };
@@ -55,5 +60,38 @@ export class LandingComponent {
     }
   });
 
+=======
+      username: this.email,   // email OR username field
+      password: this.password
+    };
+
+    this.http.post("http://127.0.0.1:8000/api/auth/login/", payload)
+      .subscribe({
+        next: (res: any) => {
+
+          // ------------------------------
+          // SAVE TOKENS
+          // ------------------------------
+          localStorage.setItem("access", res.access);
+          localStorage.setItem("refresh", res.refresh);
+
+          // ------------------------------
+          // SAVE USER INFO
+          // backend now returns: res.user = { id, username, email }
+          // ------------------------------
+          if (res.user) {
+            localStorage.setItem("username", res.user.username);
+            localStorage.setItem("email", res.user.email);
+            localStorage.setItem("user_id", res.user.id);
+          }
+
+          this.router.navigate(['/home']);
+        },
+        error: (err) => {
+          console.error(err);
+          alert("Invalid login credentials");
+        }
+      });
+>>>>>>> feature/frontend-ui
   }
 }
