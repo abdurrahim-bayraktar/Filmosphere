@@ -1,4 +1,5 @@
 from django.contrib import admin
+<<<<<<< HEAD
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
@@ -29,3 +30,11 @@ class FollowAdmin(admin.ModelAdmin):
     readonly_fields = ["created_at"]
     raw_id_fields = ["follower", "following"]
 
+=======
+from .models import User, Profile, Badge, PasswordResetCode
+
+admin.site.register(User)
+admin.site.register(Profile)
+admin.site.register(Badge)
+admin.site.register(PasswordResetCode)
+>>>>>>> feature/backend-api

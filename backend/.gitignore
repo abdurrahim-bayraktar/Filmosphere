@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 __pycache__/
 *.py[cod]
 *.sqlite3
@@ -18,3 +19,10 @@ dist/
 build/
 
 
+=======
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+db.sqlite3
+>>>>>>> feature/backend-api
