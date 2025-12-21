@@ -1,8 +1,20 @@
 from django.urls import path
 
 from .views import (
+    AdminBadgeStatsView,
+    AdminBanUserView,
+    AdminDeleteUserView,
+    AdminFilmCreateView,
+    AdminFilmDeleteView,
+    AdminFilmsListView,
+    AdminFilmUpdateView,
     AdminFlaggedCommentsView,
     AdminModerateCommentView,
+    AdminMoodStatsView,
+    AdminRecentReviewsView,
+    AdminStatsView,
+    AdminSystemLogsView,
+    AdminUsersListView,
     AwardBadgeView,
     BadgeListView,
     BadgeProgressView,
@@ -113,6 +125,24 @@ urlpatterns = [
     path("reviews/<int:review_id>/unflag", UnflagCommentView.as_view(), name="unflag-comment"),
     path("admin/reviews/<int:review_id>/moderate", AdminModerateCommentView.as_view(), name="admin-moderate-comment"),
     path("admin/reviews/flagged", AdminFlaggedCommentsView.as_view(), name="admin-flagged-comments"),
+    path("admin/stats/", AdminStatsView.as_view(), name="admin-stats"),
+    # Admin User Management endpoints
+    path("admin/users/", AdminUsersListView.as_view(), name="admin-users-list"),
+    path("admin/users/<int:user_id>/ban", AdminBanUserView.as_view(), name="admin-ban-user"),
+    path("admin/users/<int:user_id>/delete", AdminDeleteUserView.as_view(), name="admin-delete-user"),
+    # Admin Recent Reviews endpoint
+    path("admin/reviews/recent", AdminRecentReviewsView.as_view(), name="admin-recent-reviews"),
+    # Admin Film Management endpoints
+    path("admin/films/", AdminFilmsListView.as_view(), name="admin-films-list"),
+    path("admin/films/create", AdminFilmCreateView.as_view(), name="admin-film-create"),
+    path("admin/films/<str:film_id>/update", AdminFilmUpdateView.as_view(), name="admin-film-update"),
+    path("admin/films/<str:film_id>/delete", AdminFilmDeleteView.as_view(), name="admin-film-delete"),
+    # Admin Badge Stats endpoint
+    path("admin/badges/stats", AdminBadgeStatsView.as_view(), name="admin-badge-stats"),
+    # Admin Mood Stats endpoint
+    path("admin/moods/stats", AdminMoodStatsView.as_view(), name="admin-mood-stats"),
+    # Admin System Logs endpoint
+    path("admin/logs", AdminSystemLogsView.as_view(), name="admin-system-logs"),
 ]
 
 
