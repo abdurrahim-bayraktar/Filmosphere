@@ -65,19 +65,25 @@
         </h3>
         <div class="card-content">
           <div class="search-bar">
-            <input pInputText placeholder="Search users..." [(ngModel)]="userSearchTerm" class="search-input" />
+            <input 
+              pInputText 
+              placeholder="Search users..." 
+              [(ngModel)]="userSearchTerm" 
+              (ngModelChange)="onUserSearch()"
+              class="search-input" />
           </div>
           <div class="user-list">
             <div class="user-item" *ngFor="let user of users">
               <div class="user-info">
                 <strong>{{ user.username }}</strong>
                 <span class="user-email">{{ user.email }}</span>
-                <span class="user-date">Joined: {{ user.joined }}</span>
+                <span class="user-date">Joined: {{ user.date_joined | date:'short' }}</span>
+                <span *ngIf="!user.is_active" class="user-status-banned">BANNED</span>
               </div>
               <div class="user-actions">
                 <p-button 
-                  label="Ban" 
-                  icon="pi pi-ban" 
+                  [label]="user.is_active ? 'Ban' : 'Unban'" 
+                  [icon]="user.is_active ? 'pi pi-ban' : 'pi pi-unlock'" 
                   severity="warn" 
                   [outlined]="true"
                   size="small"
@@ -93,6 +99,9 @@
                 </p-button>
               </div>
             </div>
+            <div *ngIf="users.length === 0" class="no-users-message">
+              No users found.
+            </div>
           </div>
         </div>
       </div>
@@ -107,10 +116,13 @@
             <div class="comment-item" *ngFor="let comment of recentComments">
               <div class="comment-header">
                 <strong>{{ comment.user }}</strong>
-                <span class="comment-date">{{ comment.date }}</span>
+                <span class="comment-date">{{ comment.date | date:'short' }}</span>
               </div>
               <div class="comment-film">Film: {{ comment.film }}</div>
               <div class="comment-text">{{ comment.comment }}</div>
+            </div>
+            <div *ngIf="recentComments.length === 0" class="no-data-message">
+              No recent reviews.
             </div>
           </div>
         </div>
@@ -122,6 +134,22 @@
           <i class="pi pi-chart-bar"></i> Mood Tracking Analysis
         </h3>
         <div class="card-content">
+          <div class="mood-selector">
+            <p-button 
+              [label]="'Before'" 
+              [outlined]="moodType !== 'before'"
+              [severity]="moodType === 'before' ? 'primary' : 'secondary'"
+              size="small"
+              (onClick)="moodType = 'before'; onMoodTypeChange()">
+            </p-button>
+            <p-button 
+              [label]="'After'" 
+              [outlined]="moodType !== 'after'"
+              [severity]="moodType === 'after' ? 'primary' : 'secondary'"
+              size="small"
+              (onClick)="moodType = 'after'; onMoodTypeChange()">
+            </p-button>
+          </div>
           <div class="mood-chart">
             <div class="mood-item">
               <div class="mood-label">Happy</div>
@@ -134,6 +162,30 @@
             <div class="mood-item">
               <div class="mood-label">Excited</div>
               <p-progressBar [value]="moodData.excited" [showValue]="true"></p-progressBar>
+            </div>
+            <div class="mood-item">
+              <div class="mood-label">Calm</div>
+              <p-progressBar [value]="moodData.calm" [showValue]="true"></p-progressBar>
+            </div>
+            <div class="mood-item">
+              <div class="mood-label">Anxious</div>
+              <p-progressBar [value]="moodData.anxious" [showValue]="true"></p-progressBar>
+            </div>
+            <div class="mood-item">
+              <div class="mood-label">Bored</div>
+              <p-progressBar [value]="moodData.bored" [showValue]="true"></p-progressBar>
+            </div>
+            <div class="mood-item">
+              <div class="mood-label">Energetic</div>
+              <p-progressBar [value]="moodData.energetic" [showValue]="true"></p-progressBar>
+            </div>
+            <div class="mood-item">
+              <div class="mood-label">Relaxed</div>
+              <p-progressBar [value]="moodData.relaxed" [showValue]="true"></p-progressBar>
+            </div>
+            <div class="mood-item">
+              <div class="mood-label">Stressed</div>
+              <p-progressBar [value]="moodData.stressed" [showValue]="true"></p-progressBar>
             </div>
             <div class="mood-item">
               <div class="mood-label">Neutral</div>
@@ -207,7 +259,7 @@
           </div>
           <div class="badge-overview">
             <p>Badge system overview and statistics will be displayed here.</p>
-            <p-button label="View All Badges" icon="pi pi-list" [outlined]="true"></p-button>
+            <p-button label="View All Badges" icon="pi pi-list" [outlined]="true" (onClick)="openBadgesDialog()"></p-button>
           </div>
         </div>
       </div>
@@ -309,7 +361,10 @@
                 [severity]="log.level === 'ERROR' ? 'danger' : log.level === 'WARN' ? 'warn' : 'info'">
               </p-tag>
               <span class="log-message">{{ log.message }}</span>
-              <span class="log-timestamp">{{ log.timestamp }}</span>
+              <span class="log-timestamp">{{ log.timestamp | date:'short' }}</span>
+            </div>
+            <div *ngIf="systemLogs.length === 0" class="no-data-message">
+              No system logs available.
             </div>
           </div>
         </div>
@@ -319,31 +374,57 @@
 
     <!-- Film Dialog -->
     <p-dialog 
-      header="{{ editingFilm ? 'Edit Film' : 'Add New Film' }}" 
+      header="{{ editingFilm ? 'Edit Film' : 'Add New Film (by IMDb ID)' }}" 
       [(visible)]="filmDialogVisible" 
       [style]="{width: '500px'}"
       [modal]="true">
       <div class="film-form">
-        <div class="form-field">
+        <div *ngIf="!editingFilm" class="form-field">
+          <label>IMDB ID *</label>
+          <input pInputText [(ngModel)]="newFilm.imdb_id" placeholder="tt1234567" />
+          <small class="form-hint">Enter IMDb ID to fetch film details automatically (e.g., tt1375666 for Inception)</small>
+        </div>
+        <div *ngIf="editingFilm" class="form-field">
           <label>Title</label>
           <input pInputText [(ngModel)]="newFilm.title" placeholder="Film Title" />
         </div>
-        <div class="form-field">
-          <label>IMDB ID</label>
-          <input pInputText [(ngModel)]="newFilm.imdb_id" placeholder="tt1234567" />
-        </div>
-        <div class="form-field">
+        <div *ngIf="editingFilm" class="form-field">
           <label>Year</label>
           <input pInputText [(ngModel)]="newFilm.year" placeholder="2024" />
-        </div>
-        <div class="form-field">
-          <label>Description</label>
-          <textarea pTextarea [(ngModel)]="newFilm.description" rows="5" placeholder="Film description..."></textarea>
         </div>
       </div>
       <ng-template pTemplate="footer">
         <p-button label="Cancel" icon="pi pi-times" [outlined]="true" (onClick)="filmDialogVisible = false"></p-button>
         <p-button label="Save" icon="pi pi-check" (onClick)="saveFilm()"></p-button>
+      </ng-template>
+    </p-dialog>
+
+    <!-- Badges Dialog -->
+    <p-dialog 
+      header="All Badges" 
+      [(visible)]="badgesDialogVisible" 
+      [style]="{width: '700px'}"
+      [modal]="true">
+      <div class="badges-list">
+        <div class="badge-item" *ngFor="let badge of badges">
+          <div class="badge-header">
+            <strong>{{ badge.name }}</strong>
+            <p-tag [value]="badge.is_custom ? 'Custom' : 'System'" [severity]="badge.is_custom ? 'info' : 'success'"></p-tag>
+          </div>
+          <div class="badge-description">{{ badge.description }}</div>
+          <div class="badge-criteria">
+            <strong>Criteria:</strong> {{ badge.criteria_type }} - {{ badge.criteria_value }}
+          </div>
+          <div class="badge-icon" *ngIf="badge.icon_url">
+            <img [src]="badge.icon_url" alt="{{ badge.name }}" style="max-width: 50px; max-height: 50px;" />
+          </div>
+        </div>
+        <div *ngIf="badges.length === 0" class="no-data-message">
+          No badges found.
+        </div>
+      </div>
+      <ng-template pTemplate="footer">
+        <p-button label="Close" icon="pi pi-times" [outlined]="true" (onClick)="badgesDialogVisible = false"></p-button>
       </ng-template>
     </p-dialog>
   </div>
