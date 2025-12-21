@@ -1,12 +1,7 @@
 import uuid
 from decimal import Decimal
 
-<<<<<<< HEAD
 from django.contrib.auth.models import User
-=======
-
-from django.conf import settings
->>>>>>> feature/backend-api
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import Avg, Count
@@ -37,11 +32,7 @@ class Film(models.Model):
     def get_average_ratings(self):
         """Calculate average ratings for all aspects from all user ratings."""
         ratings = Rating.objects.filter(film=self)
-<<<<<<< HEAD
         
-=======
-
->>>>>>> feature/backend-api
         if not ratings.exists():
             return {
                 "overall": None,
@@ -53,12 +44,8 @@ class Film(models.Model):
                 "direction": None,
                 "total_ratings": 0,
             }
-<<<<<<< HEAD
         
         # Calculate averages for each aspect
-=======
-
->>>>>>> feature/backend-api
         aspect_ratings = ratings.aggregate(
             avg_overall=Avg("overall_rating"),
             avg_plot=Avg("plot_rating"),
@@ -69,11 +56,7 @@ class Film(models.Model):
             avg_direction=Avg("direction_rating"),
             total=Count("id"),
         )
-<<<<<<< HEAD
         
-=======
-
->>>>>>> feature/backend-api
         return {
             "overall": round(float(aspect_ratings["avg_overall"] or 0), 2),
             "plot": round(float(aspect_ratings["avg_plot"] or 0), 2) if aspect_ratings["avg_plot"] else None,
@@ -91,89 +74,53 @@ class Rating(models.Model):
 
     RATING_CHOICES = [(i, i) for i in range(1, 6)]  # 1-5 scale
 
-<<<<<<< HEAD
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="ratings")
     film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="ratings")
     
     # Overall rating (can be manually set or calculated from aspects)
-=======
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="ratings")
-    film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="ratings")
-
->>>>>>> feature/backend-api
     overall_rating = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         help_text="Overall rating (1-5). If aspect ratings provided, this is calculated automatically.",
     )
-<<<<<<< HEAD
     
     # Aspect ratings (all optional)
     plot_rating = models.IntegerField(
         null=True,
         blank=True,
-=======
-
-    plot_rating = models.IntegerField(
-        null=True, blank=True,
->>>>>>> feature/backend-api
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         help_text="Plot rating (1-5)",
     )
     acting_rating = models.IntegerField(
-<<<<<<< HEAD
         null=True,
         blank=True,
-=======
-        null=True, blank=True,
->>>>>>> feature/backend-api
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         help_text="Acting rating (1-5)",
     )
     cinematography_rating = models.IntegerField(
-<<<<<<< HEAD
         null=True,
         blank=True,
-=======
-        null=True, blank=True,
->>>>>>> feature/backend-api
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         help_text="Cinematography rating (1-5)",
     )
     soundtrack_rating = models.IntegerField(
-<<<<<<< HEAD
         null=True,
         blank=True,
-=======
-        null=True, blank=True,
->>>>>>> feature/backend-api
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         help_text="Soundtrack rating (1-5)",
     )
     originality_rating = models.IntegerField(
-<<<<<<< HEAD
         null=True,
         blank=True,
-=======
-        null=True, blank=True,
->>>>>>> feature/backend-api
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         help_text="Originality rating (1-5)",
     )
     direction_rating = models.IntegerField(
-<<<<<<< HEAD
         null=True,
         blank=True,
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         help_text="Direction rating (1-5)",
     )
     
-=======
-        null=True, blank=True,
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-        help_text="Direction rating (1-5)",
-    )
-
->>>>>>> feature/backend-api
     rated_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -189,10 +136,7 @@ class Rating(models.Model):
         return f"{self.user.username} rated {self.film.title} {self.overall_rating}/5"
 
     def calculate_overall_from_aspects(self):
-<<<<<<< HEAD
         """Calculate overall rating as average of provided aspect ratings."""
-=======
->>>>>>> feature/backend-api
         aspects = [
             self.plot_rating,
             self.acting_rating,
@@ -201,7 +145,6 @@ class Rating(models.Model):
             self.originality_rating,
             self.direction_rating,
         ]
-<<<<<<< HEAD
         
         # Filter out None values
         provided_aspects = [a for a in aspects if a is not None]
@@ -232,34 +175,13 @@ class Rating(models.Model):
             if calculated_overall:
                 self.overall_rating = calculated_overall
         
-=======
-        provided = [a for a in aspects if a is not None]
-        return round(sum(provided) / len(provided)) if provided else None
-
-    def has_aspect_ratings(self):
-        return any([
-            self.plot_rating, self.acting_rating,
-            self.cinematography_rating, self.soundtrack_rating,
-            self.originality_rating, self.direction_rating,
-        ])
-
-    def save(self, *args, **kwargs):
-        if self.has_aspect_ratings():
-            calculated = self.calculate_overall_from_aspects()
-            if calculated:
-                self.overall_rating = calculated
->>>>>>> feature/backend-api
         super().save(*args, **kwargs)
 
 
 class List(models.Model):
     """Custom film lists created by users (FR03)."""
 
-<<<<<<< HEAD
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="lists")
-=======
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="lists")
->>>>>>> feature/backend-api
     title = models.CharField(max_length=200)
     description = models.TextField(max_length=1000, blank=True)
     is_public = models.BooleanField(default=True, help_text="Whether the list is visible to other users")
@@ -278,10 +200,7 @@ class List(models.Model):
 
     @property
     def films_count(self):
-<<<<<<< HEAD
         """Count of films in this list."""
-=======
->>>>>>> feature/backend-api
         return self.items.count()
 
 
@@ -313,7 +232,6 @@ class Review(models.Model):
         ("rejected", "Rejected"),
     ]
 
-<<<<<<< HEAD
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
     film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="reviews")
     title = models.CharField(max_length=200)
@@ -326,22 +244,6 @@ class Review(models.Model):
     )
     likes_count = models.IntegerField(default=0)
     # FR06: Spoiler protection fields
-=======
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reviews")
-    film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="reviews")
-
-    title = models.CharField(max_length=200)
-    content = models.TextField()
-
-    rating = models.IntegerField(
-        null=True, blank=True,
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-        help_text="Optional rating (1-5) associated with the review",
-    )
-
-    likes_count = models.IntegerField(default=0)
-
->>>>>>> feature/backend-api
     is_spoiler = models.BooleanField(
         default=False,
         help_text="Whether the user manually marked this as a spoiler (FR06.1)",
@@ -350,11 +252,7 @@ class Review(models.Model):
         default=False,
         help_text="Whether the system automatically detected this as a spoiler (FR06.2)",
     )
-<<<<<<< HEAD
     # Comment moderation fields
-=======
-
->>>>>>> feature/backend-api
     moderation_status = models.CharField(
         max_length=20,
         choices=MODERATION_STATUS_CHOICES,
@@ -366,7 +264,6 @@ class Review(models.Model):
         help_text="Number of times this comment has been flagged by users",
     )
     moderation_reason = models.TextField(
-<<<<<<< HEAD
         blank=True,
         null=True,
         help_text="Reason for moderation decision (e.g., blacklisted words detected)",
@@ -396,25 +293,6 @@ class Review(models.Model):
     def is_visible(self):
         """Check if review is visible to users (approved and not rejected)."""
         return self.moderation_status == "approved"
-=======
-        blank=True, null=True,
-        help_text="Reason for moderation decision (e.g., blacklisted words detected)",
-    )
-    moderated_at = models.DateTimeField(
-        null=True, blank=True,
-        help_text="When this comment was moderated by admin",
-    )
-    moderated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name="moderated_reviews",
-        help_text="Admin user who moderated this comment",
-    )
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
->>>>>>> feature/backend-api
 
     class Meta:
         indexes = [
@@ -432,11 +310,7 @@ class Review(models.Model):
 class ReviewLike(models.Model):
     """Users liking reviews."""
 
-<<<<<<< HEAD
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="review_likes")
-=======
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="review_likes")
->>>>>>> feature/backend-api
     review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="likes")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -450,19 +324,13 @@ class ReviewLike(models.Model):
         return f"{self.user.username} likes {self.review.title}"
 
     def save(self, *args, **kwargs):
-<<<<<<< HEAD
         """Update likes_count when like is created."""
-=======
->>>>>>> feature/backend-api
         super().save(*args, **kwargs)
         self.review.likes_count = self.review.likes.count()
         self.review.save(update_fields=["likes_count"])
 
     def delete(self, *args, **kwargs):
-<<<<<<< HEAD
         """Update likes_count when like is deleted."""
-=======
->>>>>>> feature/backend-api
         review = self.review
         super().delete(*args, **kwargs)
         review.likes_count = review.likes.count()
@@ -480,14 +348,8 @@ class CommentFlag(models.Model):
         ("other", "Other"),
     ]
 
-<<<<<<< HEAD
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comment_flags")
     review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="flags")
-=======
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="comment_flags")
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="flags")
-
->>>>>>> feature/backend-api
     reason = models.CharField(
         max_length=20,
         choices=FLAG_REASON_CHOICES,
@@ -495,18 +357,11 @@ class CommentFlag(models.Model):
         help_text="Reason for flagging the comment",
     )
     description = models.TextField(
-<<<<<<< HEAD
         blank=True,
         null=True,
         max_length=500,
         help_text="Additional details about why this comment was flagged",
     )
-=======
-        blank=True, null=True, max_length=500,
-        help_text="Additional details about why this comment was flagged",
-    )
-
->>>>>>> feature/backend-api
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -521,19 +376,13 @@ class CommentFlag(models.Model):
         return f"{self.user.username} flagged {self.review.title} ({self.reason})"
 
     def save(self, *args, **kwargs):
-<<<<<<< HEAD
         """Update flagged_count when flag is created."""
-=======
->>>>>>> feature/backend-api
         super().save(*args, **kwargs)
         self.review.flagged_count = self.review.flags.count()
         self.review.save(update_fields=["flagged_count"])
 
     def delete(self, *args, **kwargs):
-<<<<<<< HEAD
         """Update flagged_count when flag is deleted."""
-=======
->>>>>>> feature/backend-api
         review = self.review
         super().delete(*args, **kwargs)
         review.flagged_count = review.flags.count()
@@ -556,22 +405,15 @@ class Mood(models.Model):
         ("neutral", "Neutral"),
     ]
 
-<<<<<<< HEAD
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="moods")
     film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="moods")
     
     # FR09.1: Mood before watching
-=======
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="moods")
-    film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="moods")
-
->>>>>>> feature/backend-api
     mood_before = models.CharField(
         max_length=20,
         choices=MOOD_CHOICES,
         help_text="Emotional state before watching the film",
     )
-<<<<<<< HEAD
     
     # FR09.2: Mood after watching
     mood_after = models.CharField(
@@ -582,15 +424,6 @@ class Mood(models.Model):
         help_text="Emotional state after watching the film",
     )
     
-=======
-    mood_after = models.CharField(
-        max_length=20,
-        choices=MOOD_CHOICES,
-        null=True, blank=True,
-        help_text="Emotional state after watching the film",
-    )
-
->>>>>>> feature/backend-api
     logged_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -620,10 +453,6 @@ class Badge(models.Model):
 
     name = models.CharField(max_length=100)
     description = models.TextField(max_length=500)
-<<<<<<< HEAD
-=======
-
->>>>>>> feature/backend-api
     criteria_type = models.CharField(
         max_length=50,
         choices=BADGE_TYPES,
@@ -632,23 +461,16 @@ class Badge(models.Model):
     criteria_value = models.IntegerField(
         help_text="Value needed to earn this badge (e.g., 10 films watched)",
     )
-<<<<<<< HEAD
     icon_url = models.URLField(
         max_length=2000,
         blank=True,
         null=True,
-=======
-
-    icon_url = models.URLField(
-        max_length=2000, blank=True, null=True,
->>>>>>> feature/backend-api
         help_text="URL to badge icon/image",
     )
     is_custom = models.BooleanField(
         default=False,
         help_text="Whether this is a user-created custom badge",
     )
-<<<<<<< HEAD
     created_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
@@ -657,17 +479,6 @@ class Badge(models.Model):
         related_name="created_badges",
         help_text="User who created this badge (for custom badges)",
     )
-=======
-
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name="created_badges",
-        help_text="User who created this badge (for custom badges)",
-    )
-
->>>>>>> feature/backend-api
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -684,17 +495,9 @@ class Badge(models.Model):
 class UserBadge(models.Model):
     """Badges earned by users (FR05.2, FR05.3)."""
 
-<<<<<<< HEAD
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="badges")
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name="user_badges")
     earned_at = models.DateTimeField(auto_now_add=True)
-=======
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="badges")
-    badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name="user_badges")
-
-    earned_at = models.DateTimeField(auto_now_add=True)
-
->>>>>>> feature/backend-api
     progress = models.IntegerField(
         default=0,
         help_text="Current progress towards badge (for tracking)",
@@ -715,19 +518,9 @@ class UserBadge(models.Model):
 class WatchedFilm(models.Model):
     """Track films that users have watched."""
 
-<<<<<<< HEAD
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="watched_films")
     film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="watched_by_users")
     watched_at = models.DateTimeField(auto_now_add=True, help_text="When the user marked the film as watched")
-=======
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="watched_films")
-    film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="watched_by_users")
-
-    watched_at = models.DateTimeField(
-        auto_now_add=True,
-        help_text="When the user marked the film as watched",
-    )
->>>>>>> feature/backend-api
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -740,27 +533,4 @@ class WatchedFilm(models.Model):
 
     def __str__(self):
         return f"{self.user.username} watched {self.film.title}"
-<<<<<<< HEAD
-=======
-    
-
-class Follow(models.Model):
-    follower = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="following"
-    )
-    following = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="followers"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = [["follower", "following"]]
-
-    def __str__(self):
-        return f"{self.follower} → {self.following}"
->>>>>>> feature/backend-api
 

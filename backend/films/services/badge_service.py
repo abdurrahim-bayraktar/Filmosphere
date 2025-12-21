@@ -5,14 +5,8 @@ from typing import Any, Dict
 
 from django.contrib.auth.models import User
 
-<<<<<<< HEAD
 from films.models import Badge, List, Rating, Review, UserBadge, WatchedFilm
 from users.models import Follow
-=======
-from films.models import Badge, List, Rating, Review, UserBadge, WatchedFilm, Follow
-from films.models import Follow
-
->>>>>>> feature/backend-api
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +18,7 @@ class BadgeService:
         self._initialize_default_badges()
 
     def _initialize_default_badges(self):
-<<<<<<< HEAD
         """Initialize default badges if they don't exist."""
-=======
->>>>>>> feature/backend-api
         default_badges = [
             {
                 "name": "Film Enthusiast",
@@ -69,7 +60,6 @@ class BadgeService:
             )
 
     def check_and_award_badges(self, user: User) -> list[UserBadge]:
-<<<<<<< HEAD
         """
         Check if user meets criteria for any badges and award them (FR05.2).
         
@@ -93,16 +83,6 @@ class BadgeService:
                 continue
 
             # Check if user meets criteria
-=======
-        newly_awarded = []
-        stats = self._get_user_stats(user)
-        badges = Badge.objects.all()
-
-        for badge in badges:
-            if UserBadge.objects.filter(user=user, badge=badge).exists():
-                continue
-
->>>>>>> feature/backend-api
             if self._meets_criteria(user, badge, stats):
                 user_badge = UserBadge.objects.create(
                     user=user,
@@ -110,18 +90,12 @@ class BadgeService:
                     progress=stats.get(badge.criteria_type, 0),
                 )
                 newly_awarded.append(user_badge)
-<<<<<<< HEAD
                 logger.info(f"User {user.username} earned badge: {badge.name}")
-=======
->>>>>>> feature/backend-api
 
         return newly_awarded
 
     def _get_user_stats(self, user: User) -> Dict[str, int]:
-<<<<<<< HEAD
         """Get user statistics for badge checking."""
-=======
->>>>>>> feature/backend-api
         return {
             "films_watched": WatchedFilm.objects.filter(user=user).count(),
             "reviews_written": Review.objects.filter(user=user).count(),
@@ -131,28 +105,15 @@ class BadgeService:
         }
 
     def _meets_criteria(self, user: User, badge: Badge, stats: Dict[str, int]) -> bool:
-<<<<<<< HEAD
         """Check if user meets badge criteria."""
-=======
->>>>>>> feature/backend-api
         user_value = stats.get(badge.criteria_type, 0)
         return user_value >= badge.criteria_value
 
     def get_user_progress(self, user: User, badge: Badge) -> Dict[str, Any]:
-<<<<<<< HEAD
         """Get user's progress towards a specific badge."""
         stats = self._get_user_stats(user)
         current_value = stats.get(badge.criteria_type, 0)
         progress_percentage = min(100, int((current_value / badge.criteria_value) * 100)) if badge.criteria_value > 0 else 0
-=======
-        stats = self._get_user_stats(user)
-        current_value = stats.get(badge.criteria_type, 0)
-        progress_percentage = (
-            min(100, int((current_value / badge.criteria_value) * 100))
-            if badge.criteria_value > 0
-            else 0
-        )
->>>>>>> feature/backend-api
 
         return {
             "badge": badge.id,
@@ -162,7 +123,4 @@ class BadgeService:
             "progress_percentage": progress_percentage,
             "earned": UserBadge.objects.filter(user=user, badge=badge).exists(),
         }
-<<<<<<< HEAD
 
-=======
->>>>>>> feature/backend-api

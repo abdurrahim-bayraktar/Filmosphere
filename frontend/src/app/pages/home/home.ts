@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { CarouselModule } from 'primeng/carousel';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
@@ -28,7 +28,6 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
     AvatarModule,
     PopoverModule,
     MenuModule,
-    RouterLink,
     FormsModule,
     AutoCompleteModule
   ],

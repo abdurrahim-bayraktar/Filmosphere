@@ -2,11 +2,6 @@ from django.apps import AppConfig
 
 
 class UsersConfig(AppConfig):
-<<<<<<< HEAD
-    default_auto_field = "django.db.models.BigAutoField"
-    name = "users"
-
-=======
     """
     App configuration for the Users module.
     Loads signals on app startup.
@@ -16,5 +11,7 @@ class UsersConfig(AppConfig):
 
     def ready(self):
         # Import signals so Django can register them
-        from . import signals  # noqa
->>>>>>> feature/backend-api
+        try:
+            from . import signals  # noqa
+        except ImportError:
+            pass  # signals.py might not exist yet

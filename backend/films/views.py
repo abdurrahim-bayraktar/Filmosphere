@@ -4,15 +4,7 @@ import logging
 import re
 from typing import Any, Dict
 
-<<<<<<< HEAD
 from django.contrib.auth.models import User
-=======
-from django.contrib.auth import get_user_model
-User = get_user_model()
-from django.utils import timezone
-
-
->>>>>>> feature/backend-api
 from django.db import models
 from django.http import Http404
 from rest_framework import status
@@ -31,10 +23,7 @@ from films.serializers import (
     BadgeSerializer,
     FollowSerializer,
     ListCreateUpdateSerializer,
-<<<<<<< HEAD
     ListItemCreateSerializer,
-=======
->>>>>>> feature/backend-api
     ListItemSerializer,
     ListSerializer,
     MoodCreateUpdateSerializer,
@@ -49,12 +38,7 @@ from films.serializers import (
     WatchedFilmSerializer,
 )
 from films.services import BadgeService, FilmAggregatorService
-<<<<<<< HEAD
 from users.models import Follow
-=======
-from films.models import Follow
-
->>>>>>> feature/backend-api
 
 IMDB_ID_PATTERN = re.compile(r"^tt\d+$")
 
