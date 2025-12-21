@@ -78,4 +78,3 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             user.profile.save()
 
         return user
-

@@ -18,13 +18,13 @@ from users.views import (
 )
 
 urlpatterns = [
-    # basic bunlar
-    path("register/", RegisterView.as_view(), name="register"),
-    path("login/", login_view, name="login"),
-    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    # basic bunlar - Frontend /api/auth/register/ bekliyor
+    path("auth/register/", RegisterView.as_view(), name="register"),
+    path("auth/login/", login_view, name="login"),
+    path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 
     # profil islemler icin
-    path("profile/me/", current_user_view, name="current-user"),
+    path("auth/me/", current_user_view, name="current-user"),
     path("profile/<str:username>/", UserProfileView.as_view(), name="user-profile"),
 
     # biraz modification var daha düzenli olması için profiel aldım

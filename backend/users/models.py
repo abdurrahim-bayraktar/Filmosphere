@@ -126,4 +126,3 @@ class Follow(models.Model):
         """Override save to call clean."""
         self.clean()
         super().save(*args, **kwargs)
-

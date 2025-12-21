@@ -118,4 +118,3 @@ def current_user_view(request):
     """Get current authenticated user's profile."""
     serializer = UserProfileSerializer(request.user.profile)
     return Response(serializer.data)
-

@@ -129,6 +129,32 @@ Content-Type: application/json
 
 All endpoints are prefixed with `/api/`
 
+### ⚠️ Important: Always Use Backend Endpoints
+
+**Frontend developers should ALWAYS use the backend API endpoints, NOT call external APIs (IMDb, KinoCheck, etc.) directly.**
+
+**Why?**
+1. **Security**: API keys are stored securely on the backend, never exposed to frontend
+2. **Consistency**: All data flows through the backend, ensuring consistent format
+3. **Caching**: Backend implements caching to reduce external API calls
+4. **Rate Limiting**: Backend protects against API rate limits
+5. **Error Handling**: Centralized error handling and fallbacks
+6. **Future Features**: Easy to add analytics, logging, or custom logic
+7. **CORS**: No CORS issues when calling external APIs
+8. **Maintainability**: Single point of change if external APIs change
+
+**❌ DON'T do this:**
+```javascript
+// BAD - Never expose API keys in frontend!
+const response = await fetch('https://api.imdbapi.dev/search/titles?query=inception&apiKey=YOUR_KEY');
+```
+
+**✅ DO this:**
+```javascript
+// GOOD - Use backend endpoint
+const response = await fetch('http://localhost:8000/api/search?q=inception');
+```
+
 ---
 
 ## 📚 Core Features Overview
@@ -198,13 +224,269 @@ GET /api/search?q=inception
 ```
 
 **Usage in Frontend**:
+
+#### Basic JavaScript/React Example
+
 ```javascript
+// Simple fetch function
 const searchFilms = async (query) => {
-  const response = await fetch(`http://localhost:8000/api/search?q=${encodeURIComponent(query)}`);
-  const data = await response.json();
-  return data.results;
+  try {
+    const response = await fetch(
+      `http://localhost:8000/api/search?q=${encodeURIComponent(query)}`
+    );
+    if (!response.ok) {
+      throw new Error('Search failed');
+    }
+    const data = await response.json();
+    return data.results; // Array of film objects
+  } catch (error) {
+    console.error('Search error:', error);
+    return [];
+  }
 };
 ```
+
+#### Complete React Component with Debouncing
+
+```jsx
+import React, { useState, useEffect, useCallback } from 'react';
+
+const API_BASE_URL = 'http://localhost:8000';
+
+const FilmSearch = () => {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce(async (searchQuery) => {
+      if (!searchQuery.trim()) {
+        setResults([]);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/search?q=${encodeURIComponent(searchQuery)}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`Search failed: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        setResults(data.results || []);
+      } catch (err) {
+        setError(err.message);
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 300), // 300ms debounce delay
+    []
+  );
+
+  useEffect(() => {
+    debouncedSearch(query);
+  }, [query, debouncedSearch]);
+
+  const handleFilmClick = (imdbId) => {
+    // Navigate to film detail page
+    window.location.href = `/films/${imdbId}`;
+  };
+
+  return (
+    <div className="film-search">
+      <input
+        type="text"
+        placeholder="Search for films..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        className="search-input"
+      />
+
+      {loading && <div className="loading">Searching...</div>}
+      {error && <div className="error">Error: {error}</div>}
+
+      {!loading && !error && results.length === 0 && query && (
+        <div className="no-results">No films found</div>
+      )}
+
+      <div className="results">
+        {results.map((film) => (
+          <div
+            key={film.imdb_id}
+            className="film-card"
+            onClick={() => handleFilmClick(film.imdb_id)}
+          >
+            {film.image && (
+              <img src={film.image} alt={film.title} className="film-poster" />
+            )}
+            <div className="film-info">
+              <h3>{film.title}</h3>
+              <p>{film.year} • {film.type}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Simple debounce helper function
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+export default FilmSearch;
+```
+
+#### Using Axios (Alternative)
+
+```javascript
+import axios from 'axios';
+
+const API_BASE_URL = 'http://localhost:8000';
+
+const searchFilms = async (query) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/search`, {
+      params: { q: query }
+    });
+    return response.data.results;
+  } catch (error) {
+    console.error('Search error:', error);
+    return [];
+  }
+};
+```
+
+#### TypeScript Types
+
+```typescript
+interface SearchResult {
+  imdb_id: string;      // e.g., "tt1375666"
+  title: string;        // e.g., "Inception"
+  year: number | null;  // e.g., 2010
+  image: string | null; // Poster URL
+  type: string;         // "movie" or "tvSeries"
+}
+
+interface SearchResponse {
+  query: string;
+  results: SearchResult[];
+}
+```
+
+#### TypeScript React Component Example
+
+```tsx
+import React, { useState, useEffect, useCallback } from 'react';
+
+const API_BASE_URL = 'http://localhost:8000';
+
+interface SearchResult {
+  imdb_id: string;
+  title: string;
+  year: number | null;
+  image: string | null;
+  type: string;
+}
+
+interface SearchResponse {
+  query: string;
+  results: SearchResult[];
+}
+
+const FilmSearch: React.FC = () => {
+  const [query, setQuery] = useState<string>('');
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const searchFilms = useCallback(async (searchQuery: string) => {
+    if (!searchQuery.trim()) {
+      setResults([]);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/search?q=${encodeURIComponent(searchQuery)}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Search failed: ${response.statusText}`);
+      }
+
+      const data: SearchResponse = await response.json();
+      setResults(data.results || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchFilms(query);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [query, searchFilms]);
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search films..."
+      />
+      {loading && <p>Loading...</p>}
+      {error && <p>Error: {error}</p>}
+      <ul>
+        {results.map((film) => (
+          <li key={film.imdb_id}>
+            {film.title} ({film.year})
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default FilmSearch;
+```
+
+#### Best Practices
+
+1. **Debounce Search Input**: Wait 300-500ms after user stops typing before searching
+2. **Handle Empty Queries**: Don't search if query is empty or too short (< 2 characters)
+3. **Loading States**: Show loading indicator while searching
+4. **Error Handling**: Display user-friendly error messages
+5. **Image Fallbacks**: Handle cases where `image` is `null`
+6. **Navigate to Details**: Use `imdb_id` to navigate to film detail page (`/api/films/{imdb_id}`)
 
 ---
 

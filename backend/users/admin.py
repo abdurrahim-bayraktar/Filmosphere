@@ -28,4 +28,3 @@ class FollowAdmin(admin.ModelAdmin):
     search_fields = ["follower__username", "following__username"]
     readonly_fields = ["created_at"]
     raw_id_fields = ["follower", "following"]
-

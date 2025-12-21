@@ -18,42 +18,41 @@ import { InputTextModule } from 'primeng/inputtext';
   ]
 })
 export class LandingComponent {
-  username: string = '';
+  email: string = '';
   password: string = '';
 
   constructor(private http: HttpClient, private router: Router) {}
 
   login() {
     const payload = {
-      username: this.username,   // email OR username field
+      username: this.email,   // email OR username field
       password: this.password
     };
 
     this.http.post<any>("http://127.0.0.1:8000/api/auth/login/", payload)
-  .subscribe({
-    next: (res) => {
+      .subscribe({
+        next: (res) => {
+          // ------------------------------
+          // SAVE TOKENS
+          // ------------------------------
+          localStorage.setItem("access", res.tokens.access);
+          localStorage.setItem("refresh", res.tokens.refresh);
 
-      // ------------------------------
-      // SAVE TOKENS (DOĞRU)
-      // ------------------------------
-      localStorage.setItem("access", res.tokens.access);
-      localStorage.setItem("refresh", res.tokens.refresh);
+          // ------------------------------
+          // SAVE USER INFO
+          // ------------------------------
+          if (res.user) {
+            localStorage.setItem("username", res.user.username);
+            localStorage.setItem("email", res.user.email);
+            localStorage.setItem("user_id", res.user.id.toString());
+          }
 
-      // ------------------------------
-      // SAVE USER INFO
-      // ------------------------------
-      if (res.user) {
-        localStorage.setItem("username", res.user.username);
-        localStorage.setItem("email", res.user.email);
-        localStorage.setItem("user_id", res.user.id.toString());
-      }
-
-      this.router.navigate(['/home']);
-    },
-    error: () => {
-      alert("Invalid login credentials");
-    }
-  });
-
+          this.router.navigate(['/home']);
+        },
+        error: (err) => {
+          console.error(err);
+          alert("Invalid login credentials");
+        }
+      });
   }
 }
