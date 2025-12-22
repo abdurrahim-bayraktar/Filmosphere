@@ -189,24 +189,35 @@
     border-bottom: 1px solid #222;
 }
 
-/* --- Cast Card Image Enforcing --- */
-/* This forces the container to a fixed size */
-.cast-image-wrapper {
-    width: 112px !important;  /* Fixed width (~7rem) */
-    height: 160px !important; /* Fixed height (~10rem) */
-    margin: 0 auto 10px auto; /* Center horizontally + bottom margin */
+/* --- UNIVERSAL ASPECT RATIO FIX --- */
+/* This forces a 2:3 aspect ratio (Posters/Portraits) */
+.portrait-ratio {
     position: relative;
+    width: 100%;
+    /* Padding-top % is based on width. 150% = 2:3 ratio */
+    padding-top: 150%; 
+    background-color: #1a1a1a;
     overflow: hidden;
-    background-color: #000;
-    border-radius: 4px;       /* Optional: rounded corners */
 }
 
-/* This forces the image to fill the container and crop */
-.cast-image-wrapper img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important; /* This prevents stretching */
+.portrait-ratio img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures image fills box without stretching */
     display: block;
+}
+
+/* Update Poster Card to be fluid, not fixed width */
+.poster-card {
+  width: 100%; /* Changed from 230px to fit the grid column */
+  max-width: 300px; /* Optional cap */
+  border: 1px solid #333;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0 auto; /* Center it */
 }
 
 /* Make the text container neat */
