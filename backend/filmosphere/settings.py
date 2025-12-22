@@ -1,24 +1,31 @@
 import os
 from pathlib import Path
+from datetime import timedelta
 
 import environ
 
+# -----------------------------
+# ENV
+# -----------------------------
 env = environ.Env(
     DJANGO_DEBUG=(bool, True),
 )
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-environ.Env.read_env(os.path.join(BASE_DIR, ".env")) if os.path.exists(
-    os.path.join(BASE_DIR, ".env")
-) else None
+# Load .env if exists
+env_path = os.path.join(BASE_DIR, ".env")
+if os.path.exists(env_path):
+    environ.Env.read_env(env_path)
 
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="unsafe-secret-key")
-
 DEBUG = env.bool("DJANGO_DEBUG", default=True)
 
 ALLOWED_HOSTS: list[str] = ["*"]
 
+# -----------------------------
+# APPS
+# -----------------------------
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -41,6 +48,9 @@ INSTALLED_APPS = [
 
 SITE_ID = 1
 
+# -----------------------------
+# MIDDLEWARE
+# -----------------------------
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -74,46 +84,42 @@ TEMPLATES = [
 WSGI_APPLICATION = "filmosphere.wsgi.application"
 ASGI_APPLICATION = "filmosphere.asgi.application"
 
-DATABASES = {
-    "default": env.db(
-       "DATABASE_URL",
-        default="postgres://filmouser:filmopass@localhost:5432/filmosphere",
-    )
-}
-#simdilik atamin kutahya eskisehir savasindan once yaptigi taktigi yapiyorum geri cekilir gibi yapıyorum anlık bypass ediyorum anlık sqlite kullanımı
-#edit: geri cekilme basarili ust blogu yoruma almıstım anlık test icin simdi geri actim
+# ----------------------------------------------------
+# Database (AUTO SWITCH)
+# ----------------------------------------------------
+# .env içinde:
+# USE_SQLITE=True  -> SQLite
+# USE_SQLITE=False -> Postgres (DATABASE_URL ile)
+USE_SQLITE = env.bool("USE_SQLITE", default=True)
 
+if USE_SQLITE:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+else:
+    DATABASES = {
+        "default": env.db(
+            "DATABASE_URL",
+            default="postgres://filmouser:filmopass@localhost:5432/filmosphere",
+        )
+    }
 
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': BASE_DIR / 'db.sqlite3',
-#    }
-#}
-#bu blogu silcez uste geri donmek icin unutma
-#edit: evet misyonu tamamladı belki bidaha lazim olursa diye silmiyorum yorumda kalsin
-
+# -----------------------------
+# AUTH / I18N
+# -----------------------------
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
 
 STATIC_URL = "static/"
@@ -121,10 +127,14 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# -----------------------------
+# DRF
+# -----------------------------
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
@@ -135,10 +145,6 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "60/min",
     },
-    #test yapmak icin asagiyi ekliyorum
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication', ),
 }
 
 SPECTACULAR_SETTINGS = {
@@ -148,18 +154,30 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
+# -----------------------------
+# EXTERNAL APIS / LLM
+# -----------------------------
 IMDBAPI_BASE = env("IMDBAPI_BASE", default="https://api.imdbapi.dev")
 KINO_BASE = env("KINO_BASE", default="https://api.kinocheck.com")
 KINO_API_KEY = env("KINO_API_KEY", default="")
 WATCHMODE_BASE = env("WATCHMODE_BASE", default="https://api.watchmode.com/v1")
 WATCHMODE_API_KEY = env("WATCHMODE_API_KEY", default="")
+
 DEEPSEEK_API_KEY = env("DEEPSEEK_API_KEY", default="")
 DEEPSEEK_BASE = env("DEEPSEEK_BASE", default="https://api.deepseek.com/v1")
+DEEPSEEK_MODEL = env("DEEPSEEK_MODEL", default="deepseek-chat")
+
 CACHE_TTL_HOURS = env.int("CACHE_TTL_HOURS", default=24)
 HTTP_TIMEOUT = env.int("HTTP_TIMEOUT", default=10)
 HTTP_RETRIES = env.int("HTTP_RETRIES", default=3)
 
-# CORS Settings
+# ----------------------------------------------------
+# CORS Settings (DEV)
+# ----------------------------------------------------
+# DEV için en rahatı: port değişse bile çalışsın
+CORS_ALLOW_ALL_ORIGINS = True
+
+# İstersen kalsın (prod'a geçince ALL_ORIGINS kapatıp sadece bunu kullanırsın)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
@@ -171,21 +189,16 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-# JWT Settings
-from datetime import timedelta
-
+# -----------------------------
+# JWT
+# -----------------------------
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
 }
 
-# Comment Moderation Settings
-COMMENT_BLACKLIST = [
-    # Add blacklisted words/phrases here
-    # Example: "spam", "scam", etc.
-    # Can be overridden via environment variable
-]
-COMMENT_BLACKLIST = env.list("COMMENT_BLACKLIST", default=COMMENT_BLACKLIST)
-
-
+# -----------------------------
+# Moderation
+# -----------------------------
+COMMENT_BLACKLIST = env.list("COMMENT_BLACKLIST", default=[])

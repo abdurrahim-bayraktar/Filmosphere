@@ -1,4 +1,6 @@
-/* Sets navbar height, background, color, display, and padding. */
+/* =========================
+   NAVBAR
+   ========================= */
 .navbar {
   height: 70px;
   background: #111;
@@ -10,78 +12,84 @@
   border-bottom: 1px solid #333;
 }
 
-/* Styles the logo with red color, large font, and letter spacing. */
 .logo {
   margin: 0;
-  color:red;
+  color: red;
   font-size: 1.8rem;
   letter-spacing: 2px;
 }
 
-/* Enables flexible alignment for the right side of the navbar. */
 .navbar-right {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-/* Styles the clickable avatar/menu trigger area. */
 .profile-menu-trigger {
   display: flex;
   align-items: center;
   cursor: pointer;
-  padding: 5px 10px; 
+  padding: 5px 10px;
   border-radius: 4px;
   transition: background-color 0.2s;
 }
 
-/* Provides hover effect for the menu trigger. */
 .profile-menu-trigger:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Sets font size and color for a generic user icon (unused here but kept). */
-.user-icon {
-  font-size: 1.6rem;
-  color: white;
-}
-
-/* Styles the username text. */
 .username {
   font-size: 1rem;
   color: #ddd;
 }
 
-/* Styles the dropdown arrow next to the username. */
 .dropdown-arrow {
   font-size: 0.8rem;
   color: #ccc;
   margin-left: 5px;
 }
 
+/* =========================
+   SEARCH & FILTER BUTTON
+   ========================= */
+.go-search-btn {
+  padding: 10px 22px;
+  background: #e50914;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap;
+}
 
-/* Sets padding, background, and minimum height for the main content area. */
+.go-search-btn:hover {
+  background: #b20710;
+}
+
+/* =========================
+   HOME CONTAINER
+   ========================= */
 .home-container {
   padding: 30px 40px;
   background: #000;
   min-height: calc(100vh - 70px);
 }
 
-
-/* Adds bottom margin to separate content sections. */
 .section {
   margin-bottom: 35px;
 }
 
-/* Styles the heading for content sections. */
 .section-title {
   font-size: 1.4rem;
   color: white;
   margin-bottom: 15px;
 }
 
-
-/* Defines the initial look, size, and transition for movie cards. */
+/* =========================
+   MOVIE CARDS
+   ========================= */
 .movie-card {
   width: 220px;
   height: 330px;
@@ -93,21 +101,18 @@
   position: relative;
 }
 
-/* Adds zoom and shadow effect on hover. */
 .movie-card:hover {
-  transform: scale(1.18); 
+  transform: scale(1.18);
   z-index: 20;
   box-shadow: 0 0 25px rgba(255,255,255,0.18);
 }
 
-/* Styles the movie poster image dimensions and fit. */
 .movie-poster {
   width: 100%;
   height: 85%;
   object-fit: cover;
 }
 
-/* Styles the movie title text inside the card. */
 .movie-title {
   padding: 6px;
   font-size: 1rem;
@@ -115,8 +120,9 @@
   color: #ddd;
 }
 
-
-/* Overrides PrimeNG carousel item width and spacing for 6 items per view. */
+/* =========================
+   CAROUSEL OVERRIDES
+   ========================= */
 :host ::ng-deep .p-carousel-item {
   flex: 0 0 230px !important;
   width: 230px !important;
@@ -125,20 +131,17 @@
   margin: 0 8px !important;
 }
 
-/* Removes internal padding/margin from the carousel content area. */
 :host ::ng-deep .p-carousel-items-content {
   padding: 0 !important;
   margin: 0 !important;
   gap: 0 !important;
 }
 
-/* Forces flex layout for the inner carousel container. */
 :host ::ng-deep .p-carousel-items-container {
   display: flex !important;
   gap: 0 !important;
 }
 
-/* Styles the carousel navigation buttons (color, background, size). */
 :host ::ng-deep .p-carousel-next,
 :host ::ng-deep .p-carousel-prev {
   color: white !important;
@@ -150,13 +153,11 @@
   transition: 0.2s ease;
 }
 
-/* Adds hover effect to carousel navigation buttons. */
 :host ::ng-deep .p-carousel-next:hover,
 :host ::ng-deep .p-carousel-prev:hover {
   background: rgba(255,255,255,0.20) !important;
 }
 
-/* Styles the active (highlighted) carousel indicator dot. */
 :host ::ng-deep .p-carousel-indicator-button.p-highlight {
   background-color: #e50914 !important;
   width: 18px !important;
@@ -164,22 +165,21 @@
   border-radius: 10px !important;
 }
 
-/* Styles the inactive carousel indicator dots. */
 :host ::ng-deep .p-carousel-indicator-button {
-  background-color: #555 !important; 
+  background-color: #555 !important;
   width: 10px !important;
   height: 10px !important;
   border-radius: 50% !important;
   opacity: 0.6;
 }
 
-/* Sets inactive indicator opacity to 1 on hover. */
 :host ::ng-deep .p-carousel-indicator-button:hover {
   opacity: 1 !important;
 }
 
-
-/* Reduces movie card size for medium screens. */
+/* =========================
+   RESPONSIVE
+   ========================= */
 @media (max-width: 900px) {
   .movie-card {
     width: 180px;
@@ -187,7 +187,6 @@
   }
 }
 
-/* Further reduces movie card size for small screens. */
 @media (max-width: 600px) {
   .movie-card {
     width: 150px;
@@ -195,112 +194,44 @@
   }
 }
 
-
-/* Styles the main popover container (background, border, padding). */
+/* =========================
+   PROFILE POPOVER
+   ========================= */
 :host ::ng-deep .p-popover {
-    background: #111;
-    border: 1px solid #333;
-    border-radius: 4px;
-    padding: 0;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 0;
 }
 
-/* Styles the menu element inside the popover (transparent background, no border). */
 :host ::ng-deep .p-popover .p-menu {
-    background: transparent;
-    border: none;
-    padding: 5px 0;
+  background: transparent;
+  border: none;
+  padding: 5px 0;
 }
 
-/* Styles the menu item links (text color, padding, display). */
 :host ::ng-deep .p-popover .p-menuitem-link {
-    color: #fff !important;
-    padding: 10px 15px;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
+  color: #fff !important;
+  padding: 10px 15px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
 }
 
-/* Sets the hover background color for menu item links (red). */
 :host ::ng-deep .p-popover .p-menuitem-link:hover {
-    background-color: #e50914; 
+  background-color: #e50914;
 }
 
-/* Adds margin/spacing to the menu item icons. */
 :host ::ng-deep .p-popover .p-menuitem-icon {
-    margin-right: 6px;
-    font-size: 1.1rem;
+  margin-right: 6px;
+  font-size: 1.1rem;
 }
 
-/* Styles the separator line in the menu. */
 :host ::ng-deep .p-popover .p-menu-separator {
-    border-top: 1px solid #333;
-    margin: 5px 0;
+  border-top: 1px solid #333;
+  margin: 5px 0;
 }
 
-/* Specifically colors the last menu item (Logout) red. */
 :host ::ng-deep .p-popover .p-menuitem:last-child .p-menuitem-link {
-    color: #ff5555 !important; 
+  color: #ff5555 !important;
 }
-
-/* Make search bar wider */
-.navbar-search {
-  margin-left: 20px;
-}
-
-:host ::ng-deep .p-autocomplete {
-  width: 480px !important;
-}
-
-:host ::ng-deep .p-autocomplete-input {
-  width: 100% !important;
-  padding: 10px 12px !important;
-  font-size: 15px !important;
-}
-
-/* Search bar: focus red border + glow */
-:host ::ng-deep .p-autocomplete-input:focus,
-:host ::ng-deep .p-autocomplete.p-focus .p-autocomplete-input {
-    border-color: #e50914 !important;
-    box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.3) !important;
-}
-/* Dropdown suggestion panel border also red */
-:host ::ng-deep .p-autocomplete-panel {
-    border-color: #e50914 !important;
-}
-
-
-/* Dropdown panel width */
-:host ::ng-deep .p-autocomplete-panel {
-    width:  600px !important;
-    height: 500px;
-    background: white !important;
-}
-
-/* Dropdown item container */
-:host ::ng-deep .search-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 10px;
-}
-
-/* Poster */
-:host ::ng-deep .search-thumb {
-    width: 80px;
-    height: 110px;
-    border-radius: 6px;
-    object-fit: cover;
-}
-
-/* Film name */
-:host ::ng-deep .search-title {
-    font-size: 17px;
-    color: black !important;
-    font-weight: 500;
-}
-
-
-
-
-
-

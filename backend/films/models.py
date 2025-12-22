@@ -32,7 +32,7 @@ class Film(models.Model):
     def get_average_ratings(self):
         """Calculate average ratings for all aspects from all user ratings."""
         ratings = Rating.objects.filter(film=self)
-        
+
         if not ratings.exists():
             return {
                 "overall": None,
@@ -44,7 +44,7 @@ class Film(models.Model):
                 "direction": None,
                 "total_ratings": 0,
             }
-        
+
         # Calculate averages for each aspect
         aspect_ratings = ratings.aggregate(
             avg_overall=Avg("overall_rating"),
@@ -56,7 +56,7 @@ class Film(models.Model):
             avg_direction=Avg("direction_rating"),
             total=Count("id"),
         )
-        
+
         return {
             "overall": round(float(aspect_ratings["avg_overall"] or 0), 2),
             "plot": round(float(aspect_ratings["avg_plot"] or 0), 2) if aspect_ratings["avg_plot"] else None,
@@ -76,13 +76,13 @@ class Rating(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="ratings")
     film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="ratings")
-    
+
     # Overall rating (can be manually set or calculated from aspects)
     overall_rating = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         help_text="Overall rating (1-5). If aspect ratings provided, this is calculated automatically.",
     )
-    
+
     # Aspect ratings (all optional)
     plot_rating = models.IntegerField(
         null=True,
@@ -120,7 +120,7 @@ class Rating(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         help_text="Direction rating (1-5)",
     )
-    
+
     rated_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -145,13 +145,13 @@ class Rating(models.Model):
             self.originality_rating,
             self.direction_rating,
         ]
-        
+
         # Filter out None values
         provided_aspects = [a for a in aspects if a is not None]
-        
+
         if not provided_aspects:
             return None
-        
+
         # Calculate average and round to nearest integer
         average = sum(provided_aspects) / len(provided_aspects)
         return round(average)
@@ -174,7 +174,7 @@ class Rating(models.Model):
             calculated_overall = self.calculate_overall_from_aspects()
             if calculated_overall:
                 self.overall_rating = calculated_overall
-        
+
         super().save(*args, **kwargs)
 
 
@@ -283,7 +283,7 @@ class Review(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     @property
     def contains_spoiler(self):
         """Check if review contains spoiler (manual or auto-detected) (FR06.3)."""
@@ -407,14 +407,14 @@ class Mood(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="moods")
     film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name="moods")
-    
+
     # FR09.1: Mood before watching
     mood_before = models.CharField(
         max_length=20,
         choices=MOOD_CHOICES,
         help_text="Emotional state before watching the film",
     )
-    
+
     # FR09.2: Mood after watching
     mood_after = models.CharField(
         max_length=20,
@@ -423,7 +423,7 @@ class Mood(models.Model):
         blank=True,
         help_text="Emotional state after watching the film",
     )
-    
+
     logged_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -534,3 +534,64 @@ class WatchedFilm(models.Model):
     def __str__(self):
         return f"{self.user.username} watched {self.film.title}"
 
+
+# -----------------------------
+# LLM Moderation Logs (FR06 / Chat safety)
+# -----------------------------
+class ModerationLog(models.Model):
+    DIRECTION_CHOICES = [
+        ("in", "Input (user message)"),
+        ("out", "Output (assistant answer)"),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="moderation_logs",
+        null=True,
+        blank=True,
+    )
+
+    direction = models.CharField(max_length=10, choices=DIRECTION_CHOICES)
+    allow = models.BooleanField(default=False)
+    flags = models.JSONField(default=list, blank=True)
+    reason = models.CharField(max_length=300, blank=True, default="")
+    text = models.TextField(blank=True, default="")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["direction"]),
+            models.Index(fields=["allow"]),
+            models.Index(fields=["created_at"]),
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        u = getattr(self.user, "username", None) or "anonymous"
+        return f"{self.created_at:%Y-%m-%d %H:%M} | {u} | {self.direction} | allow={self.allow}"
+
+
+class RecommendationLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="recommendation_logs")
+    user_message = models.TextField()
+    blocked = models.BooleanField(default=False)
+    flags = models.JSONField(default=list, blank=True)
+    reason = models.TextField(blank=True, null=True)
+
+    # LLM output
+    answer_text = models.TextField(blank=True, null=True)
+    items = models.JSONField(default=list, blank=True)   # structured list
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["user", "created_at"]),
+            models.Index(fields=["blocked"]),
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"RecoLog({self.user_id}) blocked={self.blocked} at {self.created_at}"

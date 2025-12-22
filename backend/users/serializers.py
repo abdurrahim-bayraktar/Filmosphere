@@ -7,10 +7,12 @@ from users.models import UserProfile
 class UserSerializer(serializers.ModelSerializer):
     """Basic user serializer."""
 
+    is_active = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = User
-        fields = ["id", "username", "email", "date_joined"]
-        read_only_fields = ["id", "date_joined"]
+        fields = ["id", "username", "email", "date_joined", "is_active"]
+        read_only_fields = ["id", "date_joined", "is_active"]
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
