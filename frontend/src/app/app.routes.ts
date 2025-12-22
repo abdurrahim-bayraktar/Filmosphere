@@ -6,16 +6,24 @@ import { LandingComponent } from './pages/landing/landing';
 import { ProfileComponent } from './pages/profile/profile';
 import { AdminComponent } from './pages/admin/admin';
 import { FilmDetailComponent } from './pages/film-details/film-details';
+import { FilmSearch } from './pages/film-search/film-search';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
   { path: 'signup', component: SignupComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
-
   { path: 'home', component: HomeComponent },
-
   { path: 'profile', component: ProfileComponent },
   { path: 'admin', component: AdminComponent },
   { path: 'film-details/:id', component: FilmDetailComponent },
-  
+  { path: 'film-search', component: FilmSearch },
+
+  // ✅ RECOMMENDATION CHAT (standalone component)
+  {
+    path: 'recommendation-chat',
+    loadComponent: () =>
+      import('./pages/recommendation-chat/recommendation-chat')
+        .then(m => m.RecommendationChatComponent),
+  },
 ];
+

@@ -1,0 +1,286 @@
+.rc-page{
+  padding: 28px;
+  max-width: 980px;
+  margin: 0 auto;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #111827;
+  background: transparent;
+}
+
+.rc-header{
+  display:flex;
+  gap:16px;
+  align-items:flex-start;
+  justify-content:space-between;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+
+.rc-title{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+}
+
+.rc-badge{
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  background: rgba(79,70,229,0.10);
+  border: 1px solid rgba(79,70,229,0.22);
+}
+
+.rc-title h2{
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: .2px;
+  font-weight: 800;
+}
+
+.rc-title p{
+  margin: 4px 0 0 0;
+  opacity: .75;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.rc-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+/* ✅ DARK CARD GİTTİ → BEYAZ KART */
+.rc-card{
+  border-radius: 18px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(0,0,0,.06);
+  overflow:hidden;
+}
+
+.rc-chat{
+  padding: 16px;
+  height: 520px;
+  overflow:auto;
+  display:flex;
+  flex-direction:column;
+  gap: 12px;
+  background: #ffffff; /* ✅ siyah yok */
+}
+
+.rc-empty{
+  margin: 40px auto 0 auto;
+  max-width: 520px;
+  text-align:center;
+  opacity:.95;
+  color: #111827;
+}
+
+.rc-empty-emoji{
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.rc-empty-title{
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.rc-empty-sub{
+  margin-top: 6px;
+  opacity: .75;
+  color: #6b7280;
+}
+
+.rc-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+  margin-top: 14px;
+}
+
+/* ✅ Chip’ler beyaz temaya uyarlandı */
+.rc-chip{
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #111827;
+  padding: 10px 12px;
+  border-radius: 999px;
+  cursor:pointer;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.rc-chip:hover{
+  background: #f3f4f6;
+}
+
+.rc-msg{
+  display:flex;
+  gap:10px;
+  align-items:flex-end;
+}
+
+.rc-msg.user{
+  justify-content:flex-end;
+}
+
+.rc-avatar{
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  flex: 0 0 auto;
+}
+
+.rc-avatar.user{
+  background: rgba(79,70,229,.10);
+  border-color: rgba(79,70,229,.25);
+}
+
+/* ✅ Bubble’lar modern */
+.rc-bubble{
+  max-width: 76%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.rc-msg.user .rc-bubble{
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: #fff;
+}
+
+.rc-meta{
+  display:flex;
+  justify-content:space-between;
+  opacity:.7;
+  font-size: 11px;
+  margin-bottom: 6px;
+  color: #6b7280;
+}
+
+.rc-role{
+  font-weight: 800;
+}
+
+.rc-text{
+  white-space: pre-wrap;
+  line-height: 1.35;
+  font-size: 13px;
+}
+
+.rc-typing{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  opacity:.75;
+  font-size: 12px;
+  margin-top: 4px;
+  color: #6b7280;
+}
+
+.rc-typing-dot{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background: #9ca3af;
+  animation: rcBounce 1s infinite;
+}
+
+.rc-typing-dot:nth-child(2){ animation-delay: .15s; }
+.rc-typing-dot:nth-child(3){ animation-delay: .30s; }
+
+@keyframes rcBounce{
+  0%, 80%, 100% { transform: translateY(0); opacity: .55; }
+  40% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ✅ Input bar da beyaz */
+.rc-inputbar{
+  display:flex;
+  gap:10px;
+  padding: 12px;
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.rc-inputbar input{
+  flex: 1;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #111827;
+  outline:none;
+}
+
+.rc-inputbar input:focus{
+  border-color: rgba(79,70,229,.60);
+  box-shadow: 0 0 0 4px rgba(79,70,229,.12);
+}
+
+/* Butonlar */
+.rc-btn{
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #111827;
+  cursor:pointer;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.rc-btn:hover{
+  background: #f3f4f6;
+}
+
+.rc-btn.primary{
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: #fff;
+}
+
+.rc-btn.primary:hover{
+  background: #4338ca;
+  border-color: #4338ca;
+}
+
+.rc-btn.ghost{
+  background: #ffffff;
+}
+
+.rc-btn.danger{
+  background: rgba(239,68,68,.10);
+  border-color: rgba(239,68,68,.25);
+  color: #991b1b;
+}
+
+.rc-btn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+.rc-footnote{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  padding: 10px 12px 14px 12px;
+  opacity: .70;
+  font-size: 11px;
+  color: #6b7280;
+  background: #ffffff;
+}

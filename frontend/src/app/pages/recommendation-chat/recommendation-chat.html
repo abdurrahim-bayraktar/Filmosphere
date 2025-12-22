@@ -1,0 +1,82 @@
+<div class="rc-page">
+  <div class="rc-header">
+    <div class="rc-title">
+      <div class="rc-badge">🎬</div>
+      <div>
+        <h2>Recommendation Chat</h2>
+        <p>Ne izlemek istediğini yaz; geçmişine göre 3–5 öneri al.</p>
+      </div>
+    </div>
+
+    <div class="rc-actions">
+      <button class="rc-btn ghost" (click)="useExample('Bugün kısa bir komedi istiyorum, popüler olmasın')">
+        Örnek: Komedi
+      </button>
+      <button class="rc-btn ghost" (click)="useExample('Psikolojik gerilim ama aşırı korku değil')">
+        Örnek: Gerilim
+      </button>
+      <button class="rc-btn ghost" (click)="useExample('Bilim kurgu, uzay temalı, sürükleyici')">
+        Örnek: Sci-Fi
+      </button>
+
+      <button class="rc-btn danger" (click)="clearChat()">
+        Temizle
+      </button>
+    </div>
+  </div>
+
+  <div class="rc-card">
+    <div class="rc-chat">
+      <div *ngIf="messages.length === 0" class="rc-empty">
+        <div class="rc-empty-emoji">✨</div>
+        <div class="rc-empty-title">Hazırım.</div>
+        <div class="rc-empty-sub">
+          Aşağıdakilerden birine tıkla ya da kendi isteğini yaz.
+        </div>
+
+        <div class="rc-chips">
+          <button class="rc-chip" (click)="useExample('Bugün 90 dakikadan kısa, hızlı akan bir film')">⏱️ Kısa</button>
+          <button class="rc-chip" (click)="useExample('Netflix tarzı popüler ama klişe olmayan')">🔥 Popüler</button>
+          <button class="rc-chip" (click)="useExample('Eski klasiklerden bir şeyler')">🎞️ Klasik</button>
+          <button class="rc-chip" (click)="useExample('Romantik ama dram değil')">💘 Romantik</button>
+          <button class="rc-chip" (click)="useExample('Aksiyon ama aşırı şiddet olmasın')">💥 Aksiyon</button>
+        </div>
+      </div>
+
+      <div *ngFor="let m of messages" class="rc-msg" [class.user]="m.role === 'user'" [class.assistant]="m.role === 'assistant'">
+        <div class="rc-avatar" *ngIf="m.role === 'assistant'">🤖</div>
+        <div class="rc-bubble">
+          <div class="rc-meta">
+            <span class="rc-role">{{ m.role === 'user' ? 'You' : 'Assistant' }}</span>
+          </div>
+          <div class="rc-text">{{ m.text }}</div>
+        </div>
+        <div class="rc-avatar user" *ngIf="m.role === 'user'">🧑</div>
+      </div>
+
+      <div *ngIf="loading" class="rc-typing">
+        <div class="rc-typing-dot"></div>
+        <div class="rc-typing-dot"></div>
+        <div class="rc-typing-dot"></div>
+        <span>Yanıt hazırlanıyor…</span>
+      </div>
+    </div>
+
+    <div class="rc-inputbar">
+      <input
+        [(ngModel)]="input"
+        (keydown.enter)="send()"
+        placeholder="Ne izlemek istiyorsun? (örn: kısa komedi, popüler olmasın)"
+      />
+      <button class="rc-btn primary" (click)="send()" [disabled]="loading || !input.trim()">
+        Gönder
+      </button>
+    </div>
+
+    <div class="rc-footnote">
+      <span>🔒 Bu sayfa login gerektirir.</span>
+      <span>🧠 Key eklenince gerçek LLM önerisi döner.</span>
+      <span>🚫 Spoiler vermemesi için sistem promptu var.</span>
+    </div>
+  </div>
+</div>

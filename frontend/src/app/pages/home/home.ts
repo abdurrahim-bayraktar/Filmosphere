@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CarouselModule } from 'primeng/carousel';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
@@ -11,14 +11,12 @@ import { MenuItem } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { PopoverModule } from 'primeng/popover';
 import { Popover } from 'primeng/popover';
-import { FormsModule } from '@angular/forms';
-import { SearchService } from '../../services/search.service';
-import { AutoCompleteModule } from 'primeng/autocomplete';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [
+    RouterModule,
     CarouselModule,
     ButtonModule,
     CommonModule,
@@ -27,9 +25,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
     HttpClientModule,
     AvatarModule,
     PopoverModule,
-    MenuModule,
-    FormsModule,
-    AutoCompleteModule
+    MenuModule
   ],
   templateUrl: './home.html',
   styleUrl: './home.css'
@@ -47,14 +43,14 @@ export class HomeComponent implements OnInit {
   modalVisible = false;
   selectedMovie: any = null;
 
-  searchQuery = "";
-  searchResults: any[] = [];
+  trendingMovies: any[] = [];
+  topRatedMovies: any[] = [];
+  actionMovies: any[] = [];
 
   constructor(
     private http: HttpClient,
-    private router: Router,
-    private searchService: SearchService
-  ) { }
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.loadUser();
@@ -77,7 +73,7 @@ export class HomeComponent implements OnInit {
       const usr = JSON.parse(cached);
       this.user = usr;
       this.avatarImage = usr.profile?.avatar || null;
-      this.avatarLabel = usr.username[0]?.toUpperCase() || "U";
+      this.avatarLabel = usr.username?.[0]?.toUpperCase() || "U";
     }
 
     const token = localStorage.getItem("access");
@@ -85,15 +81,14 @@ export class HomeComponent implements OnInit {
 
     this.http.get("http://127.0.0.1:8000/api/auth/me/", {
       headers: { Authorization: `Bearer ${token}` }
-    })
-      .subscribe({
-        next: (res: any) => {
-          this.user = res;
-          this.avatarImage = res.profile?.avatar || null;
-          this.avatarLabel = res.username[0]?.toUpperCase() || "U";
-          localStorage.setItem("user_profile", JSON.stringify(res));
-        }
-      });
+    }).subscribe({
+      next: (res: any) => {
+        this.user = res;
+        this.avatarImage = res.profile?.avatar || null;
+        this.avatarLabel = res.username?.[0]?.toUpperCase() || "U";
+        localStorage.setItem("user_profile", JSON.stringify(res));
+      }
+    });
   }
 
   logout() {
@@ -113,26 +108,7 @@ export class HomeComponent implements OnInit {
     this.modalVisible = false;
   }
 
-  onSearchChange(event: any) {
-    const query = event.query;
-
-    if (query.length < 2) {
-      this.searchResults = [];
-      return;
-    }
-
-    this.searchService.searchIMDB(query).subscribe(results => {
-      this.searchResults = results.map(movie => ({
-        title: movie.title,
-        poster: movie.image || "https://via.placeholder.com/80x120",
-        id: movie.imdb_id,
-        year: movie.year
-      }));
-    });
-
+  goToFilmSearch() {
+    this.router.navigate(['/film-search']);
   }
-
-  trendingMovies: any[] = [];
-  topRatedMovies: any[] = [];
-  actionMovies: any[] = [];
 }
