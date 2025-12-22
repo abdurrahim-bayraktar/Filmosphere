@@ -12,18 +12,41 @@ export interface FilmDetail {
   duration?: string;    // <--- Added this
   genres?: string[];    // <--- Added this
   
-  rating_statistics: {
+rating_statistics: {
     overall: number;
-    plot: number;
-    acting: number;
+    plot?: number;
+    acting?: number;
     total_ratings: number;
   };
 
-  user_rating?: UserRating; 
+  user_rating?: UserRating;
   
   cast?: Actor[];       // <--- Added this
   reviews?: Review[];   // <--- Added this
 }
+
+export interface UserRating {
+  overall_rating?: number;
+  plot_rating?: number;
+  acting_rating?: number;
+  cinematography_rating?: number;
+  soundtrack_rating?: number;
+  originality_rating?: number;
+  direction_rating?: number;
+
+  // ✅ FIX: Allow dynamic access by string key
+  [key: string]: number | undefined;
+}
+
+// Helper to easily iterate in the HTML
+export const RATING_ASPECTS = [
+  { label: 'Plot', key: 'plot_rating' },
+  { label: 'Acting', key: 'acting_rating' },
+  { label: 'Cinematography', key: 'cinematography_rating' },
+  { label: 'Soundtrack', key: 'soundtrack_rating' },
+  { label: 'Originality', key: 'originality_rating' },
+  { label: 'Direction', key: 'direction_rating' }
+];
 
 export interface Actor {
   name: string;
@@ -32,9 +55,24 @@ export interface Actor {
 }
 
 export interface Review {
-  user: string;
+id: number;
+  user: number;
+  username: string; // The backend provides this directly now
+  title: string;
+  content: string;  // mapped from 'comment' in old model
   rating: number;
-  comment: string;
+  likes_count: number;
+  is_liked: boolean;
+  
+  // Spoiler flags
+  contains_spoiler: boolean; 
+  is_spoiler: boolean;
+  is_auto_detected_spoiler: boolean;
+  
+  created_at: string;
+  
+  // UI State (Not from API)
+  isRevealed?: boolean;
 }
 
 export interface UserRating {

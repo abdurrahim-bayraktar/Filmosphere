@@ -64,9 +64,19 @@
             
             <div class="user-rating border-l border-gray-700 pl-4 md:ml-4">
                 <span class="text-sm text-gray-500 uppercase tracking-widest block mb-1">Your Rating</span>
-                <p-rating [(ngModel)]="overallRating" (onRate)="onRate($event)" styleClass="blue-stars"></p-rating>
+                
+                <p-rating 
+                    [(ngModel)]="overallRating" 
+                    (onRate)="openRatingDialog($event.value)" 
+                    styleClass="blue-stars cursor-pointer hover:scale-110 transition-transform">
+                </p-rating>
+                
+                <button *ngIf="overallRating > 0" 
+                        (click)="openRatingDialog()"
+                        class="text-xs text-blue-400 hover:text-blue-300 underline mt-1 block">
+                    Edit details
+                </button>
             </div>
-        </div>
 
         <div class="mood-section bg-[#111] p-4 rounded-lg border border-[#333] mb-8 inline-block w-full md:w-auto">
             <h3 class="section-title mb-3">Mood Tracker</h3>
@@ -125,23 +135,82 @@
             No cast info available.
         </div>
     </div>
+    
 </p-tabpanel>
 
-            <p-tabpanel value="1">
-                <div class="flex flex-col gap-4 mt-2">
-                    <div *ngFor="let review of film.reviews" class="review-item bg-[#222] p-4 rounded border border-[#333]">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-red-500 font-bold">{{ review.user }}</span>
-                            <p-rating [ngModel]="review.rating" [readonly]="true" styleClass="small-stars"></p-rating>
+    <p-tabpanel value="1">
+        <div class="flex flex-col gap-4 mt-2">
+            
+            <div *ngFor="let review of reviews" class="review-item bg-[#1a1a1a] p-5 rounded-lg border border-[#333] shadow-sm hover:border-[#444] transition-colors">
+                
+                <div class="flex justify-between items-start mb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center text-xs font-bold text-white">
+                            {{ review.username.charAt(0).toUpperCase() }}
                         </div>
-                        <p class="text-gray-300 italic">"{{ review.comment }}"</p>
-                    </div>
-                    
-                    <div *ngIf="!film.reviews?.length" class="text-gray-500 italic">
-                        No reviews yet. Be the first to review!
+                        
+                        <div class="flex flex-col">
+                            <div class="flex items-center gap-2">
+                                <span class="text-white font-semibold text-sm hover:text-blue-400 cursor-pointer">
+                                    {{ review.username }}
+                                </span>
+                                <span *ngIf="review.contains_spoiler" class="text-[10px] uppercase font-bold text-red-500 border border-red-900 bg-red-900/20 px-1.5 rounded">
+                                    Spoiler
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <p-rating [ngModel]="review.rating" [readonly]="true" [cancel]="false" styleClass="tiny-stars"></p-rating>
+                                <span class="text-xs text-gray-500">{{ review.created_at | date:'mediumDate' }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </p-tabpanel>
+
+                <h4 *ngIf="review.title" class="text-gray-200 font-bold mb-2 text-base leading-tight">
+                    {{ review.title }}
+                </h4>
+
+                <div class="review-body relative">
+                    
+                    <div *ngIf="review.contains_spoiler && !review.isRevealed" 
+                        class="bg-[#2a2a2a] border border-dashed border-gray-600 rounded p-6 text-center flex flex-col items-center justify-center gap-2">
+                        <i class="pi pi-eye-slash text-gray-400 text-2xl"></i>
+                        <p class="text-gray-400 text-sm font-medium">This review contains spoilers.</p>
+                        <button (click)="toggleSpoiler(review)" 
+                                class="text-xs text-white bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded transition-colors">
+                            Reveal Content
+                        </button>
+                    </div>
+
+                    <div *ngIf="!review.contains_spoiler || review.isRevealed" class="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
+                        {{ review.content }}
+                        
+                        <div *ngIf="review.contains_spoiler" class="mt-3">
+                            <button (click)="toggleSpoiler(review)" class="text-xs text-gray-500 hover:text-gray-300 underline">
+                                Hide Spoiler
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-[#333] flex items-center gap-4 text-gray-500 text-xs">
+                    <div class="flex items-center gap-1 cursor-pointer hover:text-pink-500 transition-colors">
+                        <i class="pi" [ngClass]="review.is_liked ? 'pi-heart-fill text-pink-500' : 'pi-heart'"></i>
+                        <span>{{ review.likes_count }} likes</span>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div *ngIf="!reviews?.length" class="text-center py-10 bg-[#1a1a1a] rounded border border-[#333]">
+                <i class="pi pi-comments text-4xl text-gray-600 mb-3"></i>
+                <p class="text-gray-500 italic">No reviews yet. Be the first to share your thoughts!</p>
+            </div>
+
+        </div>
+    </p-tabpanel>
+
         </p-tabpanels>
     </p-tabs>
 
@@ -165,5 +234,68 @@
           </div>
       </div>
   </p-dialog>
+
+<p-dialog header="Rate this Film" 
+          [(visible)]="showRatingDialog" 
+          [modal]="true" 
+          [style]="{width: '450px'}" 
+          styleClass="dark-dialog rating-dialog"
+          [draggable]="false" 
+          [resizable]="false">
+
+    <div class="flex flex-col gap-6 pt-2">
+        
+        <div class="text-center pb-4 border-b border-[#333]">
+            <span class="text-gray-400 text-sm mb-2 block">Overall Score</span>
+            <p-rating [(ngModel)]="tempRating.overall_rating" 
+                      styleClass="large-gold-stars justify-center flex gap-1">
+            </p-rating>
+            <div class="text-2xl font-bold text-white mt-2">
+                {{ tempRating.overall_rating || 0 }}<span class="text-gray-600 text-lg">/5</span>
+            </div>
+        </div>
+
+        <div class="bg-[#1a1a1a] p-4 rounded-lg border border-[#333]">
+            <h4 class="text-gray-300 text-sm font-semibold mb-4 uppercase tracking-wider">Detailed Breakdown</h4>
+            
+            <div class="grid grid-cols-1 gap-y-3">
+                <div *ngFor="let aspect of ratingAspects" class="flex items-center justify-between">
+                    <label class="text-gray-400 text-sm w-32">{{ aspect.label }}</label>
+                    <div class="flex items-center gap-3">
+                        <p-rating 
+                            [ngModel]="tempRating[aspect.key]" 
+                            (ngModelChange)="tempRating[aspect.key]=$event; updateCalculatedAverage()"
+                            styleClass="small-stars">
+                        </p-rating>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-center mt-2">
+            <button pButton 
+                    label="Remove" 
+                    icon="pi pi-trash" 
+                    class="p-button-text p-button-danger p-button-sm" 
+                    (click)="deleteRating()"
+                    *ngIf="userRating.overall_rating">
+            </button>
+            
+            <div class="flex gap-2 ml-auto">
+                <button pButton 
+                        label="Cancel" 
+                        class="p-button-text text-gray-400" 
+                        (click)="showRatingDialog=false">
+                </button>
+                <button pButton 
+                        label="Save Rating" 
+                        class="p-button-success" 
+                        [disabled]="!tempRating.overall_rating"
+                        (click)="submitRating()">
+                </button>
+            </div>
+        </div>
+    </div>
+</p-dialog>
 
 </div>

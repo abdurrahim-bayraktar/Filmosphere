@@ -92,21 +92,26 @@
     font-size: 0.75rem;
 }
 
-/* --- PrimeNG Rating Overrides --- */
-/* Gold Stars for Average */
-:host ::ng-deep .gold-stars .p-rating .p-rating-item.p-rating-item-active .p-rating-icon {
-    color: #28a745 !important; /* Green like Letterboxd average or Gold #ffc107 */
+:host ::ng-deep .tiny-stars .p-rating-icon {
+    font-size: 0.8rem; /* Smaller stars for list items */
+    color: #555;
 }
-/* Blue/Green Stars for User Interaction */
-:host ::ng-deep .blue-stars .p-rating .p-rating-item.p-rating-item-active .p-rating-icon {
-    color: #3b82f6 !important; /* Blue for user rating */
+:host ::ng-deep .tiny-stars .p-rating-icon-active {
+    color: #3b82f6; /* Blue stars for reviews, similar to Letterboxd */
 }
-/* General Rating Styles */
-:host ::ng-deep .p-rating .p-rating-item .p-rating-icon {
-    color: #444; /* Empty star color */
+
+/* Make the main stars in the dialog bigger */
+:host ::ng-deep .large-gold-stars .p-rating-icon {
+    font-size: 2.5rem;
+    color: #4b5563; /* Gray empty */
 }
-:host ::ng-deep .p-rating .p-rating-item:hover .p-rating-icon {
-    color: #e50914 !important; /* Hover color */
+:host ::ng-deep .large-gold-stars .p-rating-icon-active {
+    color: #ffd700; /* Gold filled */
+}
+
+/* Aspect stars slightly smaller */
+:host ::ng-deep .small-stars .p-rating-icon {
+    font-size: 1.1rem;
 }
 
 /* --- PrimeNG TabView Overrides --- */

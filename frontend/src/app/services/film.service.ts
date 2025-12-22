@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { FilmDetail, UserRating, WatchedStatus, UserMood, ReviewRequest } from '../models/film.model';
+import { FilmDetail, UserRating, WatchedStatus, UserMood, Review, ReviewRequest } from '../models/film.model';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +12,7 @@ export class FilmService {
   constructor(private http: HttpClient) {}
 
 private getAuthHeaders(): HttpHeaders {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem('access');
   
   // CRITICAL FIX: Only add the header if the token actually exists
   if (token) {
@@ -30,19 +30,6 @@ isLoggedIn(): boolean {
   getFilmDetails(imdbId: string): Observable<FilmDetail> {
     // Optional Auth headers included for user_rating
     return this.http.get<FilmDetail>(`${this.apiUrl}/films/${imdbId}`, { headers: this.getAuthHeaders() });
-  }
-
-  // --- 3. Rating ---
-  rateFilm(imdbId: string, ratings: UserRating): Observable<any> {
-    return this.http.post(`${this.apiUrl}/films/${imdbId}/rate`, ratings, { headers: this.getAuthHeaders() });
-  }
-
-  getUserRating(imdbId: string): Observable<UserRating> {
-    return this.http.get<UserRating>(`${this.apiUrl}/films/${imdbId}/rate`, { headers: this.getAuthHeaders() });
-  }
-
-  deleteRating(imdbId: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/films/${imdbId}/rate`, { headers: this.getAuthHeaders() });
   }
 
   // --- 4. Watched ---
@@ -70,5 +57,30 @@ isLoggedIn(): boolean {
   // --- 6. Reviews ---
   createReview(imdbId: string, review: ReviewRequest): Observable<any> {
     return this.http.post(`${this.apiUrl}/films/${imdbId}/reviews/create`, review, { headers: this.getAuthHeaders() });
+  }
+
+  /**
+   * Rate a film. Supports partial updates (e.g., just overall, or just specific aspects).
+   */
+  rateFilm(imdbId: string, ratingPayload: UserRating): Observable<any> {
+    return this.http.post(`${this.apiUrl}/films/${imdbId}/rate`, ratingPayload, { headers: this.getAuthHeaders() });
+  }
+
+  /**
+   * Delete the user's rating for a film.
+   */
+  deleteRating(imdbId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/films/${imdbId}/rate`, { headers: this.getAuthHeaders() });
+  }
+  
+  /**
+   * (Optional) Fetch just the user's rating if you need to refresh it separately
+   */
+  getUserRating(imdbId: string): Observable<UserRating> {
+    return this.http.get<UserRating>(`${this.apiUrl}/films/${imdbId}/rate`);
+  }
+
+  getFilmReviews(imdbId: string): Observable<Review[]> {
+    return this.http.get<Review[]>(`${this.apiUrl}/films/${imdbId}/reviews`);
   }
 }
