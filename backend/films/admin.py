@@ -1,6 +1,20 @@
 from django.contrib import admin
 
-from films.models import Badge, CommentFlag, Film, List, ListItem, Mood, Rating, Review, ReviewLike, UserBadge, WatchedFilm
+from films.models import (
+    Badge,
+    CommentFlag,
+    Film,
+    List,
+    ListItem,
+    Mood,
+    Rating,
+    Review,
+    ReviewLike,
+    UserBadge,
+    WatchedFilm,
+    ModerationLog,        # ✅ moderation logs
+    RecommendationLog,    # ✅ recommendation logs (structured items)
+)
 
 
 @admin.register(Film)
@@ -78,16 +92,14 @@ class ReviewAdmin(admin.ModelAdmin):
     search_fields = ["title", "user__username", "film__title", "content"]
     readonly_fields = ["created_at", "updated_at", "likes_count", "flagged_count", "moderated_at"]
     raw_id_fields = ["user", "film", "moderated_by"]
-    
+
     def get_queryset(self, request):
-        """Show flagged/pending comments first for admin."""
         qs = super().get_queryset(request)
         return qs.select_related("user", "film", "moderated_by")
-    
+
     actions = ["approve_comments", "reject_comments"]
-    
+
     def approve_comments(self, request, queryset):
-        """Approve selected comments."""
         from django.utils import timezone
         updated = queryset.update(
             moderation_status="approved",
@@ -96,9 +108,8 @@ class ReviewAdmin(admin.ModelAdmin):
         )
         self.message_user(request, f"{updated} comments approved.")
     approve_comments.short_description = "Approve selected comments"
-    
+
     def reject_comments(self, request, queryset):
-        """Reject selected comments."""
         from django.utils import timezone
         updated = queryset.update(
             moderation_status="rejected",
@@ -152,3 +163,50 @@ class CommentFlagAdmin(admin.ModelAdmin):
     readonly_fields = ["created_at"]
     raw_id_fields = ["user", "review"]
 
+
+# ✅ Moderation Logs in Admin
+@admin.register(ModerationLog)
+class ModerationLogAdmin(admin.ModelAdmin):
+    list_display = ["created_at", "user", "direction", "allow", "flags", "reason"]
+    list_filter = ["direction", "allow", "created_at"]
+    search_fields = ["user__username", "reason", "text"]
+    readonly_fields = ["created_at", "user", "direction", "allow", "flags", "reason", "text"]
+    raw_id_fields = ["user"]
+
+    def has_add_permission(self, request):
+        return False
+
+
+# ✅ Recommendation Logs (structured items) in Admin
+@admin.register(RecommendationLog)
+class RecommendationLogAdmin(admin.ModelAdmin):
+    list_display = ["created_at", "user", "blocked", "flags_count", "short_message"]
+    list_filter = ["blocked", "created_at"]
+    search_fields = ["user__username", "user_message", "answer_text", "reason"]
+    raw_id_fields = ["user"]
+
+    readonly_fields = [
+        "created_at",
+        "user",
+        "user_message",
+        "blocked",
+        "flags",
+        "reason",
+        "answer_text",
+        "items",
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def flags_count(self, obj):
+        try:
+            return len(obj.flags or [])
+        except Exception:
+            return 0
+    flags_count.short_description = "flags#"
+
+    def short_message(self, obj):
+        txt = (obj.user_message or "").strip()
+        return (txt[:60] + "…") if len(txt) > 60 else txt
+    short_message.short_description = "user_message"

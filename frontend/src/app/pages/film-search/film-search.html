@@ -1,0 +1,39 @@
+<div class="film-search-container">
+
+  <div class="top-bar">
+    <div class="search-wrapper">
+      <input
+        type="text"
+        placeholder="Search for a movie..."
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="onSearch()"
+        (ngModelChange)="onSearchChange()" 
+        class="search-input"
+      />
+      <button *ngIf="searchQuery" (click)="clearSearch()" class="clear-btn">
+        ✕
+      </button>
+    </div>
+
+    <p-button
+      label="Filter"
+      icon="pi pi-filter"
+      (click)="toggleFilterMenu()"
+      styleClass="filter-btn"
+    ></p-button>
+  </div>
+
+  <div class="filter-menu" *ngIf="filterMenuOpen">
+    <div class="filter-option" *ngFor="let genre of genres" (click)="filterByGenre(genre)">
+      {{ genre }}
+    </div>
+  </div>
+
+  <div class="film-grid">
+    <div class="film-card" *ngFor="let film of films">
+      <img [src]="film.poster" class="film-poster" />
+      <h3 class="film-title">{{ film.title }}</h3>
+      <p class="film-genres">{{ film.genres?.join(', ') }}</p>
+    </div>
+  </div>
+</div>
