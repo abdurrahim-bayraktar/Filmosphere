@@ -73,6 +73,7 @@ You could create a custom management command:
 ```bash
 python manage.py create_dummy_users
 ```
+"sassasd"
 
 ## Creating Dummy Badges
 
