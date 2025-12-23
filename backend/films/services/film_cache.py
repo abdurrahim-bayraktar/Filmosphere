@@ -22,21 +22,10 @@ class FilmCacheService:
 
     def save_cache(self, imdb_id: str, payload: Dict[str, Any]) -> None:
         """Persist the given payload into the Film cache row."""
-        metadata = payload.get("metadata", {})
-        
-        # Extract title - try primaryTitle first, then title at root level
-        title = metadata.get("primaryTitle") or payload.get("title") or ""
-        
-        # Extract year - try startYear first, then year in metadata
-        year = metadata.get("startYear") or metadata.get("year")
-        
-        # Extract poster URL
-        poster_url = metadata.get("poster_url") or metadata.get("primaryImage", {}).get("url")
-        
         defaults = {
-            "title": title,
-            "year": year,
-            "poster_url": poster_url,
+            "title": payload.get("title") or "",
+            "year": payload.get("metadata", {}).get("year"),
+            "poster_url": payload.get("metadata", {}).get("poster_url"),
             "full_json": payload,
             "cached_at": timezone.now(),
         }
