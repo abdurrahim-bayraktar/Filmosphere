@@ -1,10 +1,146 @@
-.rc-page{
-  padding: 28px;
-  max-width: 980px;
-  margin: 0 auto;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  color: #111827;
+/* =========================
+   GLOBAL - SİYAH ARKA PLAN
+   ========================= */
+:host {
+  display: block;
+  background: #000;
+  min-height: 100vh;
+}
+
+/* =========================
+   NAVBAR
+   ========================= */
+.navbar {
+  height: 70px;
+  background: #111;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid #333;
+}
+
+.logo {
+  margin: 0;
+  color: red;
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-menu-trigger {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.profile-menu-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.username {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ddd;
+}
+
+.dropdown-arrow {
+  font-size: 0.8rem;
+  color: #ccc;
+  margin-left: 5px;
+}
+
+/* =========================
+   SEARCH & FILTER BUTTON
+   ========================= */
+.go-search-btn {
+  padding: 10px 22px;
+  background: #e50914;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
+.go-search-btn i {
+  font-size: 16px;
+  vertical-align: middle;
+}
+
+.go-search-btn:hover {
+  background: #b20710;
+}
+
+/* =========================
+   PROFILE POPOVER
+   ========================= */
+:host ::ng-deep .p-popover {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 0;
+}
+
+:host ::ng-deep .p-popover .p-menu {
   background: transparent;
+  border: none;
+  padding: 5px 0;
+}
+
+:host ::ng-deep .p-popover .p-menuitem-link {
+  color: #fff !important;
+  padding: 10px 15px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+:host ::ng-deep .p-popover .p-menuitem-link:hover {
+  background-color: #e50914;
+}
+
+:host ::ng-deep .p-popover .p-menuitem-icon {
+  margin-right: 6px;
+  font-size: 1.1rem;
+}
+
+:host ::ng-deep .p-popover .p-menu-separator {
+  border-top: 1px solid #333;
+  margin: 5px 0;
+}
+
+:host ::ng-deep .p-popover .p-menuitem:last-child .p-menuitem-link {
+  color: #ff5555 !important;
+}
+
+.rc-page{
+  padding: 30px 20px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #fff;
+  background: #000;
+  min-height: calc(100vh - 70px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .rc-header{
@@ -12,8 +148,10 @@
   gap:16px;
   align-items:flex-start;
   justify-content:space-between;
-  margin-bottom:16px;
+  margin-bottom:24px;
   flex-wrap:wrap;
+  width: 100%;
+  max-width: 1200px;
 }
 
 .rc-title{
@@ -30,71 +168,111 @@
   align-items:center;
   justify-content:center;
   font-size:22px;
-  background: rgba(79,70,229,0.10);
-  border: 1px solid rgba(79,70,229,0.22);
+  background: rgba(229, 9, 20, 0.15);
+  border: 1px solid rgba(229, 9, 20, 0.3);
 }
 
 .rc-title h2{
   margin: 0;
-  font-size: 24px;
+  font-size: 28px;
   letter-spacing: .2px;
   font-weight: 800;
+  color: #fff;
 }
 
 .rc-title p{
-  margin: 4px 0 0 0;
+  margin: 6px 0 0 0;
   opacity: .75;
-  font-size: 13px;
-  color: #4b5563;
+  font-size: 14px;
+  color: #aaa;
 }
 
 .rc-actions{
   display:flex;
-  gap:10px;
+  gap:8px;
   flex-wrap:wrap;
 }
 
-/* ✅ DARK CARD GİTTİ → BEYAZ KART */
+.rc-actions .rc-btn {
+  font-size: 12px;
+  padding: 8px 14px;
+}
+
+/* ✅ SİYAH/KIRMIZI TEMA */
 .rc-card{
-  border-radius: 18px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  box-shadow: 0 10px 30px rgba(0,0,0,.06);
+  border-radius: 12px;
+  border: 1px solid #333;
+  background: #181818;
+  box-shadow: 0 4px 20px rgba(0,0,0,.6);
   overflow:hidden;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  height: calc((100vh - 70px) * 0.66);
+  min-height: 600px;
+  max-height: calc((100vh - 70px) * 0.75);
 }
 
 .rc-chat{
-  padding: 16px;
-  height: 520px;
+  padding: 24px;
+  flex: 1;
+  min-height: 0;
   overflow:auto;
   display:flex;
   flex-direction:column;
-  gap: 12px;
-  background: #ffffff; /* ✅ siyah yok */
+  gap: 16px;
+  background: #181818;
+}
+
+/* Custom scrollbar for dark theme */
+.rc-chat::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rc-chat::-webkit-scrollbar-track {
+  background: #111;
+  border-radius: 4px;
+}
+
+.rc-chat::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.rc-chat::-webkit-scrollbar-thumb:hover {
+  background: #e50914;
 }
 
 .rc-empty{
-  margin: 40px auto 0 auto;
-  max-width: 520px;
+  margin: auto;
+  max-width: 600px;
   text-align:center;
   opacity:.95;
-  color: #111827;
+  color: #fff;
+  padding: 20px;
 }
 
 .rc-empty-emoji{
   font-size: 28px;
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e50914;
 }
 
 .rc-empty-title{
   font-size: 18px;
   font-weight: 800;
+  color: #fff;
 }
 
 .rc-empty-sub{
   margin-top: 6px;
   opacity: .75;
-  color: #6b7280;
+  color: #aaa;
 }
 
 .rc-chips{
@@ -105,20 +283,28 @@
   margin-top: 14px;
 }
 
-/* ✅ Chip’ler beyaz temaya uyarlandı */
+/* ✅ Chip'ler siyah/kırmızı temaya uyarlandı */
 .rc-chip{
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
-  color: #111827;
-  padding: 10px 12px;
+  border: 1px solid #333;
+  background: #222;
+  color: #fff;
+  padding: 10px 16px;
   border-radius: 999px;
   cursor:pointer;
   font-weight: 700;
   font-size: 12px;
+  transition: all 0.2s;
 }
 
 .rc-chip:hover{
-  background: #f3f4f6;
+  background: #e50914;
+  border-color: #e50914;
+  transform: translateY(-2px);
+}
+
+.rc-chip i {
+  font-size: 14px;
+  vertical-align: middle;
 }
 
 .rc-msg{
@@ -138,28 +324,29 @@
   display:flex;
   align-items:center;
   justify-content:center;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
+  background: #333;
+  border: 1px solid #444;
   flex: 0 0 auto;
 }
 
 .rc-avatar.user{
-  background: rgba(79,70,229,.10);
-  border-color: rgba(79,70,229,.25);
+  background: rgba(229, 9, 20, 0.2);
+  border-color: rgba(229, 9, 20, 0.4);
 }
 
-/* ✅ Bubble’lar modern */
+/* ✅ Bubble'lar siyah/kırmızı temaya uyarlandı */
 .rc-bubble{
   max-width: 76%;
   padding: 12px 14px;
   border-radius: 16px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border: 1px solid #333;
+  background: #222;
+  color: #fff;
 }
 
 .rc-msg.user .rc-bubble{
-  background: #4f46e5;
-  border-color: #4f46e5;
+  background: #e50914;
+  border-color: #e50914;
   color: #fff;
 }
 
@@ -169,17 +356,19 @@
   opacity:.7;
   font-size: 11px;
   margin-bottom: 6px;
-  color: #6b7280;
+  color: #aaa;
 }
 
 .rc-role{
   font-weight: 800;
+  color: #fff;
 }
 
 .rc-text{
   white-space: pre-wrap;
   line-height: 1.35;
   font-size: 13px;
+  color: #fff;
 }
 
 .rc-typing{
@@ -189,14 +378,14 @@
   opacity:.75;
   font-size: 12px;
   margin-top: 4px;
-  color: #6b7280;
+  color: #aaa;
 }
 
 .rc-typing-dot{
   width:8px;
   height:8px;
   border-radius:999px;
-  background: #9ca3af;
+  background: #e50914;
   animation: rcBounce 1s infinite;
 }
 
@@ -208,79 +397,90 @@
   40% { transform: translateY(-6px); opacity: 1; }
 }
 
-/* ✅ Input bar da beyaz */
+/* ✅ Input bar siyah/kırmızı temaya uyarlandı */
 .rc-inputbar{
   display:flex;
-  gap:10px;
-  padding: 12px;
-  border-top: 1px solid #e5e7eb;
-  background: #ffffff;
+  gap:12px;
+  padding: 20px 24px;
+  border-top: 1px solid #333;
+  background: #181818;
+  flex-shrink: 0;
 }
 
 .rc-inputbar input{
   flex: 1;
-  padding: 12px 12px;
+  padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid #d1d5db;
-  background: #ffffff;
-  color: #111827;
+  border: 1px solid #333;
+  background: #222;
+  color: #fff;
   outline:none;
+  font-size: 14px;
+}
+
+.rc-inputbar input::placeholder{
+  color: #666;
 }
 
 .rc-inputbar input:focus{
-  border-color: rgba(79,70,229,.60);
-  box-shadow: 0 0 0 4px rgba(79,70,229,.12);
+  border-color: #e50914;
+  box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
 }
 
-/* Butonlar */
+/* Butonlar siyah/kırmızı temaya uyarlandı */
 .rc-btn{
   border-radius: 12px;
-  padding: 10px 12px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
-  color: #111827;
+  padding: 10px 16px;
+  border: 1px solid #333;
+  background: #222;
+  color: #fff;
   cursor:pointer;
-  font-weight: 800;
-  font-size: 12px;
+  font-weight: 700;
+  font-size: 13px;
+  transition: all 0.2s;
 }
 
 .rc-btn:hover{
-  background: #f3f4f6;
+  background: #333;
+  border-color: #444;
 }
 
 .rc-btn.primary{
-  background: #4f46e5;
-  border-color: #4f46e5;
+  background: #e50914;
+  border-color: #e50914;
   color: #fff;
 }
 
 .rc-btn.primary:hover{
-  background: #4338ca;
-  border-color: #4338ca;
+  background: #b20710;
+  border-color: #b20710;
 }
 
 .rc-btn.ghost{
-  background: #ffffff;
+  background: #222;
+  border-color: #333;
+  color: #fff;
+}
+
+.rc-btn.ghost:hover{
+  background: #333;
+  border-color: #444;
 }
 
 .rc-btn.danger{
-  background: rgba(239,68,68,.10);
-  border-color: rgba(239,68,68,.25);
-  color: #991b1b;
+  background: rgba(229, 9, 20, 0.2);
+  border-color: rgba(229, 9, 20, 0.4);
+  color: #ff5555;
+}
+
+.rc-btn.danger:hover{
+  background: rgba(229, 9, 20, 0.3);
+  border-color: rgba(229, 9, 20, 0.5);
 }
 
 .rc-btn:disabled{
-  opacity:.6;
+  opacity:.5;
   cursor:not-allowed;
+  background: #111;
 }
 
-.rc-footnote{
-  display:flex;
-  gap:14px;
-  flex-wrap:wrap;
-  padding: 10px 12px 14px 12px;
-  opacity: .70;
-  font-size: 11px;
-  color: #6b7280;
-  background: #ffffff;
-}

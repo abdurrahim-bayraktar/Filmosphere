@@ -1,7 +1,121 @@
+/* =========================
+   NAVBAR
+   ========================= */
+.navbar {
+  height: 70px;
+  background: #111;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 1px solid #333;
+}
+
+.logo {
+  margin: 0;
+  color: red;
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-menu-trigger {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.profile-menu-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.username {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ddd;
+}
+
+.dropdown-arrow {
+  font-size: 0.8rem;
+  color: #ccc;
+  margin-left: 5px;
+}
+
+/* =========================
+   SEARCH & FILTER BUTTON
+   ========================= */
+.go-search-btn {
+  padding: 10px 22px;
+  background: #e50914;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+
+.go-search-btn:hover {
+  background: #b20710;
+}
+
+/* =========================
+   PROFILE POPOVER
+   ========================= */
+:host ::ng-deep .p-popover {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 0;
+}
+
+:host ::ng-deep .p-popover .p-menu {
+  background: transparent;
+  border: none;
+  padding: 5px 0;
+}
+
+:host ::ng-deep .p-popover .p-menuitem-link {
+  color: #fff !important;
+  padding: 10px 15px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+:host ::ng-deep .p-popover .p-menuitem-link:hover {
+  background-color: #e50914;
+}
+
+:host ::ng-deep .p-popover .p-menuitem-icon {
+  margin-right: 6px;
+  font-size: 1.1rem;
+}
+
+:host ::ng-deep .p-popover .p-menu-separator {
+  border-top: 1px solid #333;
+  margin: 5px 0;
+}
+
+:host ::ng-deep .p-popover .p-menuitem:last-child .p-menuitem-link {
+  color: #ff5555 !important;
+}
+
 .film-search-container {
   padding: 30px 40px;
   background: #000;
-  min-height: 100vh;
+  min-height: calc(100vh - 70px);
 }
 
 /* Top search + filter area */

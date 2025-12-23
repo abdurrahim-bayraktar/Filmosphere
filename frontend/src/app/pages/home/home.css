@@ -39,7 +39,8 @@
 }
 
 .username {
-  font-size: 1rem;
+  font-size: 15px;
+  font-weight: 700;
   color: #ddd;
 }
 
@@ -59,6 +60,7 @@
   border: none;
   border-radius: 6px;
   font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
   transition: 0.2s;
   white-space: nowrap;
