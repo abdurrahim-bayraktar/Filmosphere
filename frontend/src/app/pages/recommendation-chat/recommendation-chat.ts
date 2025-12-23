@@ -200,13 +200,22 @@ export class RecommendationChatComponent implements OnInit {
             return;
           }
 
-          // ✅ NORMAL: items döner
+          // ✅ NORMAL: message veya items döner
+          const message = res?.message;
           const items = res?.items ?? [];
-          const formatted = this.formatItems(items);
+          
+          let displayText: string;
+          if (message) {
+            displayText = message;
+          } else if (items.length > 0) {
+            displayText = this.formatItems(items);
+          } else {
+            displayText = 'No recommendations available.';
+          }
 
           this.messages.push({
             role: 'assistant',
-            text: formatted
+            text: displayText
           });
 
           this.loading = false;
