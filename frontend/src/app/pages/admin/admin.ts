@@ -62,25 +62,17 @@ export class AdminComponent implements OnInit {
   selectedUser: any = null;
   userDialogVisible = false;
   userSearchTerm = '';
-  private searchTimeout: any = null;
 
   // Recent Comments
   recentComments: any[] = [];
 
   // Mood Tracking
   moodData: any = {
-    happy: 0,
-    sad: 0,
-    excited: 0,
-    calm: 0,
-    anxious: 0,
-    bored: 0,
-    energetic: 0,
-    relaxed: 0,
-    stressed: 0,
-    neutral: 0
+    happy: 45,
+    sad: 20,
+    excited: 25,
+    neutral: 10
   };
-  moodType: 'before' | 'after' = 'before';
 
   // Film Management
   films: any[] = [];
@@ -100,7 +92,6 @@ export class AdminComponent implements OnInit {
     customBadges: 0
   };
   badges: any[] = [];
-  badgesDialogVisible = false;
 
   // Flagged Content
   flaggedContent: any[] = [];
@@ -139,305 +130,58 @@ export class AdminComponent implements OnInit {
     };
     this.avatarLabel = "A";
     this.loadAdminStats();
-    this.loadUsers();
-    this.loadRecentReviews();
-    this.loadFilms();
-    this.loadBadgeStats();
-    this.loadMoodStats();
-    this.loadSystemLogs();
     this.loadMockData();
   }
 
-  loadUsers() {
-    const token = localStorage.getItem("access");
-    const headers = token ? new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    }) : new HttpHeaders();
-
-    // Build search query if search term exists
-    let url = "http://localhost:8000/api/admin/users/";
-    if (this.userSearchTerm) {
-      url += `?search=${encodeURIComponent(this.userSearchTerm)}`;
-    }
-
-    console.log('[ADMIN] Loading users from:', url);
-    this.http.get(url, { headers })
-      .subscribe({
-        next: (users: any) => {
-          console.log('[ADMIN] Users loaded successfully:', users);
-          // Handle both array and paginated response
-          if (Array.isArray(users)) {
-            this.users = users;
-            console.log(`[ADMIN] Loaded ${users.length} users`);
-          } else if (users.results) {
-            this.users = users.results;
-            console.log(`[ADMIN] Loaded ${users.results.length} users from paginated response`);
-          } else {
-            this.users = [];
-            console.log('[ADMIN] No users found in response');
-          }
-        },
-        error: (err) => {
-          console.error("[ADMIN] Failed to load users:", err);
-          this.users = [];
-        }
-      });
-  }
-
-  onUserSearch() {
-    // Debounce search to avoid too many API calls
-    if (this.searchTimeout) {
-      clearTimeout(this.searchTimeout);
-    }
-    this.searchTimeout = setTimeout(() => {
-      this.loadUsers();
-    }, 300); // Wait 300ms after user stops typing
-  }
-
-  loadRecentReviews() {
-    console.log('[ADMIN] Loading recent reviews...');
-    this.http.get("http://localhost:8000/api/admin/reviews/recent")
-      .subscribe({
-        next: (reviews: any) => {
-          console.log('[ADMIN] Recent reviews loaded:', reviews);
-          // Handle both array and paginated response
-          if (Array.isArray(reviews)) {
-            this.recentComments = reviews.map((review: any) => ({
-              id: review.id,
-              user: review.username,
-              film: review.film_title,
-              comment: review.content,
-              date: review.created_at
-            }));
-            console.log(`[ADMIN] Loaded ${reviews.length} recent reviews`);
-          } else if (reviews.results) {
-            this.recentComments = reviews.results.map((review: any) => ({
-              id: review.id,
-              user: review.username,
-              film: review.film_title,
-              comment: review.content,
-              date: review.created_at
-            }));
-            console.log(`[ADMIN] Loaded ${reviews.results.length} recent reviews from paginated response`);
-          } else {
-            this.recentComments = [];
-            console.log('[ADMIN] No reviews found in response');
-          }
-        },
-        error: (err) => {
-          console.error("[ADMIN] Failed to load recent reviews:", err);
-          this.recentComments = [];
-        }
-      });
-  }
-
-  loadFilms() {
-    console.log('[ADMIN] Loading films...');
-    this.http.get("http://localhost:8000/api/admin/films/")
-      .subscribe({
-        next: (films: any) => {
-          console.log('[ADMIN] Films loaded:', films);
-          // Handle both array and paginated response
-          if (Array.isArray(films)) {
-            this.films = films;
-            console.log(`[ADMIN] Loaded ${films.length} films`);
-          } else if (films.results) {
-            this.films = films.results;
-            console.log(`[ADMIN] Loaded ${films.results.length} films from paginated response`);
-          } else {
-            this.films = [];
-            console.log('[ADMIN] No films found in response');
-          }
-        },
-        error: (err) => {
-          console.error("[ADMIN] Failed to load films:", err);
-          this.films = [];
-        }
-      });
-  }
-
-  loadBadgeStats() {
-    console.log('[ADMIN] Loading badge stats...');
-    this.http.get("http://localhost:8000/api/admin/badges/stats")
-      .subscribe({
-        next: (stats: any) => {
-          console.log('[ADMIN] Badge stats loaded:', stats);
-          this.badgeStats = {
-            totalBadges: stats.total_badges || 0,
-            activeBadges: stats.active_badges || 0,
-            customBadges: stats.custom_badges || 0
-          };
-          console.log(`[ADMIN] Total: ${this.badgeStats.totalBadges}, Active: ${this.badgeStats.activeBadges}, Custom: ${this.badgeStats.customBadges}`);
-        },
-        error: (err) => {
-          console.error("[ADMIN] Failed to load badge stats:", err);
-          this.badgeStats = {
-            totalBadges: 0,
-            activeBadges: 0,
-            customBadges: 0
-          };
-        }
-      });
-  }
-
-  loadMoodStats() {
-    console.log(`[ADMIN] Loading mood stats (${this.moodType})...`);
-    this.http.get("http://localhost:8000/api/admin/moods/stats")
-      .subscribe({
-        next: (stats: any) => {
-          console.log('[ADMIN] Mood stats loaded:', stats);
-          
-          // Get the appropriate data based on selected type
-          const selectedData = this.moodType === 'before' ? stats.before : stats.after;
-          
-          if (selectedData && selectedData.percentages) {
-            this.moodData = {
-              happy: selectedData.percentages.happy || 0,
-              sad: selectedData.percentages.sad || 0,
-              excited: selectedData.percentages.excited || 0,
-              calm: selectedData.percentages.calm || 0,
-              anxious: selectedData.percentages.anxious || 0,
-              bored: selectedData.percentages.bored || 0,
-              energetic: selectedData.percentages.energetic || 0,
-              relaxed: selectedData.percentages.relaxed || 0,
-              stressed: selectedData.percentages.stressed || 0,
-              neutral: selectedData.percentages.neutral || 0
-            };
-            console.log(`[ADMIN] Mood data updated for ${this.moodType}:`, this.moodData);
-          }
-        },
-        error: (err) => {
-          console.error("[ADMIN] Failed to load mood stats:", err);
-        }
-      });
-  }
-
-  onMoodTypeChange() {
-    console.log(`[ADMIN] Mood type changed to: ${this.moodType}`);
-    this.loadMoodStats();
-  }
-
-  openBadgesDialog() {
-    console.log('[ADMIN] Opening badges dialog...');
-    this.badgesDialogVisible = true;
-    this.loadAllBadges();
-  }
-
-  loadAllBadges() {
-    console.log('[ADMIN] Loading all badges...');
-    this.http.get("http://localhost:8000/api/badges/")
-      .subscribe({
-        next: (badges: any) => {
-          console.log('[ADMIN] All badges loaded:', badges);
-          if (Array.isArray(badges)) {
-            this.badges = badges;
-          } else if (badges.results) {
-            this.badges = badges.results;
-          } else {
-            this.badges = [];
-          }
-          console.log(`[ADMIN] Loaded ${this.badges.length} badges`);
-        },
-        error: (err) => {
-          console.error("[ADMIN] Failed to load badges:", err);
-          this.badges = [];
-        }
-      });
-  }
-
-  loadSystemLogs() {
-    console.log('[ADMIN] Loading system logs...');
-    this.http.get("http://localhost:8000/api/admin/logs")
-      .subscribe({
-        next: (logs: any) => {
-          console.log('[ADMIN] System logs loaded:', logs);
-          // Handle both array and paginated response
-          if (Array.isArray(logs)) {
-            this.systemLogs = logs.map((log: any, index: number) => ({
-              id: index,
-              level: log.level || 'INFO',
-              message: log.message || '',
-              timestamp: log.timestamp || new Date().toISOString()
-            }));
-            console.log(`[ADMIN] Loaded ${logs.length} system logs`);
-          } else if (logs.results) {
-            this.systemLogs = logs.results.map((log: any, index: number) => ({
-              id: index,
-              level: log.level || 'INFO',
-              message: log.message || '',
-              timestamp: log.timestamp || new Date().toISOString()
-            }));
-            console.log(`[ADMIN] Loaded ${logs.results.length} system logs from paginated response`);
-          } else {
-            this.systemLogs = [];
-            console.log('[ADMIN] No logs found in response');
-          }
-        },
-        error: (err) => {
-          console.error("[ADMIN] Failed to load system logs:", err);
-          this.systemLogs = [];
-        }
-      });
-  }
-
   loadMockData() {
-    // Mock data for other sections (comments, films, etc.)
-    // Most data is now loaded from API, so this is minimal
+    // Mock data for preview
+    this.users = [
+      { id: 1, username: 'john_doe', email: 'john@example.com', joined: '2025-01-15', status: 'active' },
+      { id: 2, username: 'jane_smith', email: 'jane@example.com', joined: '2025-02-20', status: 'active' },
+      { id: 3, username: 'banned_user', email: 'banned@example.com', joined: '2024-12-10', status: 'banned' }
+    ];
+
+    this.recentComments = [
+      { id: 1, user: 'john_doe', film: 'Inception', comment: 'Amazing movie!', date: '2025-12-12 09:15:00' },
+      { id: 2, user: 'jane_smith', film: 'The Matrix', comment: 'Mind-blowing!', date: '2025-12-12 08:30:00' },
+      { id: 3, user: 'user123', film: 'Interstellar', comment: 'Great visuals', date: '2025-12-11 22:45:00' }
+    ];
+
+    this.films = [
+      { id: 1, title: 'Inception', imdb_id: 'tt1375666', year: 2010 },
+      { id: 2, title: 'The Matrix', imdb_id: 'tt0133093', year: 1999 }
+    ];
+
+    this.badgeStats = {
+      totalBadges: 15,
+      activeBadges: 12,
+      customBadges: 3
+    };
 
     this.flaggedContent = [
       { id: 1, type: 'Review', content: 'Inappropriate language detected', user: 'user123', date: '2025-12-12 10:00:00', status: 'pending' },
       { id: 2, type: 'Comment', content: 'Spam detected', user: 'spammer', date: '2025-12-11 15:30:00', status: 'reviewed' }
     ];
+
+    this.systemLogs = [
+      { id: 1, level: 'INFO', message: 'User registration successful', timestamp: '2025-12-12 11:00:00' },
+      { id: 2, level: 'WARNING', message: 'API rate limit approaching', timestamp: '2025-12-12 10:45:00' },
+      { id: 3, level: 'ERROR', message: 'Database connection timeout', timestamp: '2025-12-12 10:30:00' }
+    ];
   }
 
   // User Management Methods
   banUser(user: any) {
-    const action = user.is_active ? 'ban' : 'unban';
-    if (confirm(`Are you sure you want to ${action} ${user.username}?`)) {
-      const token = localStorage.getItem("access");
-      const headers = token ? new HttpHeaders({
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }) : new HttpHeaders({
-        'Content-Type': 'application/json'
-      });
-
-      console.log(`[ADMIN] Attempting to ${action} user ${user.id} (${user.username})...`);
-      this.http.post(`http://localhost:8000/api/admin/users/${user.id}/ban`, {}, { headers })
-        .subscribe({
-          next: (response: any) => {
-            console.log(`[ADMIN] ${action} successful:`, response);
-            // Reload users to update the list
-            this.loadUsers();
-          },
-          error: (err) => {
-            console.error(`[ADMIN] Failed to ${action} user:`, err);
-            alert(`Failed to ${action} user: ${err.error?.detail || err.message}`);
-          }
-        });
+    if (confirm(`Are you sure you want to ban ${user.username}?`)) {
+      console.log('Banning user:', user);
+      // API call here
     }
   }
 
   deleteUser(user: any) {
     if (confirm(`Are you sure you want to delete ${user.username}? This action cannot be undone.`)) {
-      const token = localStorage.getItem("access");
-      const headers = token ? new HttpHeaders({
-        Authorization: `Bearer ${token}`
-      }) : new HttpHeaders();
-
-      console.log(`[ADMIN] Attempting to delete user ${user.id} (${user.username})...`);
-      this.http.delete(`http://localhost:8000/api/admin/users/${user.id}/delete`, { headers })
-        .subscribe({
-          next: (response: any) => {
-            console.log('[ADMIN] Delete successful:', response);
-            // Reload users to update the list
-            this.loadUsers();
-          },
-          error: (err) => {
-            console.error('[ADMIN] Failed to delete user:', err);
-            alert(`Failed to delete user: ${err.error?.detail || err.message}`);
-          }
-        });
+      console.log('Deleting user:', user);
+      // API call here
     }
   }
 
@@ -445,12 +189,7 @@ export class AdminComponent implements OnInit {
   openFilmDialog(film?: any) {
     if (film) {
       this.editingFilm = film;
-      this.newFilm = { 
-        title: film.title || '', 
-        imdb_id: film.imdb_id || '', 
-        year: film.year || '', 
-        description: '' 
-      };
+      this.newFilm = { ...film };
     } else {
       this.editingFilm = null;
       this.newFilm = { title: '', imdb_id: '', year: '', description: '' };
@@ -459,69 +198,15 @@ export class AdminComponent implements OnInit {
   }
 
   saveFilm() {
-    if (this.editingFilm) {
-      // Update existing film
-      console.log(`[ADMIN] Updating film ${this.editingFilm.id}...`, this.newFilm);
-      this.http.put(`http://localhost:8000/api/admin/films/${this.editingFilm.id}/update`, {
-        title: this.newFilm.title,
-        year: this.newFilm.year ? parseInt(this.newFilm.year) : null
-      })
-        .subscribe({
-          next: (response: any) => {
-            console.log('[ADMIN] Film updated successfully:', response);
-            this.loadFilms();
-            this.filmDialogVisible = false;
-          },
-          error: (err) => {
-            console.error('[ADMIN] Failed to update film:', err);
-            alert(`Failed to update film: ${err.error?.detail || err.message}`);
-          }
-        });
-    } else {
-      // Create new film
-      if (!this.newFilm.imdb_id) {
-        alert('IMDb ID is required');
-        return;
-      }
-
-      console.log(`[ADMIN] Creating film with IMDb ID: ${this.newFilm.imdb_id}...`);
-      this.http.post("http://localhost:8000/api/admin/films/create", {
-        imdb_id: this.newFilm.imdb_id.trim()
-      })
-        .subscribe({
-          next: (response: any) => {
-            console.log('[ADMIN] Film created successfully:', response);
-            if (response.film) {
-              console.log(`[ADMIN] Film details: ${response.film.title} (${response.film.year}) - ${response.film.imdb_id}`);
-              if (response.film.description) {
-                console.log(`[ADMIN] Description: ${response.film.description.substring(0, 100)}...`);
-              }
-            }
-            this.loadFilms();
-            this.filmDialogVisible = false;
-          },
-          error: (err) => {
-            console.error('[ADMIN] Failed to create film:', err);
-            alert(`Failed to create film: ${err.error?.detail || err.message}`);
-          }
-        });
-    }
+    console.log('Saving film:', this.newFilm);
+    // API call here
+    this.filmDialogVisible = false;
   }
 
   deleteFilm(film: any) {
     if (confirm(`Delete ${film.title}?`)) {
-      console.log(`[ADMIN] Deleting film ${film.id} (${film.title})...`);
-      this.http.delete(`http://localhost:8000/api/admin/films/${film.id}/delete`)
-        .subscribe({
-          next: (response: any) => {
-            console.log('[ADMIN] Film deleted successfully:', response);
-            this.loadFilms();
-          },
-          error: (err) => {
-            console.error('[ADMIN] Failed to delete film:', err);
-            alert(`Failed to delete film: ${err.error?.detail || err.message}`);
-          }
-        });
+      console.log('Deleting film:', film);
+      // API call here
     }
   }
 
@@ -604,28 +289,24 @@ export class AdminComponent implements OnInit {
   */
 
   loadAdminStats() {
-    // Temporarily allow access without authentication for testing
-    console.log("Calling API without auth: http://localhost:8000/api/admin/stats/");
-    this.http.get("http://localhost:8000/api/admin/stats/")
-      .subscribe({
-        next: (stats: any) => {
-          console.log("API response:", stats);
-          this.adminStats = {
-            totalUsers: stats.total_users,
-            totalFilms: stats.total_films,
-            totalReviews: stats.total_reviews
-          };
-        },
-        error: (err) => {
-          console.error("Failed to load admin stats:", err);
-          // Fallback to mock data if API fails
-          this.adminStats = {
-            totalUsers: 0,
-            totalFilms: 0,
-            totalReviews: 0
-          };
-        }
-      });
+    const token = localStorage.getItem("access");
+    if (!token) return;
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
+    // Example: Load admin statistics
+    // You'll need to create these endpoints in your backend
+    // For now, this is a placeholder structure
+    
+    // Example API calls (adjust endpoints based on your backend):
+    // this.http.get("http://127.0.0.1:8000/api/admin/stats/", { headers })
+    //   .subscribe({
+    //     next: (stats: any) => {
+    //       this.adminStats = stats;
+    //     }
+    //   });
   }
 
   logout() {
