@@ -98,8 +98,13 @@ class UserProfileView(RetrieveUpdateAPIView):
     def get_object(self):
         username = self.kwargs.get("username")
         if username == "me":
-            return self.request.user.profile
-        return UserProfile.objects.get(user__username=username)
+            profile, created = UserProfile.objects.get_or_create(user=self.request.user)
+            return profile
+        try:
+            return UserProfile.objects.get(user__username=username)
+        except UserProfile.DoesNotExist:
+            from rest_framework.exceptions import NotFound
+            raise NotFound("User profile not found.")
 
     def update(self, request, *args, **kwargs):
         """Only allow users to update their own profile."""
@@ -111,6 +116,22 @@ class UserProfileView(RetrieveUpdateAPIView):
             )
         return super().update(request, *args, **kwargs)
 
+    def partial_update(self, request, *args, **kwargs):
+        """Handle PATCH requests for partial updates."""
+        username = self.kwargs.get("username")
+        if username != "me" and request.user.username != username:
+            return Response(
+                {"detail": "You can only update your own profile."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        return Response(serializer.data)
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -118,3 +139,30 @@ def current_user_view(request):
     """Get current authenticated user's profile."""
     serializer = UserProfileSerializer(request.user.profile)
     return Response(serializer.data)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def search_users_view(request):
+    """Search users by username."""
+    query = request.query_params.get("q", "").strip()
+    
+    if not query:
+        return Response(
+            {"detail": "Query parameter 'q' is required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    
+    # Search users by username (case-insensitive, partial match)
+    users = User.objects.filter(username__icontains=query)[:20]  # Limit to 20 results
+    
+    # Get profiles for these users
+    profiles = UserProfile.objects.filter(user__in=users).select_related("user")
+    
+    # Serialize results
+    serializer = UserProfileSerializer(profiles, many=True)
+    return Response({
+        "query": query,
+        "results": serializer.data,
+        "count": len(serializer.data)
+    })

@@ -60,7 +60,6 @@ export class HomeComponent implements OnInit {
   setupMenuItems() {
     this.menuItems = [
       { label: 'My Profile', icon: 'pi pi-user', routerLink: ['/profile'] },
-      { label: 'Settings', icon: 'pi pi-cog', routerLink: ['/settings'] },
       { separator: true },
       { label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() }
     ];
@@ -70,10 +69,15 @@ export class HomeComponent implements OnInit {
     const cached = localStorage.getItem("user_profile");
 
     if (cached) {
-      const usr = JSON.parse(cached);
-      this.user = usr;
-      this.avatarImage = usr.profile?.avatar || null;
-      this.avatarLabel = usr.username?.[0]?.toUpperCase() || "U";
+      try {
+        const usr = JSON.parse(cached);
+        this.user = usr;
+        // Backend returns profile_picture_url directly, not in profile.avatar
+        this.avatarImage = usr.profile_picture_url || usr.profile?.profile_picture_url || usr.profile?.avatar || null;
+        this.avatarLabel = (usr.username || usr.user?.username || "U")[0]?.toUpperCase() || "U";
+      } catch (e) {
+        console.error('Error parsing cached user:', e);
+      }
     }
 
     const token = localStorage.getItem("access");
@@ -84,9 +88,14 @@ export class HomeComponent implements OnInit {
     }).subscribe({
       next: (res: any) => {
         this.user = res;
-        this.avatarImage = res.profile?.avatar || null;
-        this.avatarLabel = res.username?.[0]?.toUpperCase() || "U";
+        // Backend returns profile_picture_url directly in serializer.data
+        this.avatarImage = res.profile_picture_url || res.profile?.profile_picture_url || null;
+        this.avatarLabel = (res.username || res.user?.username || "U")[0]?.toUpperCase() || "U";
+        // Update cache with latest data
         localStorage.setItem("user_profile", JSON.stringify(res));
+      },
+      error: (err) => {
+        console.error('Error loading user:', err);
       }
     });
   }

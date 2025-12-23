@@ -4,29 +4,26 @@
   </div>
 
   <!-- 🔍 Search & Filter Films -->
-  <div style="margin-right: 14px;">
-    <button class="go-search-btn" (click)="goToFilmSearch()">
-      <i class="pi pi-search" style="margin-right: 8px; font-size: 16px;"></i>Search & Filter Films
-    </button>
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/film-search" routerLinkActive="active">
+      <i class="pi pi-search"></i>
+      <span>Search & Filter Films</span>
+    </a>
   </div>
 
-  <!-- 🎬 Recommendation Chat (SAĞ) -->
-  <div style="margin-right: 14px;">
-    <a
-      routerLink="/recommendation-chat"
-      style="
-        padding: 10px 14px;
-        background: #e50914;
-        color: white;
-        border-radius: 10px;
-        text-decoration: none;
-        font-weight: 700;
-        font-size: 15px;
-        display: inline-flex;
-        align-items: center;
-      "
-    >
-      <i class="pi pi-comments" style="margin-right: 8px; font-size: 16px;"></i>Recommendation Chat
+  <!-- 👥 Search Users -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/user-search" routerLinkActive="active">
+      <i class="pi pi-users"></i>
+      <span>Search Users</span>
+    </a>
+  </div>
+
+  <!-- 🎬 Recommendation Chat -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/recommendation-chat" routerLinkActive="active">
+      <i class="pi pi-comments"></i>
+      <span>Recommendation Chat</span>
     </a>
   </div>
 
@@ -36,14 +33,14 @@
       *ngIf="avatarImage"
       [image]="avatarImage"
       shape="circle"
-      style="width:40px; height:40px;">
+      style="width:50px; height:50px;">
     </p-avatar>
 
     <p-avatar 
       *ngIf="!avatarImage && avatarLabel"
       [label]="avatarLabel"
       shape="circle"
-      style="background:#e50914; color:white; width:40px; height:40px;">
+      style="background:#e50914; color:white; width:50px; height:50px; font-size:20px;">
     </p-avatar>
 
     <span class="username">{{ user?.username || 'Guest' }}</span>

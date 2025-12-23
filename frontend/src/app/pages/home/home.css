@@ -2,20 +2,20 @@
    NAVBAR
    ========================= */
 .navbar {
-  height: 70px;
+  height: 120px;
   background: #111;
   color: white;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 40px;
+  padding: 0 60px;
   border-bottom: 1px solid #333;
 }
 
 .logo {
   margin: 0;
   color: red;
-  font-size: 1.8rem;
+  font-size: 3.5rem;
   letter-spacing: 2px;
 }
 
@@ -39,9 +39,12 @@
 }
 
 .username {
-  font-size: 15px;
+  font-size: 27px;
   font-weight: 700;
   color: #ddd;
+  line-height: 1;
+  display: flex;
+  align-items: center;
 }
 
 .dropdown-arrow {
@@ -53,21 +56,45 @@
 /* =========================
    SEARCH & FILTER BUTTON
    ========================= */
-.go-search-btn {
-  padding: 10px 22px;
-  background: #e50914;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.2s;
-  white-space: nowrap;
+/* Modern Navbar Links */
+.nav-link-wrapper {
+  margin-right: 14px;
 }
 
-.go-search-btn:hover {
-  background: #b20710;
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: #ddd !important;
+  text-decoration: none !important;
+  font-size: 24px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+  position: relative;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+}
+
+.nav-link:visited {
+  color: #ddd !important;
+}
+
+.nav-link:link {
+  color: #ddd !important;
+}
+
+.nav-link i {
+  margin-right: 10px;
+  font-size: 25px;
+}
+
+.nav-link:hover {
+  color: #fff !important;
+}
+
+.nav-link.active {
+  color: #fff !important;
+  border-bottom-color: #e50914;
 }
 
 /* =========================

@@ -12,7 +12,7 @@ class UserProfile(models.Model):
     )
     display_name = models.CharField(max_length=100, blank=True)
     bio = models.TextField(max_length=500, blank=True)
-    profile_picture_url = models.URLField(max_length=2000, blank=True, null=True)
+    profile_picture_url = models.TextField(blank=True, null=True)  # Changed to TextField to support base64 data URLs
     favorite_film_1 = models.ForeignKey(
         "films.Film",
         on_delete=models.SET_NULL,

@@ -15,6 +15,7 @@ from users.views import (
     login_view,
     UserProfileView,
     current_user_view,
+    search_users_view,
 )
 
 urlpatterns = [
@@ -36,4 +37,7 @@ urlpatterns = [
     path("profile/<str:username>/badges/", UserBadgesView.as_view(), name="user-badges"),
     path("profile/<str:username>/followers/", UserFollowersView.as_view(), name="user-followers"),
     path("profile/<str:username>/following/", UserFollowingView.as_view(), name="user-following"),
+    
+    # user search
+    path("users/search/", search_users_view, name="search-users"),
 ]
