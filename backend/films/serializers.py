@@ -362,6 +362,8 @@ class FollowSerializer(serializers.ModelSerializer):
 
     follower_username = serializers.CharField(source="follower.username", read_only=True)
     following_username = serializers.CharField(source="following.username", read_only=True)
+    follower_profile_picture_url = serializers.CharField(source="follower.profile.profile_picture_url", read_only=True, allow_null=True)
+    following_profile_picture_url = serializers.CharField(source="following.profile.profile_picture_url", read_only=True, allow_null=True)
 
     class Meta:
         model = Follow
@@ -369,8 +371,10 @@ class FollowSerializer(serializers.ModelSerializer):
             "id",
             "follower",
             "follower_username",
+            "follower_profile_picture_url",
             "following",
             "following_username",
+            "following_profile_picture_url",
             "created_at",
         ]
         read_only_fields = ["id", "created_at"]

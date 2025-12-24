@@ -1,103 +1,365 @@
+<!-- NAVBAR -->
+<div class="navbar">
+  <div class="navbar-left">
+    <h1 class="logo" (click)="goHome()" style="cursor: pointer;">FILMOSPHERE</h1>
+  </div>
+
+  <!-- 🔍 Search & Filter Films -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/film-search" routerLinkActive="active">
+      <i class="pi pi-search"></i>
+      <span>Search & Filter Films</span>
+    </a>
+  </div>
+
+  <!-- 👥 Search Users -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/user-search" routerLinkActive="active">
+      <i class="pi pi-users"></i>
+      <span>Search Users</span>
+    </a>
+  </div>
+
+  <!-- 🎬 Recommendation Chat -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/recommendation-chat" routerLinkActive="active">
+      <i class="pi pi-comments"></i>
+      <span>Recommendation Chat</span>
+    </a>
+  </div>
+
+  <!-- 👤 Profile / Avatar -->
+  <div class="navbar-right profile-menu-trigger" (click)="profileMenu.toggle($event)">
+    <p-avatar 
+      *ngIf="navbarAvatarImage"
+      [image]="navbarAvatarImage"
+      shape="circle"
+      style="width:50px; height:50px;">
+                </p-avatar>
+
+    <p-avatar 
+      *ngIf="!navbarAvatarImage && navbarAvatarLabel"
+      [label]="navbarAvatarLabel"
+      shape="circle"
+      style="background:#e50914; color:white; width:50px; height:50px; font-size:20px;">
+                </p-avatar>
+
+    <span class="username">{{ navbarUsername || 'Guest' }}</span>
+    <i class="pi pi-chevron-down dropdown-arrow"></i>
+            </div>
+        </div>
+
+<p-popover 
+  #profileMenu 
+  appendTo="body" 
+  [style]="{width: '230px'}" 
+  styleClass="profile-dropdown-panel"
+>
+  <p-menu [model]="menuItems"></p-menu>
+</p-popover>
+
 <div class="profile-container">
+  <div class="profile-content" *ngIf="!loadingProfile">
+    
+    <!-- PROFILE HEADER -->
+    <div class="profile-header">
+      <div class="avatar-section">
+        <div class="avatar-display" *ngIf="isOwnProfile()" (click)="openAvatarSelection()">
+          <p-avatar *ngIf="avatarImage" [image]="avatarImage" shape="circle" size="xlarge"></p-avatar>
+          <p-avatar *ngIf="!avatarImage" [label]="avatarLabel" shape="circle" size="xlarge"
+            style="background:#e50914; color:white;"></p-avatar>
+          <div class="edit-icon" *ngIf="isOwnProfile()"><i class="pi pi-pencil"></i></div>
+        </div>
+        <div class="avatar-display" *ngIf="!isOwnProfile()">
+          <p-avatar *ngIf="avatarImage" [image]="avatarImage" shape="circle" size="xlarge"></p-avatar>
+          <p-avatar *ngIf="!avatarImage" [label]="avatarLabel" shape="circle" size="xlarge"
+            style="background:#e50914; color:white;"></p-avatar>
+        </div>
+      </div>
 
-    <div class="profile-card">
+      <div class="profile-info-section">
+        <div class="profile-info">
+          <h1 class="username">{{ username }}</h1>
+          
+          <!-- FOLLOWER/FOLLOWING COUNTS -->
+          <div class="follow-stats">
+            <span class="follow-count" (click)="loadFollowers()">
+              <strong>{{ followersCount }}</strong> followers
+            </span>
+            <span class="follow-separator">•</span>
+            <span class="follow-count" (click)="loadFollowing()">
+              <strong>{{ followingCount }}</strong> following
+            </span>
+          </div>
 
-        <!-- AVATAR SECTION -->
-        <div class="avatar-section">
-            <div class="avatar-display" (click)="openAvatarSelection()">
+          <!-- FOLLOW/UNFOLLOW BUTTON (only if not own profile) -->
+          <div *ngIf="!isOwnProfile()" class="follow-button-section">
+            <p-button 
+              [label]="isFollowing ? 'Unfollow' : 'Follow'"
+              [icon]="isFollowing ? 'pi pi-user-minus' : 'pi pi-user-plus'"
+              [styleClass]="isFollowing ? 'p-button-secondary' : 'p-button-danger'"
+              (click)="toggleFollow()"
+              styleClass="p-button-sm">
+            </p-button>
+          </div>
 
-                <p-avatar *ngIf="avatarImage" [image]="avatarImage" shape="circle" size="xlarge">
-                </p-avatar>
-
-                <p-avatar *ngIf="!avatarImage" [label]="avatarLabel" shape="circle" size="xlarge"
-                    style="background:#e50914; color:white;">
-                </p-avatar>
-
-                <div class="edit-icon"><i class="pi pi-pencil"></i></div>
+          <!-- BIOGRAPHY -->
+          <div class="bio-section-compact">
+            <div class="bio-header">
+              <p-button *ngIf="!editMode && isOwnProfile()" label="Edit" icon="pi pi-pencil" 
+                (click)="enableEditMode()" styleClass="p-button-text p-button-sm"></p-button>
+            </div>
+            <p *ngIf="!editMode" class="bio-text-compact">{{ user?.profile?.bio || "No biography yet." }}</p>
+            <div *ngIf="editMode && isOwnProfile()">
+              <textarea [(ngModel)]="bioToEdit" name="bio" rows="3" maxlength="200" class="bio-textarea-compact"></textarea>
+              <div class="edit-actions">
+                <p-button label="Save" icon="pi pi-check" (click)="saveProfile()" 
+                  styleClass="p-button-danger p-button-sm"></p-button>
+                <p-button label="Cancel" icon="pi pi-times" (click)="cancelEdit()" 
+                  styleClass="p-button-secondary p-button-sm"></p-button>
+              </div>
+            </div>
             </div>
         </div>
 
-        <!-- USER INFO -->
-        <h2 class="username">{{ user?.username }}</h2>
-        <p class="email">{{ user?.email }}</p>
-
-        <!-- BIO -->
-        <div class="bio-section">
-            <h3>Biography</h3>
-
-            <p *ngIf="!editMode">{{ user?.profile?.bio || "No bio yet." }}</p>
-
-            <div *ngIf="editMode">
-                <textarea [(ngModel)]="bioToEdit" name="bio" rows="5" class="bio-textarea">
-</textarea>
-
+        <!-- BADGES GRID (3x3) -->
+        <div class="badges-section-compact">
+          <h3>Badges</h3>
+          <div class="badges-grid-compact">
+            <div *ngFor="let userBadge of userBadges.slice(0, 9)" class="badge-item-compact" 
+              [title]="userBadge.badge_details?.name || userBadge.badge?.name">
+              <img *ngIf="userBadge.badge_details?.icon_url || userBadge.badge?.icon_url" 
+                [src]="userBadge.badge_details?.icon_url || userBadge.badge?.icon_url" 
+                [alt]="userBadge.badge_details?.name || userBadge.badge?.name" 
+                class="badge-icon-compact"
+                (error)="$event.target.style.display='none'">
+              <div *ngIf="!(userBadge.badge_details?.icon_url || userBadge.badge?.icon_url)" 
+                class="badge-icon-placeholder-compact">
+                <i class="pi pi-trophy"></i>
+              </div>
             </div>
+            <!-- Empty slots -->
+            <div *ngFor="let empty of getEmptyBadgeSlots()" class="badge-item-compact empty-badge">
+              <i class="pi pi-circle"></i>
+            </div>
+          </div>
+          <p *ngIf="userBadges.length === 0" class="no-badges-text">No badges earned yet</p>
+        </div>
+      </div>
         </div>
 
-        <!-- FAVORITE MOVIES -->
-        <div class="favorites">
-            <h3>Favorite Movies</h3>
-            <ul>
-                <li>{{ user?.profile?.favorite_movie_1 || "-" }}</li>
-                <li>{{ user?.profile?.favorite_movie_2 || "-" }}</li>
-                <li>{{ user?.profile?.favorite_movie_3 || "-" }}</li>
-            </ul>
+    <!-- WATCHED FILMS AND REVIEWS SIDE BY SIDE -->
+    <div class="two-column-section">
+      <!-- WATCHED FILMS -->
+      <div class="section-column">
+        <h2>Watched Films</h2>
+        <div *ngIf="loadingWatchedFilms" class="loading">Loading...</div>
+        <div *ngIf="!loadingWatchedFilms && watchedFilms.length === 0" class="empty-state">
+          <i class="pi pi-film" style="font-size: 2rem; color: #666; margin-bottom: 1rem;"></i>
+          <p>No films watched yet.</p>
+          <p-button label="Watch a Film" icon="pi pi-search" (click)="goToFilmSearch()" 
+            styleClass="p-button-danger p-button-sm"></p-button>
+        </div>
+        <div *ngIf="!loadingWatchedFilms && watchedFilms.length > 0" class="watched-films-grid">
+          <div *ngFor="let film of watchedFilms" class="watched-film-card" (click)="goToFilm(film.film_imdb_id)">
+            <img [src]="film.film_poster_url || '/assets/default-poster.jpg'" 
+              [alt]="film.film_title" class="film-poster" 
+              onerror="this.src='/assets/default-poster.jpg'">
+            <div class="film-info">
+              <h3>{{ film.film_title }}</h3>
+              <p *ngIf="film.film_year">{{ film.film_year }}</p>
+              <div *ngIf="film.rating" class="rating-display">
+                <p-rating [ngModel]="film.rating.overall_rating" [readonly]="true" [stars]="5"></p-rating>
+                <span class="rating-value">{{ film.rating.overall_rating }}/5</span>
+              </div>
+              <p *ngIf="!film.rating" class="no-rating">No rating yet</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REVIEWS -->
+      <div class="section-column">
+        <h2>My Reviews</h2>
+        <div *ngIf="loadingReviews" class="loading">Loading...</div>
+        <div *ngIf="!loadingReviews && userReviews.length === 0" class="empty-state">
+          <i class="pi pi-comment" style="font-size: 2rem; color: #666; margin-bottom: 1rem;"></i>
+          <p>No reviews written yet.</p>
+          <p-button label="Write a Review" icon="pi pi-pencil" 
+            (click)="goToFilmSearch()" 
+            styleClass="p-button-danger p-button-sm"></p-button>
+        </div>
+        <div *ngIf="!loadingReviews && userReviews.length > 0" class="reviews-list">
+          <div *ngFor="let review of userReviews" class="review-card">
+            <div class="review-header">
+              <h3>{{ review.title }}</h3>
+              <div class="review-meta">
+                <span (click)="goToFilm(review.film_imdb_id)" class="film-link">
+                  {{ review.film_title }}
+                </span>
+                <span *ngIf="review.rating" class="review-rating">
+                  <p-rating [ngModel]="review.rating" [readonly]="true" [stars]="5"></p-rating>
+                </span>
+              </div>
+            </div>
+            <p class="review-content">{{ review.content }}</p>
+            <div class="review-footer">
+              <span class="review-date">{{ review.created_at | date:'short' }}</span>
+              <span class="review-likes" *ngIf="review.likes_count > 0">
+                <i class="pi pi-heart"></i> {{ review.likes_count }}
+              </span>
+              <span *ngIf="review.contains_spoiler" class="spoiler-badge">Spoiler</span>
+            </div>
+          </div>
+        </div>
+      </div>
         </div>
 
-        <!-- ACTION BUTTONS -->
-        <div class="action-buttons">
-
-            <p-button *ngIf="!editMode" label="Edit Profile" icon="pi pi-pencil" (click)="enableEditMode()"
-                styleClass="p-button-danger p-button-sm">
-            </p-button>
-
-            <p-button *ngIf="editMode" label="Save Changes" icon="pi pi-check" (click)="saveProfile()"
-                styleClass="save-changes-btn p-button-sm mr-2">
-            </p-button>
-
-
-            <p-button *ngIf="editMode" label="Cancel" icon="pi pi-times" (click)="cancelEdit()"
-                styleClass="p-button-secondary p-button-sm">
-            </p-button>
-
+    <!-- USER LISTS -->
+    <div class="section">
+      <h2>My Lists</h2>
+      <div *ngIf="loadingLists" class="loading">Loading...</div>
+      <div *ngIf="!loadingLists && userLists.length === 0" class="empty-state">
+        <i class="pi pi-list" style="font-size: 2rem; color: #666; margin-bottom: 1rem;"></i>
+        <p>No lists created yet.</p>
+        <p-button label="Create a List" icon="pi pi-plus" 
+          styleClass="p-button-danger p-button-sm"></p-button>
+      </div>
+      <div *ngIf="!loadingLists && userLists.length > 0" class="lists-grid">
+        <div *ngFor="let list of userLists" class="list-card">
+          <h3>{{ list.title }}</h3>
+          <p *ngIf="list.description">{{ list.description }}</p>
+          <p class="list-meta">{{ list.films_count || 0 }} films</p>
+          <span class="list-badge" *ngIf="list.is_public">Public</span>
+          <span class="list-badge private" *ngIf="!list.is_public">Private</span>
+        </div>
+      </div>
         </div>
 
-        <!-- BACK TO HOME BUTTON -->
-        <div style="text-align:center; margin-top:25px;">
-            <p-button label="Back to Home" icon="pi pi-arrow-left" styleClass="p-button-secondary p-button-sm"
-                (click)="goHome()">
-            </p-button>
-        </div>
-
+    <!-- BACK TO HOME -->
+    <div class="back-button">
+      <p-button label="Back to Home" icon="pi pi-arrow-left" 
+        styleClass="p-button-secondary p-button-sm" (click)="goHome()"></p-button>
     </div>
 </div>
 
+  <div *ngIf="loadingProfile" class="loading-container">
+    <div class="loading">Loading profile...</div>
+  </div>
+</div>
 
-
-<!-- AVATAR SELECTION DIALOG -->
-<p-dialog header="Select New Avatar" [(visible)]="avatarModalVisible" [modal]="true"
-    [style]="{ width: '500px', height: '350px' }">
-
-    <div class="avatar-select-container">
-
-        <p-select [options]="availableAvatars" [(ngModel)]="selectedAvatar" optionLabel="name"
-            [style]="{ width: '100%' }">
-
-            <ng-template pTemplate="item" let-item>
-                <div class="avatar-option">
-                    <p-avatar [image]="item.url" shape="circle" size="large"></p-avatar>
-                    <span class="avatar-name">{{ item.name }}</span>
-                </div>
-            </ng-template>
-
-        </p-select>
-
+<!-- AVATAR/PROFILE PICTURE UPLOAD DIALOG -->
+<p-dialog header="Update Profile Picture" [(visible)]="avatarModalVisible" [modal]="true"
+  [style]="{ width: '700px', maxWidth: '90vw' }">
+  <div class="avatar-upload-container">
+    <!-- File Upload Section -->
+    <div class="avatar-section">
+      <h3>Upload from Computer</h3>
+      <input type="file" #fileInput accept="image/*" (change)="onFileSelected($event)" 
+        style="display: none;" />
+      <p-button label="Choose File" icon="pi pi-upload" (click)="fileInput.click()" 
+        styleClass="p-button-outlined p-button-sm"></p-button>
+      <p *ngIf="uploadedFile" class="file-name">{{ uploadedFileName }}</p>
+      <p *ngIf="uploadError" class="error-message">{{ uploadError }}</p>
+      <p class="avatar-hint">Maximum file size: 2MB. Supported formats: JPG, PNG, GIF</p>
     </div>
 
+    <!-- Divider -->
+    <div class="avatar-divider">
+      <span>OR</span>
+    </div>
+
+    <!-- URL Input Section -->
+    <div class="avatar-section">
+      <h3>Enter Image URL</h3>
+      <input type="text" [(ngModel)]="avatarImage" placeholder="https://example.com/image.jpg" 
+        class="avatar-url-input" />
+      <p class="avatar-hint">Paste a direct link to an image</p>
+    </div>
+
+    <!-- Divider -->
+    <div class="avatar-divider">
+      <span>OR</span>
+    </div>
+
+    <!-- Avatar Selection Grid -->
+    <div class="avatar-section">
+      <h3>Select from Available Avatars</h3>
+      <div class="avatars-grid">
+        <div *ngFor="let avatar of availableAvatars" 
+          class="avatar-item" 
+          [class.selected]="selectedAvatar?.url === avatar.url"
+          (click)="selectAvatar(avatar)">
+          <p-avatar [image]="avatar.url" shape="circle" size="xlarge"></p-avatar>
+          <span class="avatar-check" *ngIf="selectedAvatar?.url === avatar.url">
+            <i class="pi pi-check"></i>
+          </span>
+        </div>
+                </div>
+    </div>
+
+    <!-- Preview Section -->
+    <div class="avatar-preview-section" *ngIf="avatarImage || selectedAvatar || uploadedFile">
+      <h3>Preview</h3>
+      <div class="preview-container">
+        <p-avatar [image]="uploadedFile || selectedAvatar?.url || avatarImage" shape="circle" size="xlarge"></p-avatar>
+      </div>
+    </div>
+  </div>
     <ng-template pTemplate="footer">
-        <p-button label="Cancel" icon="pi pi-times" (click)="cancelEdit()" styleClass="cancel-btn p-button-sm">
-        </p-button>
+    <p-button label="Cancel" icon="pi pi-times" (click)="cancelAvatarSelection()" 
+      styleClass="p-button-secondary p-button-sm"></p-button>
+    <p-button label="Save" icon="pi pi-check" (click)="saveAvatar()" 
+      styleClass="p-button-danger p-button-sm"></p-button>
+  </ng-template>
+</p-dialog>
 
+<!-- FOLLOWERS DIALOG -->
+<p-dialog header="Followers" [(visible)]="showFollowersDialog" [modal]="true"
+  [style]="{ width: '500px' }">
+  <div class="followers-list">
+    <div *ngIf="followersList.length === 0" class="empty-state">
+      <p>No followers yet.</p>
+    </div>
+    <div *ngFor="let follow of followersList" class="follower-item" (click)="goToProfileFromDialog(follow.follower_username)">
+      <p-avatar 
+        *ngIf="follow.follower_profile_picture_url"
+        [image]="follow.follower_profile_picture_url"
+        shape="circle" 
+        style="width:50px; height:50px;">
+      </p-avatar>
+      <p-avatar 
+        *ngIf="!follow.follower_profile_picture_url"
+        [label]="follow.follower_username[0]?.toUpperCase() || 'U'" 
+        shape="circle" 
+        style="background:#e50914; color:white; width:50px; height:50px;">
+      </p-avatar>
+      <span class="follower-name">{{ follow.follower_username }}</span>
+    </div>
+  </div>
+</p-dialog>
 
-        <p-button label="Save Avatar" icon="pi pi-check" (click)="saveAvatar()" styleClass="save-avatar-btn">
-        </p-button>
+<!-- FOLLOWING DIALOG -->
+<p-dialog header="Following" [(visible)]="showFollowingDialog" [modal]="true"
+  [style]="{ width: '500px' }">
+  <div class="followers-list">
+    <div *ngIf="followingList.length === 0" class="empty-state">
+      <p>Not following anyone yet.</p>
+    </div>
+    <div *ngFor="let follow of followingList" class="follower-item" (click)="goToProfileFromDialog(follow.following_username)">
+      <p-avatar 
+        *ngIf="follow.following_profile_picture_url"
+        [image]="follow.following_profile_picture_url"
+        shape="circle" 
+        style="width:50px; height:50px;">
+      </p-avatar>
+      <p-avatar 
+        *ngIf="!follow.following_profile_picture_url"
+        [label]="follow.following_username[0]?.toUpperCase() || 'U'" 
+        shape="circle" 
+        style="background:#e50914; color:white; width:50px; height:50px;">
+      </p-avatar>
+      <span class="follower-name">{{ follow.following_username }}</span>
+    </div>
+  </div>
+</p-dialog>

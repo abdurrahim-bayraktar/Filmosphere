@@ -1447,7 +1447,7 @@ class UserFollowersView(ListAPIView):
         username = self.kwargs.get("username")
         try:
             user = User.objects.get(username=username)
-            return Follow.objects.filter(following=user).select_related("follower", "following")
+            return Follow.objects.filter(following=user).select_related("follower", "follower__profile", "following", "following__profile")
         except User.DoesNotExist:
             return Follow.objects.none()
 
@@ -1462,7 +1462,7 @@ class UserFollowingView(ListAPIView):
         username = self.kwargs.get("username")
         try:
             user = User.objects.get(username=username)
-            return Follow.objects.filter(follower=user).select_related("follower", "following")
+            return Follow.objects.filter(follower=user).select_related("follower", "follower__profile", "following", "following__profile")
         except User.DoesNotExist:
             return Follow.objects.none()
 

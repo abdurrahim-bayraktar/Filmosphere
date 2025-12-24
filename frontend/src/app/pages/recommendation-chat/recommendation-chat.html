@@ -1,26 +1,85 @@
+<div class="navbar">
+  <div class="navbar-left">
+    <h1 class="logo" routerLink="/home" style="cursor: pointer;">FILMOSPHERE</h1>
+  </div>
+
+  <!-- 🔍 Search & Filter Films -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/film-search" routerLinkActive="active">
+      <i class="pi pi-search"></i>
+      <span>Search & Filter Films</span>
+    </a>
+  </div>
+
+  <!-- 👥 Search Users -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/user-search" routerLinkActive="active">
+      <i class="pi pi-users"></i>
+      <span>Search Users</span>
+    </a>
+  </div>
+
+  <!-- 🎬 Recommendation Chat -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/recommendation-chat" routerLinkActive="active">
+      <i class="pi pi-comments"></i>
+      <span>Recommendation Chat</span>
+    </a>
+  </div>
+
+  <!-- 👤 Profile / Avatar -->
+  <div class="navbar-right profile-menu-trigger" (click)="profileMenu.toggle($event)">
+    <p-avatar 
+      *ngIf="avatarImage"
+      [image]="avatarImage"
+      shape="circle"
+      style="width:50px; height:50px;">
+    </p-avatar>
+
+    <p-avatar 
+      *ngIf="!avatarImage && avatarLabel"
+      [label]="avatarLabel"
+      shape="circle"
+      style="background:#e50914; color:white; width:50px; height:50px; font-size:20px;">
+    </p-avatar>
+
+    <span class="username">{{ user?.username || 'Guest' }}</span>
+    <i class="pi pi-chevron-down dropdown-arrow"></i>
+  </div>
+</div>
+
+<p-popover 
+  #profileMenu 
+  appendTo="body" 
+  [style]="{width: '230px'}" 
+  styleClass="profile-dropdown-panel"
+>
+  <p-menu [model]="menuItems"></p-menu>
+</p-popover>
+
 <div class="rc-page">
   <div class="rc-header">
     <div class="rc-title">
-      <div class="rc-badge">🎬</div>
+      <div class="rc-badge"><i class="pi pi-video" style="font-size: 20px;"></i></div>
       <div>
         <h2>Recommendation Chat</h2>
-        <p>Ne izlemek istediğini yaz; geçmişine göre 3–5 öneri al.</p>
+        <p>Tell us what you want to watch; get 3–5 recommendations based on your history.</p>
       </div>
     </div>
 
     <div class="rc-actions">
-      <button class="rc-btn ghost" (click)="useExample('Bugün kısa bir komedi istiyorum, popüler olmasın')">
-        Örnek: Komedi
+      <button class="rc-btn ghost" (click)="useExample('I want a short comedy today, not popular')">
+        Example: Comedy
       </button>
-      <button class="rc-btn ghost" (click)="useExample('Psikolojik gerilim ama aşırı korku değil')">
-        Örnek: Gerilim
+      <button class="rc-btn ghost" (click)="useExample('Psychological thriller but not too scary')">
+        Example: Thriller
       </button>
-      <button class="rc-btn ghost" (click)="useExample('Bilim kurgu, uzay temalı, sürükleyici')">
-        Örnek: Sci-Fi
+      <button class="rc-btn ghost" (click)="useExample('Sci-fi, space-themed, engaging')">
+        Example: Sci-Fi
       </button>
 
       <button class="rc-btn danger" (click)="clearChat()">
-        Temizle
+        Clear
       </button>
     </div>
   </div>
@@ -28,37 +87,51 @@
   <div class="rc-card">
     <div class="rc-chat">
       <div *ngIf="messages.length === 0" class="rc-empty">
-        <div class="rc-empty-emoji">✨</div>
-        <div class="rc-empty-title">Hazırım.</div>
+        <div class="rc-empty-emoji"><i class="pi pi-star" style="font-size: 32px;"></i></div>
+        <div class="rc-empty-title">I'm ready.</div>
         <div class="rc-empty-sub">
-          Aşağıdakilerden birine tıkla ya da kendi isteğini yaz.
+          Click one of the options below or write your own request.
         </div>
 
         <div class="rc-chips">
-          <button class="rc-chip" (click)="useExample('Bugün 90 dakikadan kısa, hızlı akan bir film')">⏱️ Kısa</button>
-          <button class="rc-chip" (click)="useExample('Netflix tarzı popüler ama klişe olmayan')">🔥 Popüler</button>
-          <button class="rc-chip" (click)="useExample('Eski klasiklerden bir şeyler')">🎞️ Klasik</button>
-          <button class="rc-chip" (click)="useExample('Romantik ama dram değil')">💘 Romantik</button>
-          <button class="rc-chip" (click)="useExample('Aksiyon ama aşırı şiddet olmasın')">💥 Aksiyon</button>
+          <button class="rc-chip" (click)="useExample('A film shorter than 90 minutes, fast-paced')">
+            <i class="pi pi-clock" style="margin-right: 6px;"></i>Short
+          </button>
+          <button class="rc-chip" (click)="useExample('Netflix-style popular but not cliché')">
+            <i class="pi pi-star-fill" style="margin-right: 6px;"></i>Popular
+          </button>
+          <button class="rc-chip" (click)="useExample('Something from old classics')">
+            <i class="pi pi-film" style="margin-right: 6px;"></i>Classic
+          </button>
+          <button class="rc-chip" (click)="useExample('Romantic but not drama')">
+            <i class="pi pi-heart" style="margin-right: 6px;"></i>Romantic
+          </button>
+          <button class="rc-chip" (click)="useExample('Action but not too violent')">
+            <i class="pi pi-bolt" style="margin-right: 6px;"></i>Action
+          </button>
         </div>
       </div>
 
       <div *ngFor="let m of messages" class="rc-msg" [class.user]="m.role === 'user'" [class.assistant]="m.role === 'assistant'">
-        <div class="rc-avatar" *ngIf="m.role === 'assistant'">🤖</div>
+        <div class="rc-avatar" *ngIf="m.role === 'assistant'">
+          <i class="pi pi-android" style="font-size: 18px;"></i>
+        </div>
         <div class="rc-bubble">
           <div class="rc-meta">
             <span class="rc-role">{{ m.role === 'user' ? 'You' : 'Assistant' }}</span>
           </div>
           <div class="rc-text">{{ m.text }}</div>
         </div>
-        <div class="rc-avatar user" *ngIf="m.role === 'user'">🧑</div>
+        <div class="rc-avatar user" *ngIf="m.role === 'user'">
+          <i class="pi pi-user" style="font-size: 18px;"></i>
+        </div>
       </div>
 
       <div *ngIf="loading" class="rc-typing">
         <div class="rc-typing-dot"></div>
         <div class="rc-typing-dot"></div>
         <div class="rc-typing-dot"></div>
-        <span>Yanıt hazırlanıyor…</span>
+        <span>Preparing response…</span>
       </div>
     </div>
 
@@ -66,17 +139,11 @@
       <input
         [(ngModel)]="input"
         (keydown.enter)="send()"
-        placeholder="Ne izlemek istiyorsun? (örn: kısa komedi, popüler olmasın)"
+        placeholder="What do you want to watch? (e.g., short comedy, not popular)"
       />
       <button class="rc-btn primary" (click)="send()" [disabled]="loading || !input.trim()">
-        Gönder
+        Send
       </button>
-    </div>
-
-    <div class="rc-footnote">
-      <span>🔒 Bu sayfa login gerektirir.</span>
-      <span>🧠 Key eklenince gerçek LLM önerisi döner.</span>
-      <span>🚫 Spoiler vermemesi için sistem promptu var.</span>
     </div>
   </div>
 </div>

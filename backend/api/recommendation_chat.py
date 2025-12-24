@@ -282,7 +282,8 @@ class RecommendationChatView(APIView):
         serializer.is_valid(raise_exception=True)
         user_message = serializer.validated_data["user_message"].strip()
 
-        api_key = getattr(settings, "DEEPSEEK_API_KEY", "") or ""
+        api_key_raw = getattr(settings, "DEEPSEEK_API_KEY", None)
+        api_key = (api_key_raw or "").strip() if api_key_raw else ""
         base_url = getattr(settings, "DEEPSEEK_BASE", "https://api.deepseek.com/v1")
         model = getattr(settings, "DEEPSEEK_MODEL", "deepseek-chat")
 
@@ -291,12 +292,16 @@ class RecommendationChatView(APIView):
             getattr(user, "id", None),
             "| has_key=",
             bool(api_key),
+            "| key_length=",
+            len(api_key) if api_key else 0,
             "| key_prefix=",
-            (api_key[:8] + "...") if api_key else "EMPTY",
+            (api_key[:10] + "...") if api_key and len(api_key) > 10 else ("EMPTY" if not api_key else api_key[:10]),
             "| base=",
             base_url,
             "| model=",
             model,
+            "| settings_module=",
+            settings.SETTINGS_MODULE if hasattr(settings, 'SETTINGS_MODULE') else "unknown",
             flush=True,
         )
 
@@ -313,7 +318,7 @@ class RecommendationChatView(APIView):
             return Response(
                 {
                     "blocked": False,
-                    "answer": "DEEPSEEK_API_KEY boş. Endpoint çalışıyor ama LLM'e gitmiyor. (Demo mode)",
+                    "message": "DEEPSEEK_API_KEY boş. Endpoint çalışıyor ama LLM'e gitmiyor. (Demo mode)",
                     "items": [],
                 },
                 status=status.HTTP_200_OK,
@@ -346,7 +351,7 @@ class RecommendationChatView(APIView):
             return Response(
                 {
                     "blocked": True,
-                    "answer": "Bu istek spoiler/uygunsuz içerik içerdiği için yanıtlanamaz. Spoilersız film önerisi istersen tür/ruh hali söyle 🙂",
+                    "message": "Bu istek spoiler/uygunsuz içerik içerdiği için yanıtlanamaz. Spoilersız film önerisi istersen tür/ruh hali söyle 🙂",
                     "flags": mod_in.get("flags", []),
                     "reason": mod_in.get("reason", ""),
                     "items": [],
@@ -491,7 +496,7 @@ class RecommendationChatView(APIView):
                 return Response(
                     {
                         "blocked": True,
-                        "answer": "Bu içerik güvenlik politikaları nedeniyle gösterilemiyor.",
+                        "message": "Bu içerik güvenlik politikaları nedeniyle gösterilemiyor.",
                         "flags": mod_out.get("flags", []),
                         "reason": mod_out.get("reason", ""),
                         "items": [],
@@ -510,7 +515,7 @@ class RecommendationChatView(APIView):
                 reason="ok",
             )
 
-            return Response({"blocked": False, "answer": answer_text, "items": items}, status=status.HTTP_200_OK)
+            return Response({"blocked": False, "message": answer_text, "items": items}, status=status.HTTP_200_OK)
 
         except Exception as e:
             _log_recommendation(

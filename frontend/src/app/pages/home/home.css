@@ -2,20 +2,20 @@
    NAVBAR
    ========================= */
 .navbar {
-  height: 70px;
+  height: 120px;
   background: #111;
   color: white;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 40px;
+  padding: 0 60px;
   border-bottom: 1px solid #333;
 }
 
 .logo {
   margin: 0;
   color: red;
-  font-size: 1.8rem;
+  font-size: 3.5rem;
   letter-spacing: 2px;
 }
 
@@ -39,8 +39,12 @@
 }
 
 .username {
-  font-size: 1rem;
+  font-size: 27px;
+  font-weight: 700;
   color: #ddd;
+  line-height: 1;
+  display: flex;
+  align-items: center;
 }
 
 .dropdown-arrow {
@@ -52,20 +56,45 @@
 /* =========================
    SEARCH & FILTER BUTTON
    ========================= */
-.go-search-btn {
-  padding: 10px 22px;
-  background: #e50914;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 15px;
-  cursor: pointer;
-  transition: 0.2s;
-  white-space: nowrap;
+/* Modern Navbar Links */
+.nav-link-wrapper {
+  margin-right: 14px;
 }
 
-.go-search-btn:hover {
-  background: #b20710;
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: #ddd !important;
+  text-decoration: none !important;
+  font-size: 24px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+  position: relative;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+}
+
+.nav-link:visited {
+  color: #ddd !important;
+}
+
+.nav-link:link {
+  color: #ddd !important;
+}
+
+.nav-link i {
+  margin-right: 10px;
+  font-size: 25px;
+}
+
+.nav-link:hover {
+  color: #fff !important;
+}
+
+.nav-link.active {
+  color: #fff !important;
+  border-bottom-color: #e50914;
 }
 
 /* =========================
@@ -74,7 +103,7 @@
 .home-container {
   padding: 30px 40px;
   background: #000;
-  min-height: calc(100vh - 70px);
+  min-height: calc(100vh - 120px);
 }
 
 .section {
@@ -87,110 +116,355 @@
   margin-bottom: 15px;
 }
 
-/* =========================
-   MOVIE CARDS
-   ========================= */
-.movie-card {
-  width: 220px;
-  height: 330px;
+.bottom-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-top: 40px;
+  padding: 0 40px;
+  padding-bottom: 40px;
+}
+
+/* Films Section (Left) */
+.films-section {
+  background: #111;
+  padding: 30px;
   border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.films-section .section-title {
+  font-size: 1.8rem;
+  color: white;
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e50914;
+}
+
+.films-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.film-card {
   background: #222;
+  border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #333;
 }
 
-.movie-card:hover {
-  transform: scale(1.18);
-  z-index: 20;
-  box-shadow: 0 0 25px rgba(255,255,255,0.18);
+.film-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
+  border-color: #e50914;
 }
 
-.movie-poster {
+.film-poster {
   width: 100%;
-  height: 85%;
+  height: 220px;
   object-fit: cover;
+  display: block;
 }
 
-.movie-title {
-  padding: 6px;
+.film-info {
+  padding: 12px;
+}
+
+.film-title {
+  font-size: 0.95rem;
+  color: white;
+  margin: 0 0 5px 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.film-year {
+  font-size: 0.85rem;
+  color: #999;
+  margin: 0;
+}
+
+/* Comments Section (Right) */
+.comments-section {
+  background: #111;
+  padding: 30px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  max-height: 800px;
+  overflow-y: auto;
+}
+
+.comments-section .section-title {
+  font-size: 1.8rem;
+  color: white;
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e50914;
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.comment-card {
+  background: #222;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  transition: all 0.3s ease;
+}
+
+.comment-card:hover {
+  border-color: #e50914;
+  box-shadow: 0 4px 12px rgba(229, 9, 20, 0.2);
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.comment-user-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.comment-username {
+  font-size: 0.95rem;
+  color: white;
+  font-weight: 600;
+}
+
+.comment-film {
+  font-size: 0.8rem;
+  color: #e50914;
+  margin-top: 2px;
+}
+
+.comment-likes {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #e50914;
+  font-weight: 600;
+}
+
+.comment-likes i {
   font-size: 1rem;
-  text-align: center;
+}
+
+.comment-content {
   color: #ddd;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0 0 10px 0;
 }
 
-/* =========================
-   CAROUSEL OVERRIDES
-   ========================= */
-:host ::ng-deep .p-carousel-item {
-  flex: 0 0 230px !important;
-  width: 230px !important;
-  max-width: 230px !important;
-  padding: 0 !important;
-  margin: 0 8px !important;
+.comment-footer {
+  display: flex;
+  justify-content: flex-end;
 }
 
-:host ::ng-deep .p-carousel-items-content {
-  padding: 0 !important;
-  margin: 0 !important;
-  gap: 0 !important;
+.comment-date {
+  font-size: 0.75rem;
+  color: #999;
 }
 
-:host ::ng-deep .p-carousel-items-container {
-  display: flex !important;
-  gap: 0 !important;
+.loading-message {
+  color: #999;
+  text-align: center;
+  padding: 40px;
+  font-style: italic;
 }
 
-:host ::ng-deep .p-carousel-next,
-:host ::ng-deep .p-carousel-prev {
-  color: white !important;
-  background: rgba(0,0,0,0.45) !important;
+/* Scrollbar styling for comments section */
+.comments-section::-webkit-scrollbar {
+  width: 8px;
+}
+
+.comments-section::-webkit-scrollbar-track {
+  background: #111;
+}
+
+.comments-section::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.comments-section::-webkit-scrollbar-thumb:hover {
+  background: #e50914;
+}
+
+.hero-section {
+  position: relative;
+  height: calc(100vh - 120px);
+  min-height: calc(100vh - 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 40px;
+  overflow: hidden;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 700px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-title {
+  font-size: 4rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  line-height: 1.1;
+  background: linear-gradient(90deg, #ffffff, #e50914, #ffffff);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 20px;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 600px;
+  margin: 0 auto 35px auto;
+  line-height: 1.6;
+}
+
+.hero-cta {
+  position: relative;
+  background: linear-gradient(135deg, #e50914, #ff2a2a) !important;
   border: none !important;
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 50% !important;
-  transition: 0.2s ease;
+  color: white !important;
+  padding: 12px 30px !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+  border-radius: 999px !important;
+  box-shadow: 0 8px 25px rgba(229, 9, 20, 0.35) !important;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background-position 0.4s ease !important;
+  background-size: 200% 200%;
 }
 
-:host ::ng-deep .p-carousel-next:hover,
-:host ::ng-deep .p-carousel-prev:hover {
-  background: rgba(255,255,255,0.20) !important;
+.hero-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px rgba(229, 9, 20, 0.5) !important;
+  background-position: right center;
 }
 
-:host ::ng-deep .p-carousel-indicator-button.p-highlight {
-  background-color: #e50914 !important;
-  width: 18px !important;
-  height: 6px !important;
-  border-radius: 10px !important;
+.hero-cta:active {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(229, 9, 20, 0.35) !important;
 }
 
-:host ::ng-deep .p-carousel-indicator-button {
-  background-color: #555 !important;
-  width: 10px !important;
-  height: 10px !important;
-  border-radius: 50% !important;
-  opacity: 0.6;
+.hero-cta .pi {
+  font-size: 1rem;
 }
 
-:host ::ng-deep .p-carousel-indicator-button:hover {
-  opacity: 1 !important;
+.hero-background {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 40%;
+  background-repeat: no-repeat;
+  transform: scale(1.06);
+  animation: heroPan 10s ease-in-out infinite alternate;
+  will-change: opacity, transform;
+}
+
+@keyframes heroPan {
+  0%   { transform: scale(1.06) translateX(-2%); }
+  100% { transform: scale(1.10) translateX(2%); }
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.9),
+    rgba(0,0,0,0.4),
+    rgba(0,0,0,0.9)
+  );
+  z-index: 1;
 }
 
 /* =========================
    RESPONSIVE
    ========================= */
-@media (max-width: 900px) {
-  .movie-card {
-    width: 180px;
-    height: 280px;
+@media (max-width: 1200px) {
+  .bottom-section {
+    grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 600px) {
-  .movie-card {
-    width: 150px;
-    height: 240px;
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: 90vh;
+    padding: 0 20px;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .hero-title {
+    font-size: 2.6rem;
+  }
+
+  .hero-content {
+    padding: 0 20px;
+  }
+
+  .hero-cta {
+    padding: 10px 24px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .bottom-section {
+    padding: 0 20px;
+    padding-bottom: 20px;
+  }
+
+  .films-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+  }
+
+  .film-poster {
+    height: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .films-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .section-title {
+    font-size: 1.4rem;
   }
 }
 

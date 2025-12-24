@@ -1,3 +1,62 @@
+<div class="navbar">
+  <div class="navbar-left">
+    <h1 class="logo" routerLink="/home" style="cursor: pointer;">FILMOSPHERE</h1>
+  </div>
+
+  <!-- 🔍 Search & Filter Films -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/film-search" routerLinkActive="active">
+      <i class="pi pi-search"></i>
+      <span>Search & Filter Films</span>
+    </a>
+  </div>
+
+  <!-- 👥 Search Users -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/user-search" routerLinkActive="active">
+      <i class="pi pi-users"></i>
+      <span>Search Users</span>
+    </a>
+  </div>
+
+  <!-- 🎬 Recommendation Chat -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/recommendation-chat" routerLinkActive="active">
+      <i class="pi pi-comments"></i>
+      <span>Recommendation Chat</span>
+    </a>
+  </div>
+
+  <!-- 👤 Profile / Avatar -->
+  <div class="navbar-right profile-menu-trigger" (click)="profileMenu.toggle($event)">
+    <p-avatar 
+      *ngIf="avatarImage"
+      [image]="avatarImage"
+      shape="circle"
+      style="width:50px; height:50px;">
+    </p-avatar>
+
+    <p-avatar 
+      *ngIf="!avatarImage && avatarLabel"
+      [label]="avatarLabel"
+      shape="circle"
+      style="background:#e50914; color:white; width:50px; height:50px; font-size:20px;">
+    </p-avatar>
+
+    <span class="username">{{ user?.username || 'Guest' }}</span>
+    <i class="pi pi-chevron-down dropdown-arrow"></i>
+  </div>
+</div>
+
+<p-popover 
+  #profileMenu 
+  appendTo="body" 
+  [style]="{width: '230px'}" 
+  styleClass="profile-dropdown-panel"
+>
+  <p-menu [model]="menuItems"></p-menu>
+</p-popover>
+
 <div class="film-search-container">
 
   <div class="top-bar">

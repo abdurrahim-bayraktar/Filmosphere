@@ -3,28 +3,27 @@
     <h1 class="logo">FILMOSPHERE</h1>
   </div>
 
-  <!-- 🔍 Search & Filter Films (SOL) -->
-  <div style="margin-right: 14px;">
-    <button class="go-search-btn" (click)="goToFilmSearch()">
-      🔍 Search & Filter Films
-    </button>
+  <!-- 🔍 Search & Filter Films -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/film-search" routerLinkActive="active">
+      <i class="pi pi-search"></i>
+      <span>Search & Filter Films</span>
+    </a>
   </div>
 
-  <!-- 🎬 Recommendation Chat (SAĞ) -->
-  <div style="margin-right: 14px;">
-    <a
-      routerLink="/recommendation-chat"
-      style="
-        padding: 10px 14px;
-        background: #4f46e5;
-        color: white;
-        border-radius: 10px;
-        text-decoration: none;
-        font-weight: 700;
-        display: inline-block;
-      "
-    >
-      🎬 Recommendation Chat
+  <!-- 👥 Search Users -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/user-search" routerLinkActive="active">
+      <i class="pi pi-users"></i>
+      <span>Search Users</span>
+    </a>
+  </div>
+
+  <!-- 🎬 Recommendation Chat -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/recommendation-chat" routerLinkActive="active">
+      <i class="pi pi-comments"></i>
+      <span>Recommendation Chat</span>
     </a>
   </div>
 
@@ -34,14 +33,14 @@
       *ngIf="avatarImage"
       [image]="avatarImage"
       shape="circle"
-      style="width:40px; height:40px;">
+      style="width:50px; height:50px;">
     </p-avatar>
 
     <p-avatar 
       *ngIf="!avatarImage && avatarLabel"
       [label]="avatarLabel"
       shape="circle"
-      style="background:#e50914; color:white; width:40px; height:40px;">
+      style="background:#e50914; color:white; width:50px; height:50px; font-size:20px;">
     </p-avatar>
 
     <span class="username">{{ user?.username || 'Guest' }}</span>
@@ -49,69 +48,87 @@
   </div>
 </div>
 
-<div class="home-container">
+<div class="hero-section">
+  
+  <!-- Dynamic Background -->
+  <div
+  class="hero-background"
+  [style.backgroundImage]="'url(' + heroBackgrounds[currentHeroIndex] + ')'"
+></div>
 
-  <app-hero></app-hero>
+  <!-- Overlay -->
+  <div class="hero-overlay"></div>
 
-  <div class="section">
-    <h2 class="section-title">Trending Now</h2>
+  <!-- Content -->
+  <div class="hero-content">
+    <h1 class="hero-title">Welcome to Filmosphere</h1>
+    <p class="hero-subtitle">
+      Discover films, explore opinions, feel cinema
+    </p>
 
-    <p-carousel 
-      [value]="trendingMovies" 
-      [numVisible]="6" 
-      [numScroll]="4" 
-      [circular]="true" 
-      class="movie-carousel"
-    >
-      <ng-template let-movie pTemplate="item">
-        <div class="movie-card" (click)="openMovieDetail(movie)">
-          <img [src]="movie.poster" class="movie-poster" />
-          <div class="movie-title">{{ movie.title }}</div>
-        </div>
-      </ng-template>
-    </p-carousel>
-  </div>
-
-  <div class="section">
-    <h2 class="section-title">Top Rated</h2>
-
-    <p-carousel 
-      [value]="topRatedMovies" 
-      [numVisible]="6" 
-      [numScroll]="4" 
-      [circular]="true" 
-      class="movie-carousel"
-    >
-      <ng-template let-movie pTemplate="item">
-        <div class="movie-card" (click)="openMovieDetail(movie)">
-          <img [src]="movie.poster" class="movie-poster" />
-          <div class="movie-title">{{ movie.title }}</div>
-        </div>
-      </ng-template>
-    </p-carousel>
-  </div>
-
-  <div class="section">
-    <h2 class="section-title">Action Movies</h2>
-
-    <p-carousel 
-      [value]="actionMovies" 
-      [numVisible]="6" 
-      [numScroll]="4" 
-      [circular]="true" 
-      class="movie-carousel"
-    >
-      <ng-template let-movie pTemplate="item">
-        <div class="movie-card" (click)="openMovieDetail(movie)">
-          <img [src]="movie.poster" class="movie-poster" />
-          <div class="movie-title">{{ movie.title }}</div>
-        </div>
-      </ng-template>
-    </p-carousel>
+    <button
+      pButton
+      label="Explore New Films"
+      icon="pi pi-compass"
+      class="hero-cta"
+      (click)="scrollToFilms()"
+    ></button>
   </div>
 
 </div>
 
+
+  <!-- Bottom Section: Films (left) and Comments (right) -->
+  <div class="bottom-section">
+    <!-- Films Section (Left) -->
+    <div class="films-section">
+      <h2 class="section-title">Popular Films</h2>
+      <div class="films-grid">
+        <div class="film-card" *ngFor="let film of films" (click)="openMovieDetail(film)">
+          <img [src]="film.poster || 'https://via.placeholder.com/200x300'" 
+               [alt]="film.title" 
+               class="film-poster" 
+               onerror="this.src='https://via.placeholder.com/200x300'">
+          <div class="film-info">
+            <h3 class="film-title">{{ film.title }}</h3>
+            <p class="film-year" *ngIf="film.year">{{ film.year }}</p>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="films.length === 0" class="loading-message">Loading films...</div>
+    </div>
+
+    <!-- Comments Section (Right) -->
+    <div class="comments-section">
+      <h2 class="section-title">Most Liked Comments</h2>
+      <div class="comments-list">
+        <div class="comment-card" *ngFor="let comment of topComments">
+          <div class="comment-header">
+            <p-avatar 
+              [label]="comment.username?.[0]?.toUpperCase() || 'U'"
+              shape="circle"
+              style="background:#e50914; color:white; width:32px; height:32px;">
+            </p-avatar>
+            <div class="comment-user-info">
+              <span class="comment-username">{{ comment.username || 'Anonymous' }}</span>
+              <span class="comment-film" *ngIf="comment.film_title">{{ comment.film_title }}</span>
+            </div>
+            <div class="comment-likes">
+              <i class="pi pi-heart"></i>
+              <span>{{ comment.likes_count || 0 }}</span>
+            </div>
+          </div>
+          <p class="comment-content">{{ comment.content }}</p>
+          <div class="comment-footer">
+            <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="topComments.length === 0" class="loading-message">Loading comments...</div>
+    </div>
+  </div>
+
+<!-- Movie Detail Modal -->
 <app-movie-modal 
   [visible]="modalVisible" 
   [movie]="selectedMovie"
