@@ -89,10 +89,16 @@
   </div>
 
   <div class="film-grid">
-    <div class="film-card" *ngFor="let film of films">
+    <div 
+      class="film-card" 
+      *ngFor="let film of films" 
+      [routerLink]="['/film-details', film.imdb_id]" 
+      style="cursor: pointer;">
+      
       <img [src]="film.poster" class="film-poster" />
       <h3 class="film-title">{{ film.title }}</h3>
       <p class="film-genres">{{ film.genres?.join(', ') }}</p>
     </div>
   </div>
+  
 </div>
