@@ -85,10 +85,10 @@
       <h2 class="section-title">Popular Films</h2>
       <div class="films-grid">
         <div class="film-card" *ngFor="let film of films" (click)="openMovieDetail(film)">
-          <img [src]="film.poster || 'https://via.placeholder.com/200x300'" 
+          <img [src]="film.poster || 'https://placehold.co/200x300?text=No+Image'" 
                [alt]="film.title" 
                class="film-poster" 
-               onerror="this.src='https://via.placeholder.com/200x300'">
+            onerror="this.src='https://placehold.co/200x300?text=No+Image'">
           <div class="film-info">
             <h3 class="film-title">{{ film.title }}</h3>
             <p class="film-year" *ngIf="film.year">{{ film.year }}</p>

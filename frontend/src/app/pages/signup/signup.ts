@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-signup',
@@ -12,7 +13,8 @@ import { ButtonModule } from 'primeng/button';
     FormsModule,
     RouterModule,        
     InputTextModule,
-    ButtonModule
+    ButtonModule,
+    CommonModule
   ],
   templateUrl: './signup.html',
   styleUrl: './signup.css'
@@ -22,10 +24,19 @@ export class SignupComponent {
   username = "";
   password = "";
   confirmPassword = "";
+  passwordErrors: string[] = [];
+  showPasswordErrors = false;
+  successMessage = "";
+  showSuccessMessage = false;
 
   constructor(private http: HttpClient, private router: Router) {}
 
   register() {
+    this.passwordErrors = [];
+    this.showPasswordErrors = false;
+    this.showSuccessMessage = false;
+    this.successMessage = "";
+
     if (this.password !== this.confirmPassword) {
       alert("Passwords do not match.");
       return;
@@ -41,31 +52,35 @@ export class SignupComponent {
     this.http.post("http://127.0.0.1:8000/api/auth/register/", payload)
       .subscribe({
         next: (res) => {
-          alert("Account created successfully!");
-          this.router.navigate(['/']);   
+          this.successMessage = "Account has been created successfully!";
+          this.showSuccessMessage = true;
+          // Clear sensitive fields after success
+          this.password = "";
+          this.confirmPassword = "";
+          this.passwordErrors = [];
+          this.showPasswordErrors = false;
+          // Optionally navigate after short delay to let user read message
+          setTimeout(() => this.router.navigate(['/']), 900);
         },
         error: (err) => {
           console.error(err);
-          alert("Registration failed.");
+          
+          // Extract password validation errors from backend
+          if (err.error && err.error.password) {
+            this.passwordErrors = Array.isArray(err.error.password) 
+              ? err.error.password 
+              : [err.error.password];
+            this.showPasswordErrors = true;
+          } else if (err.error && err.error.non_field_errors) {
+            const errors = Array.isArray(err.error.non_field_errors)
+              ? err.error.non_field_errors
+              : [err.error.non_field_errors];
+            alert(errors.join('\n'));
+          } else {
+            alert("Registration failed. Please check your inputs and try again.");
+          }
         }
       });
   }
-  //login() {
-  //const payload = {
-    //email: this.email,
-    //password: this.password
-  //};
-
-  //this.http.post("http://127.0.0.1:8000/api/token/", payload)
-    //.subscribe({
-      //next: (res: any) => {
-        //localStorage.setItem("access", res.access);
-        //localStorage.setItem("refresh", res.refresh);
-        //this.router.navigate(['/']); 
-     // },
-      //error: () => {
-        //alert("Login failed");
-      //}
-    //});
 }
 

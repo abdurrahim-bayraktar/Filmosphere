@@ -801,66 +801,102 @@ class ReviewCreateView(CreateAPIView):
                     review.moderation_status = "pending"
                     review.moderation_reason = "Contains blacklisted words"
                     review.save(update_fields=["moderation_status", "moderation_reason"])
+                    
+                    # Auto-create a system flag
+                    try:
+                        admin_user = User.objects.filter(is_superuser=True).first() or User.objects.filter(is_staff=True).first()
+                        if admin_user:
+                            CommentFlag.objects.get_or_create(
+                                user=admin_user,
+                                review=review,
+                                defaults={
+                                    "reason": "inappropriate",
+                                    "description": "Flagged by basic blacklist check (DeepSeek API not configured)",
+                                },
+                            )
+                    except Exception as flag_error:
+                        logger.error(f"Failed to auto-flag review {review.id}: {flag_error}")
                 else:
                     review.moderation_status = "approved"
                     review.save(update_fields=["moderation_status"])
-                return
-            
-            # 1. Check for spoilers (only if user didn't manually mark it)
-            is_spoiler = False
-            if not review.is_spoiler:
-                try:
-                    is_spoiler = deepseek_service.check_spoiler(film.title, review.content)
-                    if is_spoiler:
-                        review.is_auto_detected_spoiler = True
-                except Exception as e:
-                    logger.error(f"Error detecting spoiler: {e}")
-                    # Continue without spoiler detection if it fails
-            
-            # 2. Check for inappropriate content (profanity, racism, sexism, etc.)
-            try:
-                moderation_result = deepseek_service.moderate_comment(review.content, blacklist)
-            except Exception as e:
-                logger.error(f"Error calling DeepSeek moderation API: {e}")
-                # If API call fails, only check blacklist
-                comment_lower = review.content.lower()
-                has_blacklisted = any(word.lower() in comment_lower for word in blacklist)
-                if has_blacklisted:
-                    review.moderation_status = "pending"
-                    review.moderation_reason = "Contains blacklisted words"
-                    review.save(update_fields=["moderation_status", "moderation_reason"])
-                else:
-                    # No blacklisted words, approve it
-                    review.moderation_status = "approved"
-                    review.save(update_fields=["moderation_status"])
-                return
-            
-            content_type = moderation_result.get("content_type", "none")
-            needs_moderation = moderation_result.get("needs_moderation", False)
-            
-            logger.info(f"DeepSeek moderation result for review {review.id}: needs_moderation={needs_moderation}, content_type={content_type}, is_spoiler={is_spoiler}")
-            
-            # If inappropriate content detected (profanity, racism, sexism, etc.), flag for admin review
-            if needs_moderation and content_type not in ["none", ""]:
-                # Flag for admin review - contains profanity, racism, sexism, etc.
-                review.moderation_status = "pending"
-                review.moderation_reason = moderation_result.get("reason", f"Content flagged: {content_type}")
-                logger.info(f"Review {review.id} flagged for moderation: {review.moderation_reason}")
-                review.save(update_fields=["moderation_status", "moderation_reason", "is_auto_detected_spoiler"])
-            elif is_spoiler:
-                # Only spoiler detected - approve but mark as spoiler (will be blurred in frontend)
-                review.moderation_status = "approved"
-                review.is_auto_detected_spoiler = True
-                logger.info(f"Review {review.id} approved with spoiler tag")
-                review.save(update_fields=["moderation_status", "is_auto_detected_spoiler"])
+                # Don't return here - continue to badge check and response
             else:
-                # No issues - auto-approve
-                review.moderation_status = "approved"
-                logger.info(f"Review {review.id} auto-approved")
-                review.save(update_fields=["moderation_status"])
+                # API key is configured, proceed with full AI moderation
+                # 1. Check for spoilers (only if user didn't manually mark it)
+                is_spoiler = False
+                if not review.is_spoiler:
+                    try:
+                        logger.info(f"Checking spoiler for review content: '{review.content}' (film: {film.title})")
+                        is_spoiler = deepseek_service.check_spoiler(film.title, review.content)
+                        logger.info(f"Spoiler detection result: {is_spoiler}")
+                        if is_spoiler:
+                            review.is_auto_detected_spoiler = True
+                            logger.info(f"Review {review.id} marked as auto-detected spoiler")
+                    except Exception as e:
+                        logger.error(f"Error detecting spoiler: {e}", exc_info=True)
+                        # Continue without spoiler detection if it fails
+                else:
+                    logger.info(f"Skipping spoiler detection - user manually marked as spoiler: {review.is_spoiler}")
+                
+                # 2. Check for inappropriate content (profanity, racism, sexism, etc.)
+                try:
+                    moderation_result = deepseek_service.moderate_comment(review.content, blacklist)
+                except Exception as e:
+                    logger.error(f"Error calling DeepSeek moderation API: {e}")
+                    # If API call fails, only check blacklist
+                    comment_lower = review.content.lower()
+                    has_blacklisted = any(word.lower() in comment_lower for word in blacklist)
+                    if has_blacklisted:
+                        review.moderation_status = "pending"
+                        review.moderation_reason = "Contains blacklisted words"
+                        review.save(update_fields=["moderation_status", "moderation_reason"])
+                    else:
+                        # No blacklisted words, approve it
+                        review.moderation_status = "approved"
+                        review.save(update_fields=["moderation_status"])
+                    # Continue to badge check and response - don't return
+                else:
+                    content_type = moderation_result.get("content_type", "none")
+                    needs_moderation = moderation_result.get("needs_moderation", False)
+                    
+                    logger.info(f"DeepSeek moderation result for review {review.id}: needs_moderation={needs_moderation}, content_type={content_type}, is_spoiler={is_spoiler}")
+                    
+                    # If inappropriate content detected (profanity, racism, sexism, etc.), flag for admin review
+                    if needs_moderation and content_type not in ["none", ""]:
+                        # Flag for admin review - contains profanity, racism, sexism, etc.
+                        review.moderation_status = "pending"
+                        review.moderation_reason = moderation_result.get("reason", f"Content flagged: {content_type}")
+                        logger.info(f"Review {review.id} flagged for moderation: {review.moderation_reason}")
+                        review.save(update_fields=["moderation_status", "moderation_reason", "is_auto_detected_spoiler"])
+
+                        # Auto-create a system flag so it appears in moderation queues
+                        try:
+                            admin_user = User.objects.filter(is_superuser=True).first() or User.objects.filter(is_staff=True).first()
+                            if admin_user:
+                                CommentFlag.objects.get_or_create(
+                                    user=admin_user,
+                                    review=review,
+                                    defaults={
+                                        "reason": "inappropriate",
+                                        "description": moderation_result.get("reason", "Flagged by AI moderation"),
+                                    },
+                                )
+                        except Exception as flag_error:
+                            logger.error(f"Failed to auto-flag review {review.id}: {flag_error}")
+                    elif is_spoiler:
+                        # Only spoiler detected - approve but mark as spoiler (will be blurred in frontend)
+                        review.moderation_status = "approved"
+                        review.is_auto_detected_spoiler = True
+                        logger.info(f"Review {review.id} approved with spoiler tag")
+                        review.save(update_fields=["moderation_status", "is_auto_detected_spoiler"])
+                    else:
+                        # No issues - auto-approve
+                        review.moderation_status = "approved"
+                        logger.info(f"Review {review.id} auto-approved")
+                        review.save(update_fields=["moderation_status"])
                 
         except Exception as e:
-            logger.error(f"Unexpected error in DeepSeek analysis: {e}")
+            logger.error(f"Unexpected error in DeepSeek analysis: {e}", exc_info=True)
             # If there's an unexpected error, check blacklist at least
             try:
                 from django.conf import settings
@@ -890,7 +926,17 @@ class ReviewCreateView(CreateAPIView):
             # Continue even if badge checking fails
 
         response_serializer = ReviewSerializer(review, context={"request": request})
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        response_data = response_serializer.data
+        
+        # Add moderation info to response so frontend can inform user
+        if review.moderation_status == "pending":
+            response_data["moderation_message"] = (
+                "Your review has been submitted for moderation. "
+                f"Reason: {review.moderation_reason or 'Automatic content check'}. "
+                "It will be visible once approved by a moderator."
+            )
+        
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
 
 class ReviewDetailView(RetrieveUpdateDestroyAPIView):
@@ -1024,7 +1070,15 @@ class UserReviewsView(ListAPIView):
         username = self.kwargs.get("username")
         try:
             user = User.objects.get(username=username)
-            return Review.objects.filter(user=user).select_related("user", "film")
+            # Only show approved reviews unless the user is viewing their own profile or is an admin
+            queryset = Review.objects.filter(user=user).select_related("user", "film")
+            
+            # Filter to only approved reviews for public view
+            if not self.request.user.is_authenticated or \
+               (self.request.user.username != username and not self.request.user.is_staff):
+                queryset = queryset.filter(moderation_status="approved")
+            
+            return queryset.order_by("-created_at")
         except User.DoesNotExist:
             return Review.objects.none()
 

@@ -212,7 +212,16 @@
                   </span>
                 </div>
               </div>
-              <p class="review-content" *ngIf="editingReview?.id !== review.id">{{ review.content }}</p>
+              
+              <!-- Spoiler Warning with Click to Reveal -->
+              <div *ngIf="editingReview?.id !== review.id">
+                <div *ngIf="review.contains_spoiler && !review.isRevealed" 
+                     class="spoiler-warning"
+                     (click)="toggleSpoiler(review)">
+                  <span class="spoiler-text">⚠️ SPOILER - Click to reveal</span>
+                </div>
+                <p class="review-content" *ngIf="!review.contains_spoiler || review.isRevealed">{{ review.content }}</p>
+              </div>
               <!-- Edit Form -->
               <div *ngIf="editingReview?.id === review.id" class="review-edit-form">
                 <input type="text" [(ngModel)]="editReviewTitle" placeholder="Review Title" class="review-edit-input" />

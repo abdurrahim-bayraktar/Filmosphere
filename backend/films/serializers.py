@@ -346,12 +346,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         return False
 
     def get_content(self, obj):
-        """Hide content if it contains spoiler (FR06.3, FR06.4)."""
-        request = self.context.get("request")
-        show_spoiler = request and request.query_params.get("show_spoiler", "false").lower() == "true"
-        
-        if obj.contains_spoiler and not show_spoiler:
-            return "[SPOILER - Click to reveal]"
+        """Return the review content. Frontend handles spoiler display."""
+        # Always return full content - let frontend handle spoiler blur/reveal
         return obj.content
 
 

@@ -786,12 +786,15 @@ export class AdminComponent implements OnInit {
   }
 
   setupMenuItems() {
-    this.menuItems = [
-      { label: 'My Profile', icon: 'pi pi-user', routerLink: ['/profile'] },
-      { label: 'Home', icon: 'pi pi-home', routerLink: ['/home'] },
-      { separator: true },
-      { label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() }
+    const items: MenuItem[] = [
+      { label: 'My Profile', icon: 'pi pi-user', routerLink: ['/profile'] } as MenuItem,
+      { label: 'Home', icon: 'pi pi-home', routerLink: ['/home'] } as MenuItem,
+      { label: 'Admin', icon: 'pi pi-cog', routerLink: ['/admin'] } as MenuItem,
+      { separator: true } as MenuItem,
+      { label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() } as MenuItem
     ];
+
+    this.menuItems = items;
   }
 
   checkAuth() {
@@ -820,6 +823,7 @@ export class AdminComponent implements OnInit {
           const isStaff = res.is_staff || res.user?.is_staff || false;
           const isSuperuser = res.is_superuser || res.user?.is_superuser || false;
           this.isAdmin = isStaff || isSuperuser;
+          this.setupMenuItems();
           
           console.log("[ADMIN] Admin check:", { isStaff, isSuperuser, isAdmin: this.isAdmin });
           

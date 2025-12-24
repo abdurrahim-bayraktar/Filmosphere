@@ -57,6 +57,7 @@ export class RecommendationChatComponent implements OnInit {
   user: any = null;
   avatarLabel: string = "";
   avatarImage: string | null = null;
+  isAdmin = false;
   menuItems: MenuItem[] = [];
 
   private API_URL = 'http://127.0.0.1:8000/api/recommendations/chat/';
@@ -68,15 +69,21 @@ export class RecommendationChatComponent implements OnInit {
 
   ngOnInit() {
     this.loadUser();
-    this.setupMenuItems();
   }
 
   setupMenuItems() {
-    this.menuItems = [
-      { label: 'My Profile', icon: 'pi pi-user', routerLink: ['/profile'] },
-      { separator: true },
-      { label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() }
+    const items: MenuItem[] = [
+      { label: 'My Profile', icon: 'pi pi-user', routerLink: ['/profile'] } as MenuItem,
     ];
+
+    if (this.isAdmin) {
+      items.push({ label: 'Admin', icon: 'pi pi-cog', routerLink: ['/admin'] } as MenuItem);
+    }
+
+    items.push({ separator: true } as MenuItem);
+    items.push({ label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() } as MenuItem);
+
+    this.menuItems = items;
   }
 
   loadUser() {
@@ -86,9 +93,11 @@ export class RecommendationChatComponent implements OnInit {
       try {
         const usr = JSON.parse(cached);
         this.user = usr;
+        this.isAdmin = !!(usr.is_staff || usr.is_superuser);
         // Backend returns profile_picture_url directly, not in profile.avatar
         this.avatarImage = usr.profile_picture_url || usr.profile?.profile_picture_url || usr.profile?.avatar || null;
         this.avatarLabel = (usr.username || usr.user?.username || "U")[0]?.toUpperCase() || "U";
+        this.setupMenuItems();
       } catch (e) {
         console.error('Error parsing cached user:', e);
       }
@@ -102,10 +111,12 @@ export class RecommendationChatComponent implements OnInit {
     }).subscribe({
       next: (res: any) => {
         this.user = res;
+        this.isAdmin = !!(res.is_staff || res.is_superuser);
         // Backend returns profile_picture_url directly in serializer.data
         this.avatarImage = res.profile_picture_url || res.profile?.profile_picture_url || null;
         this.avatarLabel = (res.username || res.user?.username || "U")[0]?.toUpperCase() || "U";
         localStorage.setItem("user_profile", JSON.stringify(res));
+        this.setupMenuItems();
       },
       error: (err) => {
         console.error('Error loading user:', err);

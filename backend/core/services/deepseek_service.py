@@ -17,7 +17,8 @@ class DeepSeekService:
     BASE_URL = "https://api.deepseek.com/v1"
 
     def __init__(self, http_client: HttpClient | None = None):
-        self.http_client = http_client or HttpClient()
+        base_url = getattr(settings, "DEEPSEEK_BASE", self.BASE_URL)
+        self.http_client = http_client or HttpClient(base_url=base_url)
         self.api_key = getattr(settings, "DEEPSEEK_API_KEY", "")
 
     def get_recommendations(
@@ -176,13 +177,16 @@ class DeepSeekService:
             return False
 
         prompt = self._build_spoiler_check_prompt(film_title, comment_text)
+        logger.info(f"Spoiler check prompt: {prompt}")
 
         try:
             response = self._call_deepseek_api(prompt)
+            logger.info(f"Spoiler check API response: {response}")
             is_spoiler = self._parse_spoiler_response(response)
+            logger.info(f"Parsed spoiler result: {is_spoiler}")
             return is_spoiler
         except Exception as e:
-            logger.error(f"Error checking spoiler with DeepSeek: {e}")
+            logger.error(f"Error checking spoiler with DeepSeek: {e}", exc_info=True)
             return False
 
     def _build_spoiler_check_prompt(self, film_title: str, comment_text: str) -> str:

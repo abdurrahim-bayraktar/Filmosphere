@@ -43,6 +43,7 @@ export class UserSearchComponent implements OnInit, OnDestroy {
   user: any = null;
   avatarLabel: string = "";
   avatarImage: string | null = null;
+  isAdmin = false;
   menuItems: MenuItem[] = [];
 
   private searchSubject = new Subject<string>();
@@ -55,7 +56,6 @@ export class UserSearchComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadUser();
-    this.setupMenuItems();
     
     // Setup debounced search
     this.searchSubject.pipe(
@@ -81,12 +81,19 @@ export class UserSearchComponent implements OnInit, OnDestroy {
   }
 
   setupMenuItems() {
-    this.menuItems = [
-      { label: 'My Profile', icon: 'pi pi-user', routerLink: ['/profile'] },
-      { label: 'Home', icon: 'pi pi-home', routerLink: ['/home'] },
-      { separator: true },
-      { label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() }
+    const items: MenuItem[] = [
+      { label: 'My Profile', icon: 'pi pi-user', routerLink: ['/profile'] } as MenuItem,
+      { label: 'Home', icon: 'pi pi-home', routerLink: ['/home'] } as MenuItem,
     ];
+
+    if (this.isAdmin) {
+      items.push({ label: 'Admin', icon: 'pi pi-cog', routerLink: ['/admin'] } as MenuItem);
+    }
+
+    items.push({ separator: true } as MenuItem);
+    items.push({ label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() } as MenuItem);
+
+    this.menuItems = items;
   }
 
   loadUser() {
@@ -96,8 +103,10 @@ export class UserSearchComponent implements OnInit, OnDestroy {
       try {
         const usr = JSON.parse(cached);
         this.user = usr;
+        this.isAdmin = !!(usr.is_staff || usr.is_superuser);
         this.avatarImage = usr.profile_picture_url || usr.profile?.profile_picture_url || usr.profile?.avatar || null;
         this.avatarLabel = (usr.username || usr.user?.username || "U")[0]?.toUpperCase() || "U";
+        this.setupMenuItems();
       } catch (e) {
         console.error('Error parsing cached user:', e);
       }
@@ -111,9 +120,11 @@ export class UserSearchComponent implements OnInit, OnDestroy {
     }).subscribe({
       next: (res: any) => {
         this.user = res;
+        this.isAdmin = !!(res.is_staff || res.is_superuser);
         this.avatarImage = res.profile_picture_url || res.profile?.profile_picture_url || null;
         this.avatarLabel = (res.username || res.user?.username || "U")[0]?.toUpperCase() || "U";
         localStorage.setItem("user_profile", JSON.stringify(res));
+        this.setupMenuItems();
       },
       error: (err) => {
         console.error('Error loading user:', err);

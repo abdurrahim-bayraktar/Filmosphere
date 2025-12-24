@@ -74,6 +74,7 @@ export class FilmDetailComponent implements OnInit {
   user: any = null;
   avatarLabel: string = '';
   avatarImage: string | null = null;
+  isAdmin = false;
   menuItems: MenuItem[] = [];
 
   // Lists state
@@ -88,7 +89,6 @@ export class FilmDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.setupMenuItems();
     this.loadUser();
     this.route.paramMap.subscribe(params => {
       this.imdbId = params.get('id') || 'tt1375666'; 
@@ -97,12 +97,19 @@ export class FilmDetailComponent implements OnInit {
   }
 
   setupMenuItems() {
-    this.menuItems = [
-      { label: 'Home', icon: 'pi pi-home', routerLink: ['/home'] },
-      { label: 'My Profile', icon: 'pi pi-user', routerLink: ['/profile'] },
-      { separator: true },
-      { label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() }
+    const items: MenuItem[] = [
+      { label: 'Home', icon: 'pi pi-home', routerLink: ['/home'] } as MenuItem,
+      { label: 'My Profile', icon: 'pi pi-user', routerLink: ['/profile'] } as MenuItem,
     ];
+
+    if (this.isAdmin) {
+      items.push({ label: 'Admin', icon: 'pi pi-cog', routerLink: ['/admin'] } as MenuItem);
+    }
+
+    items.push({ separator: true } as MenuItem);
+    items.push({ label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() } as MenuItem);
+
+    this.menuItems = items;
   }
 
   loadUser() {
@@ -111,8 +118,10 @@ export class FilmDetailComponent implements OnInit {
       try {
         const usr = JSON.parse(cached);
         this.user = usr;
+        this.isAdmin = !!(usr.is_staff || usr.is_superuser);
         this.avatarImage = usr.profile_picture_url || usr.profile?.profile_picture_url || null;
         this.avatarLabel = (usr.username || usr.user?.username || 'U')[0]?.toUpperCase() || 'U';
+        this.setupMenuItems();
       } catch (e) {
         console.error('Error parsing cached user:', e);
       }
@@ -126,9 +135,11 @@ export class FilmDetailComponent implements OnInit {
     }).subscribe({
       next: (res: any) => {
         this.user = res;
+        this.isAdmin = !!(res.is_staff || res.is_superuser);
         this.avatarImage = res.profile_picture_url || res.profile?.profile_picture_url || null;
         this.avatarLabel = (res.username || res.user?.username || 'U')[0]?.toUpperCase() || 'U';
         localStorage.setItem('user_profile', JSON.stringify(res));
+        this.setupMenuItems();
       },
       error: (err) => console.error('Error loading user:', err)
     });
@@ -223,21 +234,66 @@ export class FilmDetailComponent implements OnInit {
   loadReviews() {
     this.filmService.getFilmReviews(this.imdbId).subscribe({
       next: (data: any) => {
+        console.log('=== REVIEWS DEBUG ===');
+        console.log('Raw data:', data);
+        console.log('Is array?', Array.isArray(data));
+        console.log('data.results?', data?.results);
+        
         // DRF may return a paginated object; normalize to array
         const items = Array.isArray(data) ? data : data?.results || [];
+        console.log('Items array:', items);
+        console.log('Items length:', items.length);
 
         this.reviews = items.map((r: any) => ({
           ...r,
           isRevealed: false,
         }));
+        console.log('Final this.reviews:', this.reviews);
+        console.log('Final this.reviews.length:', this.reviews.length);
+        console.log('====================');
       },
-      error: (err) => console.error('Error loading reviews:', err)
+      error: (err) => {
+        console.error('=== ERROR LOADING REVIEWS ===');
+        console.error('Error:', err);
+        console.error('Status:', err.status);
+        console.error('Message:', err.message);
+        console.error('Error details:', err.error);
+        console.error('============================');
+      }
     });
   }
 
   toggleSpoiler(review: Review) {
     review.isRevealed = !review.isRevealed;
   }
+
+  toggleLike(review: Review) {
+    if (!this.isLoggedIn()) {
+      return;
+    }
+
+    const token = localStorage.getItem('access');
+    if (!token) return;
+
+    const headers = { 'Authorization': `Bearer ${token}` };
+
+    this.http.post(`http://127.0.0.1:8000/api/reviews/${review.id}/like`, {}, { headers })
+      .subscribe({
+        next: (response: any) => {
+          // Update the review with the new data from the server
+          review.is_liked = response.review.is_liked;
+          review.likes_count = response.review.likes_count;
+        },
+        error: (err) => {
+          console.error('Error toggling like:', err);
+        }
+      });
+  }
+
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('access');
+  }
+
 
   getActorName(nameData: any): string {
       if (!nameData) return 'Unknown';
@@ -467,11 +523,19 @@ export class FilmDetailComponent implements OnInit {
     }
     
     this.filmService.createReview(this.imdbId, payload).subscribe({
-      next: () => {
+      next: (response: any) => {
         this.showReviewDialog = false;
         this.newReview = { title: '', content: '' }; // Reset
         this.loadReviews(); // refresh list
-        console.log('Review posted successfully');
+        
+        // Check if review was flagged for moderation
+        if (response.moderation_message) {
+          alert(response.moderation_message);
+          console.log('Review submitted for moderation:', response.moderation_message);
+        } else {
+          alert('Review posted successfully!');
+          console.log('Review posted successfully');
+        }
       },
       error: (err) => {
         console.error('Error creating review:', err);

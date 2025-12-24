@@ -112,11 +112,19 @@ export class HomeComponent implements OnInit, OnDestroy {
   
 
   setupMenuItems() {
-    this.menuItems = [
-      { label: 'My Profile', icon: 'pi pi-user', routerLink: ['/profile'] },
-      { separator: true },
-      { label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() }
+    const menuItems: MenuItem[] = [
+      { label: 'My Profile', icon: 'pi pi-user', routerLink: ['/profile'] } as MenuItem,
     ];
+
+    // Add Admin link if user is admin
+    if (this.user && (this.user.is_staff || this.user.is_superuser)) {
+      menuItems.push({ label: 'Admin', icon: 'pi pi-cog', routerLink: ['/admin'] } as MenuItem);
+    }
+
+    menuItems.push({ separator: true } as MenuItem);
+    menuItems.push({ label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() } as MenuItem);
+
+    this.menuItems = menuItems;
   }
 
  loadUser() {
@@ -129,6 +137,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         // Backend returns profile_picture_url directly, not in profile.avatar
         this.avatarImage = usr.profile_picture_url || usr.profile?.profile_picture_url || usr.profile?.avatar || null;
         this.avatarLabel = (usr.username || usr.user?.username || "U")[0]?.toUpperCase() || "U";
+        this.setupMenuItems();
       } catch (e) {
         console.error('Error parsing cached user:', e);
       }
@@ -147,6 +156,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           this.avatarImage = res.profile_picture_url || res.profile?.profile_picture_url || res.profile?.avatar || null;
           this.avatarLabel = (res.username || res.user?.username || "U")[0]?.toUpperCase() || "U";
           localStorage.setItem("user_profile", JSON.stringify(res));
+          this.setupMenuItems();
         }
       });
   }
@@ -310,9 +320,13 @@ export class HomeComponent implements OnInit, OnDestroy {
           }
         });
 
+        // Filter to exclude flagged reviews (not approved) and spoiler reviews
         // Sort by likes_count descending and take top 10
         this.topComments = allComments
-          .filter(comment => comment.moderation_status !== 'rejected')
+          .filter(comment => 
+            comment.moderation_status === 'approved' && 
+            !comment.contains_spoiler
+          )
           .sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0))
           .slice(0, 10);
       },
@@ -328,13 +342,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
 
   openMovieDetail(movie: any) {
-    if (movie.imdb_id || movie.id) {
-      this.selectedMovie = movie;
-      this.modalVisible = true;
-    } else {
-      // Navigate to film detail page
-      this.router.navigate(['/film-details', movie.id || movie.imdb_id]);
-    }
+    // Navigate to film detail page instead of showing modal
+    this.router.navigate(['/film-details', movie.id || movie.imdb_id]);
   }
 
   closeMovieDetail() {

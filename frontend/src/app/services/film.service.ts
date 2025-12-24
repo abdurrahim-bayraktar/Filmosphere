@@ -82,8 +82,10 @@ isLoggedIn(): boolean {
   }
 
   getFilmReviews(imdbId: string): Observable<any> {
+    // Include auth headers if user is logged in (to get is_liked status)
+    const headers = this.isLoggedIn() ? this.getAuthHeaders() : undefined;
     // DRF paginates: returns { count, next, previous, results: [...] }
-    return this.http.get(`${this.apiUrl}/films/${imdbId}/reviews`);
+    return this.http.get(`${this.apiUrl}/films/${imdbId}/reviews`, { headers });
   }
 
   // --- Review Update & Delete ---

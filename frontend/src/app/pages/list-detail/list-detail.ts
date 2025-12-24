@@ -37,6 +37,7 @@ export class ListDetailComponent implements OnInit {
   navbarAvatarLabel = '';
   navbarAvatarImage: string | null = null;
   navbarUsername: string = '';
+  isAdmin = false;
   menuItems: MenuItem[] = [];
 
   constructor(
@@ -47,7 +48,6 @@ export class ListDetailComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.setupMenuItems();
     this.loadNavbarUser();
     
     this.route.paramMap.subscribe(params => {
@@ -60,12 +60,19 @@ export class ListDetailComponent implements OnInit {
   }
 
   setupMenuItems() {
-    this.menuItems = [
-      { label: 'Home', icon: 'pi pi-home', routerLink: ['/home'] },
-      { label: 'My Profile', icon: 'pi pi-user', routerLink: ['/profile'] },
-      { separator: true },
-      { label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() }
+    const items: MenuItem[] = [
+      { label: 'Home', icon: 'pi pi-home', routerLink: ['/home'] } as MenuItem,
+      { label: 'My Profile', icon: 'pi pi-user', routerLink: ['/profile'] } as MenuItem,
     ];
+
+    if (this.isAdmin) {
+      items.push({ label: 'Admin', icon: 'pi pi-cog', routerLink: ['/admin'] } as MenuItem);
+    }
+
+    items.push({ separator: true } as MenuItem);
+    items.push({ label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() } as MenuItem);
+
+    this.menuItems = items;
   }
 
   loadNavbarUser() {
@@ -76,6 +83,8 @@ export class ListDetailComponent implements OnInit {
         this.navbarAvatarImage = usr.profile_picture_url || usr.profile?.profile_picture_url || null;
         this.navbarAvatarLabel = (usr.username || usr.user?.username || "U")[0]?.toUpperCase() || "U";
         this.navbarUsername = usr.username || usr.user?.username || "Guest";
+        this.isAdmin = !!(usr.is_staff || usr.is_superuser);
+        this.setupMenuItems();
       } catch {}
     }
 
@@ -92,6 +101,8 @@ export class ListDetailComponent implements OnInit {
           this.navbarAvatarImage = res.profile_picture_url || res.profile?.profile_picture_url || null;
           this.navbarAvatarLabel = (res.username || res.user?.username || "U")[0]?.toUpperCase() || "U";
           this.navbarUsername = res.username || res.user?.username || "Guest";
+          this.isAdmin = !!(res.is_staff || res.is_superuser);
+          this.setupMenuItems();
         },
         error: (err) => {
           console.error('Error loading navbar user:', err);

@@ -76,3 +76,62 @@
   box-shadow: 0 0 6px rgba(229, 9, 20, 0.8) !important;
 }
 
+/* Error Messages */
+.error-container {
+  background: rgba(220, 53, 69, 0.15);
+  border: 1px solid #dc3545;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.error-title {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  margin: 0 0 10px 0;
+  font-weight: 600;
+}
+
+.error-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.error-item {
+  color: #ff8787;
+  font-size: 0.85rem;
+  padding: 5px 0;
+  margin: 0;
+}
+
+.error-item:before {
+  content: "• ";
+  margin-right: 8px;
+  color: #dc3545;
+}
+
+/* Success Message */
+.success-container {
+  background: rgba(40, 167, 69, 0.15);
+  border: 1px solid #28a745;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.success-title {
+  color: #6be39b;
+  font-size: 0.9rem;
+  margin: 0 0 6px 0;
+  font-weight: 700;
+}
+
+.success-text {
+  color: #b8ffd1;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
