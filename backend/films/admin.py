@@ -92,14 +92,16 @@ class ReviewAdmin(admin.ModelAdmin):
     search_fields = ["title", "user__username", "film__title", "content"]
     readonly_fields = ["created_at", "updated_at", "likes_count", "flagged_count", "moderated_at"]
     raw_id_fields = ["user", "film", "moderated_by"]
-
+    
     def get_queryset(self, request):
+        """Show flagged/pending comments first for admin."""
         qs = super().get_queryset(request)
         return qs.select_related("user", "film", "moderated_by")
-
+    
     actions = ["approve_comments", "reject_comments"]
-
+    
     def approve_comments(self, request, queryset):
+        """Approve selected comments."""
         from django.utils import timezone
         updated = queryset.update(
             moderation_status="approved",
@@ -108,8 +110,9 @@ class ReviewAdmin(admin.ModelAdmin):
         )
         self.message_user(request, f"{updated} comments approved.")
     approve_comments.short_description = "Approve selected comments"
-
+    
     def reject_comments(self, request, queryset):
+        """Reject selected comments."""
         from django.utils import timezone
         updated = queryset.update(
             moderation_status="rejected",
@@ -210,3 +213,4 @@ class RecommendationLogAdmin(admin.ModelAdmin):
         txt = (obj.user_message or "").strip()
         return (txt[:60] + "…") if len(txt) > 60 else txt
     short_message.short_description = "user_message"
+
