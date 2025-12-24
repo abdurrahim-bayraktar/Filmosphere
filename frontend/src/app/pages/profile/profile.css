@@ -414,6 +414,29 @@
   margin-bottom: 50px;
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #333;
+}
+
+.section-header h2 {
+  color: #e50914;
+  font-size: 1.8rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.section-header .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .section h2 {
   color: #e50914;
   font-size: 1.8rem;
@@ -455,7 +478,7 @@
 /* WATCHED FILMS */
 .watched-films-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   gap: 20px;
 }
 
@@ -466,6 +489,9 @@
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   border: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .watched-film-card:hover {
@@ -476,22 +502,34 @@
 
 .film-poster {
   width: 100%;
-  height: 300px;
+  aspect-ratio: 2/3;
   object-fit: cover;
   background: #222;
+  display: block;
+  margin: 0 auto;
 }
 
 .film-info {
   padding: 15px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .film-info h3 {
   margin: 0 0 8px 0;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
   color: white;
-  white-space: nowrap;
+  line-height: 1.3;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .film-info p {
@@ -502,9 +540,11 @@
 
 .rating-display {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
   margin-top: 10px;
+  width: 100%;
 }
 
 .rating-value {
@@ -530,10 +570,12 @@
   padding: 20px;
   border-radius: 8px;
   border: 1px solid #333;
-  transition: border-color 0.2s;
+  transition: all 0.3s ease;
 }
 
 .list-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
   border-color: #e50914;
 }
 
@@ -664,6 +706,37 @@
   transition: border-color 0.2s;
 }
 
+.review-card-with-poster {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 15px;
+  align-items: stretch;
+}
+
+.review-poster {
+  width: 150px;
+  aspect-ratio: 2/3;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0f0f0f;
+  border: 1px solid #222;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.review-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.review-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .review-card:hover {
   border-color: #e50914;
 }
@@ -682,17 +755,29 @@
   flex-wrap: wrap;
 }
 
+.film-info-in-review {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .film-link {
   color: #e50914;
   cursor: pointer;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.2s;
+  font-size: 1rem;
 }
 
 .film-link:hover {
   color: #b20710;
   text-decoration: underline;
+}
+
+.film-year {
+  color: #999;
+  font-size: 0.9rem;
 }
 
 .review-rating {
@@ -712,6 +797,128 @@
   gap: 15px;
   padding-top: 15px;
   border-top: 1px solid #333;
+  flex-wrap: wrap;
+}
+
+.review-actions {
+  display: flex;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.review-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 10px 0;
+  padding: 15px;
+  background: #1a1a1a;
+  border-radius: 6px;
+  border: 1px solid #444;
+}
+
+.review-edit-input {
+  padding: 8px;
+  background: #222;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: white;
+  font-size: 1rem;
+}
+
+.review-edit-textarea {
+  padding: 8px;
+  background: #222;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: white;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+.review-edit-rating {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.review-edit-rating label {
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.review-edit-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* Force white background and red text/icons for review edit buttons */
+:host ::ng-deep .review-edit-actions button.p-button,
+:host ::ng-deep .review-edit-actions .p-button,
+:host ::ng-deep .review-edit-actions .review-edit-btn,
+.review-edit-actions ::ng-deep button.p-button,
+.review-edit-actions ::ng-deep .p-button,
+.review-edit-actions ::ng-deep .review-edit-btn {
+  background: white !important;
+  background-color: white !important;
+  color: #e50914 !important;
+  border: 1px solid #e50914 !important;
+}
+
+:host ::ng-deep .review-edit-actions button.p-button .p-button-label,
+:host ::ng-deep .review-edit-actions .p-button .p-button-label,
+:host ::ng-deep .review-edit-actions .review-edit-btn .p-button-label,
+.review-edit-actions ::ng-deep button.p-button .p-button-label,
+.review-edit-actions ::ng-deep .p-button .p-button-label,
+.review-edit-actions ::ng-deep .review-edit-btn .p-button-label {
+  color: #e50914 !important;
+}
+
+:host ::ng-deep .review-edit-actions button.p-button .p-button-icon,
+:host ::ng-deep .review-edit-actions .p-button .p-button-icon,
+:host ::ng-deep .review-edit-actions .review-edit-btn .p-button-icon,
+.review-edit-actions ::ng-deep button.p-button .p-button-icon,
+.review-edit-actions ::ng-deep .p-button .p-button-icon,
+.review-edit-actions ::ng-deep .review-edit-btn .p-button-icon {
+  color: #e50914 !important;
+}
+
+.review-edit-actions ::ng-deep button.p-button:hover,
+.review-edit-actions ::ng-deep .p-button:hover,
+.review-edit-actions ::ng-deep .review-edit-btn:hover {
+  background: #f5f5f5 !important;
+  border-color: #e50914 !important;
+  color: #e50914 !important;
+}
+
+.review-edit-actions ::ng-deep button.p-button:hover .p-button-icon,
+.review-edit-actions ::ng-deep .p-button:hover .p-button-icon,
+.review-edit-actions ::ng-deep .review-edit-btn:hover .p-button-icon {
+  color: #e50914 !important;
+}
+
+.review-edit-actions ::ng-deep button.p-button:hover .p-button-label,
+.review-edit-actions ::ng-deep .p-button:hover .p-button-label,
+.review-edit-actions ::ng-deep .review-edit-btn:hover .p-button-label {
+  color: #e50914 !important;
+}
+
+/* Override any success/green button styles */
+.review-edit-actions ::ng-deep button.p-button.p-button-success,
+.review-edit-actions ::ng-deep .p-button.p-button-success,
+.review-edit-actions ::ng-deep .review-edit-btn.p-button-success {
+  background: white !important;
+  color: #e50914 !important;
+  border-color: #e50914 !important;
+}
+
+.review-edit-actions ::ng-deep button.p-button.p-button-success .p-button-icon,
+.review-edit-actions ::ng-deep .p-button.p-button-success .p-button-icon,
+.review-edit-actions ::ng-deep .review-edit-btn.p-button-success .p-button-icon {
+  color: #e50914 !important;
 }
 
 .review-date {

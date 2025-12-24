@@ -22,10 +22,25 @@ class FilmCacheService:
 
     def save_cache(self, imdb_id: str, payload: Dict[str, Any]) -> None:
         """Persist the given payload into the Film cache row."""
+        metadata = payload.get("metadata", {})
+        # Extract poster URL from metadata.primaryImage.url (IMDb format)
+        primary_image = metadata.get("primaryImage")
+        poster_url = None
+        if isinstance(primary_image, dict):
+            poster_url = primary_image.get("url")
+        elif isinstance(primary_image, str):
+            poster_url = primary_image
+        # Fallback to metadata.poster_url if primaryImage is not available
+        if not poster_url:
+            poster_url = metadata.get("poster_url")
+        
+        # Extract title from payload or metadata
+        title = payload.get("title") or metadata.get("primaryTitle") or metadata.get("title") or ""
+        
         defaults = {
-            "title": payload.get("title") or "",
-            "year": payload.get("metadata", {}).get("year"),
-            "poster_url": payload.get("metadata", {}).get("poster_url"),
+            "title": title,
+            "year": metadata.get("startYear") or metadata.get("year"),
+            "poster_url": poster_url,
             "full_json": payload,
             "cached_at": timezone.now(),
         }

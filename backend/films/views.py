@@ -171,6 +171,14 @@ class FilmRatingView(APIView):
         """Create or update a rating for a film."""
         film = self.get_film(imdb_id)
         
+        # Check if user has watched the film
+        from films.models import WatchedFilm
+        if not WatchedFilm.objects.filter(user=request.user, film=film).exists():
+            return Response(
+                {"detail": "You must mark this film as watched before rating it."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
         # Validate the data first
         serializer = RatingCreateUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -336,6 +344,14 @@ class FilmMoodView(APIView):
     def post(self, request: Request, imdb_id: str, *args: Any, **kwargs: Any) -> Response:
         """Create or update mood log for a film."""
         film = self.get_film(imdb_id)
+        
+        # Check if user has watched the film
+        from films.models import WatchedFilm
+        if not WatchedFilm.objects.filter(user=request.user, film=film).exists():
+            return Response(
+                {"detail": "You must mark this film as watched before logging your mood."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         
         # Validate the data first
         serializer = MoodCreateUpdateSerializer(data=request.data)
@@ -531,7 +547,7 @@ class ListListView(ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        # Get user's own lists and public lists from other users
+        # All lists are public, get user's own lists and all other lists
         return List.objects.filter(
             models.Q(user=user) | models.Q(is_public=True)
         ).select_related("user").prefetch_related("items__film").distinct()
@@ -544,7 +560,8 @@ class ListCreateView(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        list_obj = serializer.save(user=self.request.user)
+        # All lists are public by default
+        list_obj = serializer.save(user=self.request.user, is_public=True)
         
         # Check and award badges (FR05.2)
         try:
@@ -559,15 +576,31 @@ class ListCreateView(CreateAPIView):
 class ListDetailView(RetrieveUpdateDestroyAPIView):
     """Get, update, or delete a list (FR03.4)."""
 
-    serializer_class = ListSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            return ListCreateUpdateSerializer
+        return ListSerializer
 
     def get_queryset(self):
         user = self.request.user
-        # Users can only edit/delete their own lists, but can view public lists
+        # All lists are public, but users can only edit/delete their own lists
         return List.objects.filter(
             models.Q(user=user) | models.Q(is_public=True)
         ).select_related("user").prefetch_related("items__film")
+
+    def get_object(self):
+        """Override to allow viewing any public list."""
+        list_id = self.kwargs.get('list_id')
+        try:
+            list_obj = List.objects.select_related("user").prefetch_related("items__film").get(id=list_id)
+            # Allow viewing if list is public or user owns it
+            if list_obj.is_public or list_obj.user == self.request.user:
+                return list_obj
+            raise Http404("List not found or you don't have permission.")
+        except List.DoesNotExist:
+            raise Http404("List not found.")
 
     def destroy(self, request, *args, **kwargs):
         """Only allow users to delete their own lists."""
@@ -587,7 +620,11 @@ class ListDetailView(RetrieveUpdateDestroyAPIView):
                 {"detail": "You can only update your own lists."},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        return super().update(request, *args, **kwargs)
+        # Ensure is_public is always True
+        serializer = self.get_serializer(list_obj, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(is_public=True)
+        return Response(serializer.data)
 
 
 class ListAddFilmView(APIView):
@@ -733,6 +770,14 @@ class ReviewCreateView(CreateAPIView):
         except Film.DoesNotExist:
             raise Http404("Film not found")
 
+        # Check if user has watched the film
+        from films.models import WatchedFilm
+        if not WatchedFilm.objects.filter(user=request.user, film=film).exists():
+            return Response(
+                {"detail": "You must mark this film as watched before writing a review."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         review = serializer.save(user=request.user, film=film)
@@ -786,11 +831,18 @@ class ReviewCreateView(CreateAPIView):
 class ReviewDetailView(RetrieveUpdateDestroyAPIView):
     """Get, update, or delete a review."""
 
-    serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+    lookup_url_kwarg = 'review_id'
 
     def get_queryset(self):
         return Review.objects.select_related("user", "film").all()
+
+    def get_serializer_class(self):
+        """Use ReviewCreateUpdateSerializer for updates, ReviewSerializer for retrieval."""
+        if self.request.method in ['PUT', 'PATCH']:
+            return ReviewCreateUpdateSerializer
+        return ReviewSerializer
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -799,23 +851,42 @@ class ReviewDetailView(RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         """Only allow users to update their own reviews."""
-        review = self.get_object()
-        if review.user != request.user:
+        instance = self.get_object()
+        
+        if instance.user != request.user:
             return Response(
                 {"detail": "You can only update your own reviews."},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        return super().update(request, *args, **kwargs)
+        
+        # Use ReviewCreateUpdateSerializer for update
+        partial = kwargs.pop('partial', False)
+        serializer = ReviewCreateUpdateSerializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        # Refresh instance and return with full serializer
+        instance.refresh_from_db()
+        response_serializer = ReviewSerializer(instance, context={"request": request})
+        return Response(response_serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         """Only allow users to delete their own reviews."""
-        review = self.get_object()
-        if review.user != request.user:
+        try:
+            review = self.get_object()
+            if review.user != request.user:
+                return Response(
+                    {"detail": "You can only delete your own reviews."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            review.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            logger.error(f"Error deleting review: {e}", exc_info=True)
             return Response(
-                {"detail": "You can only delete your own reviews."},
-                status=status.HTTP_403_FORBIDDEN,
+                {"detail": f"Error deleting review: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-        return super().destroy(request, *args, **kwargs)
 
 
 class ReviewLikeView(APIView):

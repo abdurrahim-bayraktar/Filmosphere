@@ -1,0 +1,164 @@
+<!-- NAVBAR -->
+<div class="navbar">
+  <div class="navbar-left">
+    <h1 class="logo" (click)="goHome()" style="cursor: pointer;">FILMOSPHERE</h1>
+  </div>
+
+  <!-- 🔍 Search & Filter Films -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/film-search" routerLinkActive="active">
+      <i class="pi pi-search"></i>
+      <span>Search & Filter Films</span>
+    </a>
+  </div>
+
+  <!-- 👥 Search Users -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/user-search" routerLinkActive="active">
+      <i class="pi pi-users"></i>
+      <span>Search Users</span>
+    </a>
+  </div>
+
+  <!-- 🎬 Recommendation Chat -->
+  <div class="nav-link-wrapper">
+    <a class="nav-link" routerLink="/recommendation-chat" routerLinkActive="active">
+      <i class="pi pi-comments"></i>
+      <span>Recommendation Chat</span>
+    </a>
+  </div>
+
+  <!-- 👤 Profile / Avatar -->
+  <div class="navbar-right profile-menu-trigger" (click)="profileMenu.toggle($event)">
+    <p-avatar 
+      *ngIf="navbarAvatarImage"
+      [image]="navbarAvatarImage"
+      shape="circle"
+      style="width:50px; height:50px;">
+    </p-avatar>
+
+    <p-avatar 
+      *ngIf="!navbarAvatarImage && navbarAvatarLabel"
+      [label]="navbarAvatarLabel"
+      shape="circle"
+      style="background:#e50914; color:white; width:50px; height:50px; font-size:20px;">
+    </p-avatar>
+
+    <span class="username">{{ navbarUsername || 'Guest' }}</span>
+    <i class="pi pi-chevron-down dropdown-arrow"></i>
+  </div>
+</div>
+
+<p-popover 
+  #profileMenu 
+  appendTo="body" 
+  [style]="{width: '230px'}" 
+  styleClass="profile-dropdown-panel"
+>
+  <p-menu [model]="menuItems"></p-menu>
+</p-popover>
+
+<div class="list-management-container">
+  <div class="list-management-header">
+    <h1>My Lists</h1>
+    <p-button label="Create New List" icon="pi pi-plus" 
+      (click)="openCreateListDialog()" 
+      styleClass="p-button-danger"></p-button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading lists...</div>
+
+  <div *ngIf="!loading && lists.length === 0" class="empty-state">
+    <i class="pi pi-list" style="font-size: 3rem; color: #666; margin-bottom: 1rem;"></i>
+    <p>No lists created yet.</p>
+    <p-button label="Create Your First List" icon="pi pi-plus" 
+      (click)="openCreateListDialog()" 
+      styleClass="p-button-danger"></p-button>
+  </div>
+
+  <div *ngIf="!loading && lists.length > 0" class="lists-grid">
+    <div *ngFor="let list of lists" class="list-card">
+      <div class="list-header">
+        <h2 (click)="goToListDetail(list.id)" [style.cursor]="'pointer'">{{ list.title }}</h2>
+        <div class="list-actions">
+          <button pButton icon="pi pi-pencil" (click)="openEditListDialog(list); $event.stopPropagation()" 
+            styleClass="p-button-text p-button-sm" 
+            [style.color]="'#999'"
+            title="Edit List"></button>
+          <button pButton icon="pi pi-trash" (click)="deleteList(list); $event.stopPropagation()" 
+            styleClass="p-button-text p-button-sm" 
+            [style.color]="'#e50914'"
+            title="Delete List"></button>
+        </div>
+      </div>
+      
+      <p *ngIf="list.description" class="list-description">{{ list.description }}</p>
+      <p *ngIf="!list.description" class="list-description no-description">No description</p>
+      
+      <div class="list-meta">
+        <span class="film-count">{{ list.films_count || 0 }} films</span>
+      </div>
+
+      <!-- List Items -->
+      <div *ngIf="list.items && list.items.length > 0" class="list-items">
+        <div *ngFor="let item of list.items.slice(0, 6)" class="list-item" (click)="goToFilm(item.film_imdb_id)">
+          <img [src]="item.film_poster_url || item.film_poster || '/assets/default-poster.jpg'" 
+               [alt]="item.film_title" 
+               class="item-poster"
+               onerror="this.src='/assets/default-poster.jpg'">
+          <div class="item-info">
+            <h4>{{ item.film_title || 'Unknown Film' }}</h4>
+            <p *ngIf="item.film_year">{{ item.film_year }}</p>
+          </div>
+        </div>
+        <div *ngIf="list.items.length > 6" class="more-items">
+          <p>+ {{ list.items.length - 6 }} more films</p>
+        </div>
+      </div>
+      
+      <div *ngIf="!list.items || list.items.length === 0" class="empty-list">
+        <p>No films in this list yet.</p>
+        <p-button label="Add Films" icon="pi pi-plus" 
+          (click)="goHome()" 
+          styleClass="p-button-outlined p-button-sm"></p-button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create/Edit List Dialog -->
+<p-dialog 
+  [header]="editingList ? 'Edit List' : 'Create New List'" 
+  [(visible)]="showListDialog" 
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  styleClass="dark-dialog">
+  
+  <div class="list-form">
+    <div class="form-group">
+      <label>List Title *</label>
+      <input type="text" pInputText [(ngModel)]="listTitle" 
+        placeholder="Enter list title" 
+        class="form-input" />
+    </div>
+
+    <div class="form-group">
+      <label>Description</label>
+      <textarea pTextarea [(ngModel)]="listDescription" 
+        placeholder="Enter list description (optional)" 
+        rows="4"
+        class="form-textarea"></textarea>
+    </div>
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" icon="pi pi-times" 
+      (click)="closeListDialog()" 
+      styleClass="p-button-secondary"></p-button>
+    <p-button label="Save" icon="pi pi-check" 
+      (click)="saveList()" 
+      styleClass="p-button-danger"></p-button>
+  </ng-template>
+</p-dialog>
+

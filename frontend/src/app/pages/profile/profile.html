@@ -166,8 +166,8 @@
               [alt]="film.film_title" class="film-poster" 
               onerror="this.src='/assets/default-poster.jpg'">
             <div class="film-info">
-              <h3>{{ film.film_title }}</h3>
-              <p *ngIf="film.film_year">{{ film.film_year }}</p>
+              <h3>{{ getFilmTitle(film) }}</h3>
+              <p *ngIf="film.film_year || film.year">{{ film.film_year || film.year }}</p>
               <div *ngIf="film.rating" class="rating-display">
                 <p-rating [ngModel]="film.rating.overall_rating" [readonly]="true" [stars]="5"></p-rating>
                 <span class="rating-value">{{ film.rating.overall_rating }}/5</span>
@@ -190,25 +190,62 @@
             styleClass="p-button-danger p-button-sm"></p-button>
         </div>
         <div *ngIf="!loadingReviews && userReviews.length > 0" class="reviews-list">
-          <div *ngFor="let review of userReviews" class="review-card">
-            <div class="review-header">
-              <h3>{{ review.title }}</h3>
-              <div class="review-meta">
-                <span (click)="goToFilm(review.film_imdb_id)" class="film-link">
-                  {{ review.film_title }}
-                </span>
-                <span *ngIf="review.rating" class="review-rating">
-                  <p-rating [ngModel]="review.rating" [readonly]="true" [stars]="5"></p-rating>
-                </span>
-              </div>
+          <div *ngFor="let review of userReviews" class="review-card review-card-with-poster">
+            <div class="review-poster" (click)="goToFilm(review.film_imdb_id)">
+              <img [src]="review.film_poster_url || '/assets/default-poster.jpg'" 
+                   [alt]="review.film_title" 
+                   loading="lazy"
+                   onerror="this.src='/assets/default-poster.jpg'" />
             </div>
-            <p class="review-content">{{ review.content }}</p>
-            <div class="review-footer">
-              <span class="review-date">{{ review.created_at | date:'short' }}</span>
-              <span class="review-likes" *ngIf="review.likes_count > 0">
-                <i class="pi pi-heart"></i> {{ review.likes_count }}
-              </span>
-              <span *ngIf="review.contains_spoiler" class="spoiler-badge">Spoiler</span>
+            <div class="review-body">
+              <div class="review-header">
+                <h3>{{ review.title }}</h3>
+                <div class="review-meta">
+                  <div class="film-info-in-review">
+                    <span (click)="goToFilm(review.film_imdb_id)" class="film-link">
+                      {{ getFilmTitle(review) }}
+                    </span>
+                    <span *ngIf="review.film_year || review.year" class="film-year">({{ review.film_year || review.year }})</span>
+                  </div>
+                  <span *ngIf="review.rating" class="review-rating">
+                    <p-rating [ngModel]="review.rating" [readonly]="true" [stars]="5"></p-rating>
+                  </span>
+                </div>
+              </div>
+              <p class="review-content" *ngIf="editingReview?.id !== review.id">{{ review.content }}</p>
+              <!-- Edit Form -->
+              <div *ngIf="editingReview?.id === review.id" class="review-edit-form">
+                <input type="text" [(ngModel)]="editReviewTitle" placeholder="Review Title" class="review-edit-input" />
+                <textarea [(ngModel)]="editReviewContent" placeholder="Review Content" rows="4" class="review-edit-textarea"></textarea>
+                <div class="review-edit-rating">
+                  <label>Rating:</label>
+                  <p-rating [(ngModel)]="editReviewRating" [stars]="5"></p-rating>
+                </div>
+                <div class="review-edit-actions">
+                  <p-button label="Save" icon="pi pi-check" (click)="saveEditReview()" 
+                    styleClass="p-button-sm review-edit-btn"></p-button>
+                  <p-button label="Cancel" icon="pi pi-times" (click)="cancelEditReview()" 
+                    styleClass="p-button-sm review-edit-btn"></p-button>
+                </div>
+              </div>
+              <div class="review-footer">
+                <span class="review-date">{{ review.created_at | date:'short' }}</span>
+                <span class="review-likes" *ngIf="review.likes_count > 0">
+                  <i class="pi pi-heart"></i> {{ review.likes_count }}
+                </span>
+                <span *ngIf="review.contains_spoiler" class="spoiler-badge">Spoiler</span>
+                <!-- Edit & Delete Buttons (only for own reviews) -->
+                <div *ngIf="isReviewOwner(review) && editingReview?.id !== review.id" class="review-actions">
+                  <button pButton icon="pi pi-pencil" (click)="openEditReview(review)" 
+                    styleClass="p-button-text p-button-sm p-button-plain" 
+                    [style.color]="'#e50914'"
+                    title="Edit Review"></button>
+                  <button pButton icon="pi pi-trash" (click)="deleteReview(review)" 
+                    styleClass="p-button-text p-button-sm p-button-plain" 
+                    [style.color]="'#e50914'"
+                    title="Delete Review"></button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -217,21 +254,25 @@
 
     <!-- USER LISTS -->
     <div class="section">
-      <h2>My Lists</h2>
+      <div class="section-header">
+        <h2>My Lists</h2>
+        <p-button label="Manage Lists" icon="pi pi-cog" 
+          (click)="goToLists()"
+          styleClass="p-button-danger p-button-sm"></p-button>
+      </div>
       <div *ngIf="loadingLists" class="loading">Loading...</div>
       <div *ngIf="!loadingLists && userLists.length === 0" class="empty-state">
         <i class="pi pi-list" style="font-size: 2rem; color: #666; margin-bottom: 1rem;"></i>
         <p>No lists created yet.</p>
         <p-button label="Create a List" icon="pi pi-plus" 
+          (click)="goToLists()"
           styleClass="p-button-danger p-button-sm"></p-button>
       </div>
       <div *ngIf="!loadingLists && userLists.length > 0" class="lists-grid">
-        <div *ngFor="let list of userLists" class="list-card">
+        <div *ngFor="let list of userLists" class="list-card" (click)="goToListDetail(list.id)" [style.cursor]="'pointer'">
           <h3>{{ list.title }}</h3>
           <p *ngIf="list.description">{{ list.description }}</p>
           <p class="list-meta">{{ list.films_count || 0 }} films</p>
-          <span class="list-badge" *ngIf="list.is_public">Public</span>
-          <span class="list-badge private" *ngIf="!list.is_public">Private</span>
         </div>
       </div>
         </div>

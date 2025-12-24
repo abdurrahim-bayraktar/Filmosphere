@@ -8,6 +8,8 @@ import { AdminComponent } from './pages/admin/admin';
 import { FilmDetailComponent } from './pages/film-details/film-details';
 import { FilmSearch } from './pages/film-search/film-search';
 import { UserSearchComponent } from './pages/user-search/user-search';
+import { ListManagementComponent } from './pages/list-management/list-management';
+import { ListDetailComponent } from './pages/list-detail/list-detail';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -20,6 +22,8 @@ export const routes: Routes = [
   { path: 'film-details/:id', component: FilmDetailComponent },
   { path: 'film-search', component: FilmSearch },
   { path: 'user-search', component: UserSearchComponent },
+  { path: 'lists', component: ListManagementComponent },
+  { path: 'lists/:id', component: ListDetailComponent },
 
   // ✅ RECOMMENDATION CHAT (standalone component)
   {

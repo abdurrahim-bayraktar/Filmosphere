@@ -1,22 +1,21 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule, Router, NavigationEnd } from '@angular/router';
+import { filter, Subscription } from 'rxjs';
 
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
 import { FormsModule } from '@angular/forms';
-import { Select } from 'primeng/select';
 import { RatingModule } from 'primeng/rating';
 import { FileUploadModule } from 'primeng/fileupload';
 import { MenuModule } from 'primeng/menu';
 import { PopoverModule } from 'primeng/popover';
 import { Popover } from 'primeng/popover';
 import { MenuItem } from 'primeng/api';
-
-import { Router } from '@angular/router';
+import { FilmService } from '../../services/film.service';
 
 @Component({
   selector: 'app-profile',
@@ -29,7 +28,6 @@ import { Router } from '@angular/router';
     DialogModule,
     TextareaModule,
     FormsModule,
-    Select,
     RatingModule,
     FileUploadModule,
     RouterModule,
@@ -39,9 +37,11 @@ import { Router } from '@angular/router';
   templateUrl: './profile.html',
   styleUrl: './profile.css'
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
 
   @ViewChild('profileMenu') profileMenu!: Popover;
+  
+  private routerSubscription?: Subscription;
 
   user: any = { profile: {} };
   username: string = '';
@@ -104,16 +104,53 @@ export class ProfileComponent implements OnInit {
   constructor(
     private http: HttpClient, 
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private filmService: FilmService
   ) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.username = params['username'] || 'me';
-    this.loadUser();
+      this.loadUser();
       this.loadNavbarUser();
       this.setupMenuItems();
     });
+    
+    // Reload data when navigating to profile page (e.g., after rating a film or creating a list)
+    this.routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        if (event.url.startsWith('/profile')) {
+          // Update username from URL if needed
+          const urlMatch = event.url.match(/\/profile\/([^\/]+)/);
+          if (urlMatch && urlMatch[1] && urlMatch[1] !== 'me') {
+            this.username = urlMatch[1];
+            // Reload user data when username changes
+            this.loadUser();
+          } else if (event.url === '/profile' || event.url.startsWith('/profile/me')) {
+            // For 'me' or no username, keep current username or set to 'me'
+            const newUsername = this.username || 'me';
+            if (newUsername !== this.username) {
+              this.username = newUsername;
+              this.loadUser();
+            } else {
+              // Same username, just reload lists
+              this.loadWatchedFilms();
+              this.loadUserLists();
+            }
+          } else {
+            // Reload watched films, ratings, and lists when returning to profile
+            this.loadWatchedFilms();
+            this.loadUserLists();
+          }
+        }
+      });
+  }
+  
+  ngOnDestroy() {
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
   }
 
   // === SETUP MENU ITEMS ====================================================
@@ -282,9 +319,20 @@ export class ProfileComponent implements OnInit {
     this.http.get(`http://127.0.0.1:8000/api/users/${this.username}/watched`)
       .subscribe({
         next: (res: any) => {
-          this.watchedFilms = res.results || res || [];
+          const items = res.results || res || [];
+          this.watchedFilms = items.map((film: any) => ({
+            ...film,
+            film_poster_url:
+              film.film_poster_url ||
+              film.poster_url ||
+              film.poster ||
+              film.image ||
+              '/assets/default-poster.jpg',
+          }));
           // Load ratings for watched films
           this.loadRatingsForWatchedFilms();
+          // Load poster URLs from film details if missing
+          this.loadMissingPosters();
           this.loadingWatchedFilms = false;
         },
         error: () => {
@@ -292,6 +340,43 @@ export class ProfileComponent implements OnInit {
           this.loadingWatchedFilms = false;
         }
       });
+  }
+
+  // === LOAD MISSING POSTERS FROM FILM DETAILS ==========================
+  loadMissingPosters() {
+    const token = localStorage.getItem("access");
+    const headers = new HttpHeaders({
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    });
+
+    // For films without poster URLs, fetch from film details
+    this.watchedFilms.forEach((film: any) => {
+      if (!film.film_poster_url || film.film_poster_url === '/assets/default-poster.jpg') {
+        const imdbId = film.film_imdb_id;
+        if (imdbId) {
+          this.http.get(`http://127.0.0.1:8000/api/films/${imdbId}`, { headers })
+            .subscribe({
+              next: (filmData: any) => {
+                const posterUrl = filmData.metadata?.primaryImage?.url || 
+                                 filmData.posterUrl || 
+                                 filmData.poster_url;
+                if (posterUrl) {
+                  // Update the film in the array
+                  const filmIndex = this.watchedFilms.findIndex((f: any) => 
+                    f.film_imdb_id === imdbId
+                  );
+                  if (filmIndex !== -1) {
+                    this.watchedFilms[filmIndex].film_poster_url = posterUrl;
+                  }
+                }
+              },
+              error: () => {
+                // Silently fail - keep default poster
+              }
+            });
+        }
+      }
+    });
   }
 
   // === LOAD RATINGS FOR WATCHED FILMS ==================================
@@ -312,17 +397,30 @@ export class ProfileComponent implements OnInit {
         .subscribe({
           next: (res: any) => {
             this.userRatings = res.results || res || [];
-            // Match ratings with watched films
+            // Match ratings with watched films by film_imdb_id
             this.watchedFilms = this.watchedFilms.map((film: any) => {
-              const rating = this.userRatings.find((r: any) => 
-                r.film === film.film || 
-                r.film_imdb_id === film.film_imdb_id ||
-                (r.film && typeof r.film === 'object' && r.film.imdb_id === film.film_imdb_id)
-              );
+              const filmImdbId = String(film.film_imdb_id || '').trim();
+              const rating = this.userRatings.find((r: any) => {
+                // Try multiple matching strategies
+                const ratingImdbId = String(r.film_imdb_id || '').trim();
+                if (ratingImdbId && filmImdbId && ratingImdbId === filmImdbId) {
+                  return true;
+                }
+                // Check if film object has imdb_id
+                if (r.film && typeof r.film === 'object' && r.film.imdb_id) {
+                  return String(r.film.imdb_id).trim() === filmImdbId;
+                }
+                // Compare UUIDs if both are UUIDs (fallback)
+                if (r.film && film.film) {
+                  return String(r.film) === String(film.film);
+                }
+                return false;
+              });
               return { ...film, rating: rating || null };
             });
           },
-          error: () => {
+          error: (err) => {
+            console.error('Error loading ratings:', err);
             // If ratings endpoint fails, just show films without ratings
           }
         });
@@ -331,14 +429,30 @@ export class ProfileComponent implements OnInit {
 
   // === LOAD USER LISTS ==================================================
   loadUserLists() {
+    if (!this.username) {
+      console.warn('Cannot load lists: username not set');
+      this.loadingLists = false;
+      return;
+    }
+    
     this.loadingLists = true;
-    this.http.get(`http://127.0.0.1:8000/api/profile/${this.username}/lists/`)
+    const url = this.username === 'me' 
+      ? `http://127.0.0.1:8000/api/lists/` 
+      : `http://127.0.0.1:8000/api/profile/${this.username}/lists/`;
+    
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${localStorage.getItem('access') || ''}`
+    });
+    
+    this.http.get(url, { headers })
       .subscribe({
         next: (res: any) => {
           this.userLists = res.results || res || [];
           this.loadingLists = false;
+          console.log('Loaded user lists:', this.userLists.length);
         },
-        error: () => {
+        error: (err) => {
+          console.error('Error loading user lists:', err);
           this.loadingLists = false;
         }
       });
@@ -366,13 +480,61 @@ export class ProfileComponent implements OnInit {
     this.http.get(`http://127.0.0.1:8000/api/profile/${this.username}/reviews/`)
       .subscribe({
         next: (res: any) => {
-          this.userReviews = res.results || res || [];
+          const items = res.results || res || [];
+          this.userReviews = items.map((r: any) => ({
+            ...r,
+            film_poster_url:
+              r.film_poster_url ||
+              r.poster_url ||
+              r.poster ||
+              r.image ||
+              '/assets/default-poster.jpg',
+          }));
+          // Load missing posters from film details
+          this.loadMissingReviewPosters();
           this.loadingReviews = false;
         },
         error: () => {
           this.loadingReviews = false;
         }
       });
+  }
+
+  // === LOAD MISSING POSTERS FOR REVIEWS ===============================
+  loadMissingReviewPosters() {
+    const token = localStorage.getItem("access");
+    const headers = new HttpHeaders({
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    });
+
+    // For reviews without poster URLs, fetch from film details
+    this.userReviews.forEach((review: any) => {
+      if (!review.film_poster_url || review.film_poster_url === '/assets/default-poster.jpg') {
+        const imdbId = review.film_imdb_id;
+        if (imdbId) {
+          this.http.get(`http://127.0.0.1:8000/api/films/${imdbId}`, { headers })
+            .subscribe({
+              next: (filmData: any) => {
+                const posterUrl = filmData.metadata?.primaryImage?.url || 
+                                 filmData.posterUrl || 
+                                 filmData.poster_url;
+                if (posterUrl) {
+                  // Update the review in the array
+                  const reviewIndex = this.userReviews.findIndex((r: any) => 
+                    r.film_imdb_id === imdbId && r.id === review.id
+                  );
+                  if (reviewIndex !== -1) {
+                    this.userReviews[reviewIndex].film_poster_url = posterUrl;
+                  }
+                }
+              },
+              error: () => {
+                // Silently fail - keep default poster
+              }
+            });
+        }
+      }
+    });
   }
 
   // === LOAD FOLLOWERS ===================================================
@@ -944,6 +1106,14 @@ export class ProfileComponent implements OnInit {
     this.router.navigate(['/profile', username]);
   }
 
+  goToLists() {
+    this.router.navigate(['/lists']);
+  }
+
+  goToListDetail(listId: number) {
+    this.router.navigate(['/lists', listId]);
+  }
+
   // === TOGGLE FOLLOW ======================================================
   toggleFollow() {
     const token = localStorage.getItem("access");
@@ -1048,5 +1218,91 @@ export class ProfileComponent implements OnInit {
     const filled = Math.min(this.userBadges.length, 9);
     const empty = 9 - filled;
     return Array(empty).fill(0);
+  }
+
+  // === HELPER: GET FILM TITLE =============================================
+  getFilmTitle(film: any): string {
+    const title = film?.film_title || film?.title;
+    if (title && typeof title === 'string' && title.trim()) {
+      return title.trim();
+    }
+    return 'Unknown Film';
+  }
+
+  // === REVIEW EDIT & DELETE ===============================================
+  editingReview: any = null;
+  editReviewTitle: string = '';
+  editReviewContent: string = '';
+  editReviewRating: number = 0;
+
+  openEditReview(review: any) {
+    this.editingReview = review;
+    this.editReviewTitle = review.title || '';
+    this.editReviewContent = review.content || '';
+    this.editReviewRating = review.rating || 0;
+  }
+
+  cancelEditReview() {
+    this.editingReview = null;
+    this.editReviewTitle = '';
+    this.editReviewContent = '';
+    this.editReviewRating = 0;
+  }
+
+  saveEditReview() {
+    if (!this.editingReview) return;
+
+    const payload: any = {
+      title: this.editReviewTitle.trim(),
+      content: this.editReviewContent.trim(),
+    };
+
+    if (this.editReviewRating && this.editReviewRating >= 1 && this.editReviewRating <= 5) {
+      payload.rating = this.editReviewRating;
+    }
+
+    this.filmService.updateReview(this.editingReview.id, payload).subscribe({
+      next: (res: any) => {
+        // Reload reviews to get updated data
+        this.loadUserReviews();
+        this.cancelEditReview();
+      },
+      error: (err) => {
+        console.error('Error updating review:', err);
+        console.error('Full error:', JSON.stringify(err, null, 2));
+        const errorMsg = err.error?.detail || err.error?.message || err.message || 'Failed to update review. Please try again.';
+        alert(`Error: ${errorMsg}`);
+      }
+    });
+  }
+
+  deleteReview(review: any) {
+    if (!confirm('Are you sure you want to delete this review?')) {
+      return;
+    }
+
+    this.filmService.deleteReview(review.id).subscribe({
+      next: () => {
+        // Reload reviews to get updated list
+        this.loadUserReviews();
+      },
+      error: (err) => {
+        console.error('Error deleting review:', err);
+        console.error('Full error:', JSON.stringify(err, null, 2));
+        const errorMsg = err.error?.detail || err.error?.message || err.message || 'Failed to delete review. Please try again.';
+        alert(`Error: ${errorMsg}`);
+      }
+    });
+  }
+
+  isReviewOwner(review: any): boolean {
+    const currentUser = localStorage.getItem("user_profile");
+    if (!currentUser) return false;
+    try {
+      const user = JSON.parse(currentUser);
+      return user.username === review.username || user.id === review.user;
+    } catch {
+      return false;
+    }
   }
 }

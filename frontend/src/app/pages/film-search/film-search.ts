@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, HostListener } from '@angular/core';
 import { SearchService } from '../../services/search.service';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -28,7 +28,7 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
   templateUrl: 'film-search.html',
   styleUrls: ['film-search.css']
 })
-export class FilmSearch implements OnInit {
+export class FilmSearch implements OnInit, OnDestroy {
   @ViewChild('profileMenu') profileMenu!: Popover;
 
   films: any[] = [];
@@ -167,6 +167,19 @@ export class FilmSearch implements OnInit {
 
   toggleFilterMenu() {
     this.filterMenuOpen = !this.filterMenuOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    const filterWrapper = target.closest('.filter-wrapper');
+    if (!filterWrapper && this.filterMenuOpen) {
+      this.filterMenuOpen = false;
+    }
+  }
+
+  ngOnDestroy() {
+    // Cleanup if needed
   }
 
   filterByGenre(genre: string) {

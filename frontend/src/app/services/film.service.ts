@@ -7,7 +7,7 @@ import { FilmDetail, UserRating, WatchedStatus, UserMood, Review, ReviewRequest 
   providedIn: 'root'
 })
 export class FilmService {
-  private apiUrl = 'http://localhost:8000/api'; // Adjust to your Django URL
+  private apiUrl = 'http://127.0.0.1:8000/api'; // Adjust to your Django URL
 
   constructor(private http: HttpClient) {}
 
@@ -23,7 +23,8 @@ private getAuthHeaders(): HttpHeaders {
 
 // Add a helper to check if user is logged in
 isLoggedIn(): boolean {
-  return !!localStorage.getItem('access_token');
+  // Tokens are saved under "access" in the login flow
+  return !!localStorage.getItem('access');
 }
 
   // --- 2. Film Details ---
@@ -80,7 +81,46 @@ isLoggedIn(): boolean {
     return this.http.get<UserRating>(`${this.apiUrl}/films/${imdbId}/rate`);
   }
 
-  getFilmReviews(imdbId: string): Observable<Review[]> {
-    return this.http.get<Review[]>(`${this.apiUrl}/films/${imdbId}/reviews`);
+  getFilmReviews(imdbId: string): Observable<any> {
+    // DRF paginates: returns { count, next, previous, results: [...] }
+    return this.http.get(`${this.apiUrl}/films/${imdbId}/reviews`);
+  }
+
+  // --- Review Update & Delete ---
+  updateReview(reviewId: number, review: ReviewRequest): Observable<any> {
+    return this.http.put(`${this.apiUrl}/reviews/${reviewId}`, review, { headers: this.getAuthHeaders() });
+  }
+
+  deleteReview(reviewId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/reviews/${reviewId}`, { headers: this.getAuthHeaders() });
+  }
+
+  // --- Lists ---
+  getLists(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/lists/`, { headers: this.getAuthHeaders() });
+  }
+
+  createList(listData: { title: string; description?: string; is_public?: boolean }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/lists/create/`, listData, { headers: this.getAuthHeaders() });
+  }
+
+  getList(listId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/lists/${listId}`, { headers: this.getAuthHeaders() });
+  }
+
+  updateList(listId: number, listData: { title?: string; description?: string; is_public?: boolean }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/lists/${listId}`, listData, { headers: this.getAuthHeaders() });
+  }
+
+  deleteList(listId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/lists/${listId}`, { headers: this.getAuthHeaders() });
+  }
+
+  addFilmToList(listId: number, imdbId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/lists/${listId}/films`, { imdb_id: imdbId }, { headers: this.getAuthHeaders() });
+  }
+
+  removeFilmFromList(listId: number, imdbId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/lists/${listId}/films/${imdbId}`, { headers: this.getAuthHeaders() });
   }
 }

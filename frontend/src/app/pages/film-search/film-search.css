@@ -148,9 +148,14 @@
 /* Top search + filter area */
 .top-bar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 15px;
   margin-bottom: 25px;
+  position: relative;
+}
+
+.filter-wrapper {
+  position: relative;
 }
 
 /* Search Wrapper & Input */
@@ -196,14 +201,18 @@
 /* Filter Dropdown */
 .filter-menu {
   position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
   z-index: 100;
   background: #111;
   border: 1px solid #333;
   border-radius: 6px;
   width: 200px;
-  margin-bottom: 20px;
   padding: 8px 0;
   box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .filter-option {
@@ -289,4 +298,22 @@
 /* Ripple (Tıklama Efekti) Rengi */
 ::ng-deep .filter-btn .p-ink {
   background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Scrollbar styling for filter menu */
+.filter-menu::-webkit-scrollbar {
+  width: 8px;
+}
+
+.filter-menu::-webkit-scrollbar-track {
+  background: #111;
+}
+
+.filter-menu::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.filter-menu::-webkit-scrollbar-thumb:hover {
+  background: #e50914;
 }

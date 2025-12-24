@@ -2,10 +2,103 @@
 .film-page-container {
   background: black;
   min-height: 100vh;
-  padding-top: 80px; /* Matching profile example */
+  padding-top: 40px; /* space under navbar */
   padding-bottom: 50px;
   position: relative;
   overflow-x: hidden;
+}
+
+/* =========================
+   NAVBAR (reused from search)
+   ========================= */
+.navbar {
+  height: 100px;
+  background: #111;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 1px solid #333;
+}
+
+.logo {
+  margin: 0;
+  color: #e50914;
+  font-size: 2.8rem;
+  letter-spacing: 2px;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-menu-trigger {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.profile-menu-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.username {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ddd;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-arrow {
+  font-size: 0.8rem;
+  color: #ccc;
+  margin-left: 5px;
+}
+
+.nav-link-wrapper {
+  margin-right: 10px;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  color: #ddd !important;
+  text-decoration: none !important;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: color 0.2s ease;
+  position: relative;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+}
+
+.nav-link i {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}
+
+.nav-link:hover {
+  color: #fff !important;
+}
+
+.nav-link.active {
+  color: #fff !important;
+  border-bottom-color: #e50914;
+}
+
+::host ::ng-deep .profile-dropdown-panel {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 4px;
 }
 
 /* --- Backdrop Effect --- */
@@ -96,6 +189,82 @@
     font-size: 0.8rem; /* Smaller stars for list items */
     color: #555;
 }
+/* List Dialog Styles */
+.empty-lists {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.lists-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.list-item-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #1a1a1a;
+  border-radius: 6px;
+  border: 1px solid #333;
+  transition: all 0.2s;
+}
+
+.list-item-checkbox:hover {
+  border-color: #e50914;
+  background: #222;
+}
+
+.list-label {
+  flex: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+}
+
+.list-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.list-info strong {
+  color: white;
+  font-size: 1rem;
+}
+
+.list-desc {
+  color: #999;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.list-meta {
+  color: #666;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+:host ::ng-deep .dark-dialog .p-dialog-header,
+:host ::ng-deep .dark-dialog .p-dialog-content {
+  background: #111;
+  color: white;
+  border: 1px solid #333;
+}
+
+:host ::ng-deep .dark-dialog .p-dialog-header {
+  border-bottom: 1px solid #222;
+}
+
+:host ::ng-deep .dark-dialog .p-dialog-content {
+  padding: 25px;
+}
+
 :host ::ng-deep .tiny-stars .p-rating-icon-active {
     color: #3b82f6; /* Blue stars for reviews, similar to Letterboxd */
 }
@@ -225,4 +394,137 @@
     padding: 0 5px;
     width: 100%;
     overflow: hidden;
+}
+
+/* Reviews layout smoothing */
+.reviews-grid {
+  max-width: 1000px;
+}
+
+.review-card {
+  border-radius: 14px;
+  border: 1px solid #2c2c2c;
+}
+
+/* Review dialog polish */
+::host ::ng-deep .review-dialog .p-dialog-header,
+::host ::ng-deep .review-dialog .p-dialog-content {
+  background: #111;
+  color: #eee;
+  border: 1px solid #333;
+}
+
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input-full {
+  width: 100%;
+  background: #222;
+  color: #fff;
+  border: 1px solid #444;
+  padding: 10px 12px;
+  border-radius: 6px;
+}
+
+.review-textarea {
+  min-height: 180px;
+  line-height: 1.5;
+}
+
+.review-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* Rating dialog layout */
+::host ::ng-deep .rating-dialog .p-dialog-header,
+::host ::ng-deep .rating-dialog .p-dialog-content {
+  background: #111;
+  color: #eee;
+  border: 1px solid #333;
+}
+
+.rating-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 4px;
+}
+
+.overall-block {
+  text-align: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #333;
+}
+
+.overall-label {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.overall-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 8px;
+}
+
+.overall-max {
+  color: #6b7280;
+  font-size: 1.1rem;
+  margin-left: 4px;
+}
+
+.breakdown-block {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.breakdown-title {
+  color: #d1d5db;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+
+.breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.breakdown-label {
+  color: #9ca3af;
+  font-size: 0.95rem;
+  width: 48%;
+}
+
+.rating-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.actions-right {
+  display: flex;
+  gap: 10px;
 }

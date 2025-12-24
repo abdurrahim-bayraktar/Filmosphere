@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { RouterModule, Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { RatingModule } from 'primeng/rating';
 import { TagModule } from 'primeng/tag';
@@ -9,6 +10,14 @@ import { TabsModule } from 'primeng/tabs'; // v18
 import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
+import { CheckboxModule } from 'primeng/checkbox';
+import { AvatarModule } from 'primeng/avatar';
+import { PopoverModule } from 'primeng/popover';
+import { MenuModule } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
+import { Popover } from 'primeng/popover';
+import { HttpClient } from '@angular/common/http';
 import { FilmService } from '../../services/film.service';
 import { FilmDetail, UserRating, UserMood, RATING_ASPECTS, Review } from '../../models/film.model';
 
@@ -16,14 +25,17 @@ import { FilmDetail, UserRating, UserMood, RATING_ASPECTS, Review } from '../../
   selector: 'app-film-detail',
   standalone: true,
   imports: [
-    CommonModule, ButtonModule, RatingModule, TagModule, TabsModule, 
-    FormsModule, DialogModule, TextareaModule, SelectModule
+    CommonModule, ButtonModule, RatingModule, TagModule, TabsModule,
+    FormsModule, DialogModule, TextareaModule, SelectModule, InputTextModule,
+    RouterModule, AvatarModule, PopoverModule, MenuModule, CheckboxModule
   ],
   templateUrl: './film-details.html',
   styleUrls: ['./film-details.css']
 })
 
 export class FilmDetailComponent implements OnInit {
+  @ViewChild('profileMenu') profileMenu!: Popover;
+
   imdbId: string = '';
   film: FilmDetail | null = null;
   
@@ -58,21 +70,84 @@ export class FilmDetailComponent implements OnInit {
     { label: 'Neutral', value: 'neutral' }
   ];
 
+  // Navbar state
+  user: any = null;
+  avatarLabel: string = '';
+  avatarImage: string | null = null;
+  menuItems: MenuItem[] = [];
+
+  // Lists state
+  userLists: any[] = [];
+  showListDialog: boolean = false;
+
   constructor(
     private route: ActivatedRoute,
-    private filmService: FilmService
+    private filmService: FilmService,
+    private router: Router,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
+    this.setupMenuItems();
+    this.loadUser();
     this.route.paramMap.subscribe(params => {
       this.imdbId = params.get('id') || 'tt1375666'; 
       this.loadFilmData();
     });
   }
 
+  setupMenuItems() {
+    this.menuItems = [
+      { label: 'Home', icon: 'pi pi-home', routerLink: ['/home'] },
+      { label: 'My Profile', icon: 'pi pi-user', routerLink: ['/profile'] },
+      { separator: true },
+      { label: 'Logout', icon: 'pi pi-sign-out', command: () => this.logout() }
+    ];
+  }
+
+  loadUser() {
+    const cached = localStorage.getItem('user_profile');
+    if (cached) {
+      try {
+        const usr = JSON.parse(cached);
+        this.user = usr;
+        this.avatarImage = usr.profile_picture_url || usr.profile?.profile_picture_url || null;
+        this.avatarLabel = (usr.username || usr.user?.username || 'U')[0]?.toUpperCase() || 'U';
+      } catch (e) {
+        console.error('Error parsing cached user:', e);
+      }
+    }
+
+    const token = localStorage.getItem('access');
+    if (!token) return;
+
+    this.http.get('http://127.0.0.1:8000/api/auth/me/', {
+      headers: { Authorization: `Bearer ${token}` }
+    }).subscribe({
+      next: (res: any) => {
+        this.user = res;
+        this.avatarImage = res.profile_picture_url || res.profile?.profile_picture_url || null;
+        this.avatarLabel = (res.username || res.user?.username || 'U')[0]?.toUpperCase() || 'U';
+        localStorage.setItem('user_profile', JSON.stringify(res));
+      },
+      error: (err) => console.error('Error loading user:', err)
+    });
+  }
+
+  logout() {
+    localStorage.removeItem('access');
+    localStorage.removeItem('refresh');
+    localStorage.removeItem('user_profile');
+    this.user = { username: 'Guest' };
+    this.avatarLabel = 'G';
+    this.avatarImage = null;
+    this.router.navigate(['/']);
+  }
+
   // src/app/pages/film-details/film-detail.component.ts
 
   loadFilmData() {
+    this.loadUserLists();
     // 1. Get Details
     this.filmService.getFilmDetails(this.imdbId).subscribe({
       next: (data: any) => {
@@ -147,11 +222,13 @@ export class FilmDetailComponent implements OnInit {
 
   loadReviews() {
     this.filmService.getFilmReviews(this.imdbId).subscribe({
-      next: (data) => {
-        // Map the API data and initialize isRevealed to false
-        this.reviews = data.map(r => ({
+      next: (data: any) => {
+        // DRF may return a paginated object; normalize to array
+        const items = Array.isArray(data) ? data : data?.results || [];
+
+        this.reviews = items.map((r: any) => ({
           ...r,
-          isRevealed: false 
+          isRevealed: false,
         }));
       },
       error: (err) => console.error('Error loading reviews:', err)
@@ -170,6 +247,95 @@ export class FilmDetailComponent implements OnInit {
       return nameData.text || nameData.name || nameData.nameText?.text || 'Unknown';
   }
   // Add this helper function to your class to convert seconds to "Xh Ym"
+  // Lists methods
+  loadUserLists() {
+    this.filmService.getLists().subscribe({
+      next: (res: any) => {
+        this.userLists = (res.results || res || []).map((list: any) => {
+          // Check if film is in this list by comparing imdb_id
+          const hasFilm = list.items?.some((item: any) => {
+            const itemImdbId = item.film_imdb_id || item.film?.imdb_id || item.film;
+            return itemImdbId && itemImdbId.trim() === this.imdbId.trim();
+          }) || false;
+          
+          return {
+            ...list,
+            hasFilm: hasFilm
+          };
+        });
+      },
+      error: (err) => {
+        console.error('Error loading lists:', err);
+      }
+    });
+  }
+
+  openListDialog() {
+    this.showListDialog = true;
+  }
+
+  closeListDialog() {
+    this.showListDialog = false;
+  }
+
+  toggleFilmInList(list: any, event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    const currentState = list.hasFilm;
+    const newState = !currentState;
+    
+    if (currentState) {
+      // Remove from list
+      this.filmService.removeFilmFromList(list.id, this.imdbId).subscribe({
+        next: () => {
+          list.hasFilm = false;
+          if (list.items) {
+            list.items = list.items.filter((item: any) => item.film_imdb_id !== this.imdbId);
+            list.films_count = (list.films_count || 0) - 1;
+          }
+        },
+        error: (err) => {
+          console.error('Error removing film from list:', err);
+          const errorMsg = err.error?.detail || err.error?.message || err.message || 'Failed to remove film from list';
+          alert(`Error: ${errorMsg}`);
+          // Revert checkbox state on error
+          list.hasFilm = currentState;
+        }
+      });
+    } else {
+      // Add to list
+      this.filmService.addFilmToList(list.id, this.imdbId).subscribe({
+        next: (res: any) => {
+          list.hasFilm = true;
+          if (!list.items) {
+            list.items = [];
+          }
+          list.items.push({
+            film_imdb_id: this.imdbId,
+            film_title: this.film?.title || 'Unknown Film',
+            film_poster_url: this.film?.posterUrl || this.film?.metadata?.primaryImage?.url,
+            film_year: this.film?.year || this.film?.metadata?.releaseDate?.year
+          });
+          list.films_count = (list.films_count || 0) + 1;
+        },
+        error: (err) => {
+          console.error('Error adding film to list:', err);
+          const errorMsg = err.error?.detail || err.error?.message || err.message || 'Failed to add film to list';
+          alert(`Error: ${errorMsg}`);
+          // Revert checkbox state on error
+          list.hasFilm = currentState;
+        }
+      });
+    }
+  }
+
+  goToLists() {
+    this.router.navigate(['/lists']);
+  }
+
   formatDuration(seconds: number): string {
     if (!seconds) return 'N/A';
     const h = Math.floor(seconds / 3600);
@@ -278,15 +444,52 @@ export class FilmDetailComponent implements OnInit {
   }
 
   submitReview() {
-    const payload = {
-      ...this.newReview,
-      rating: this.overallRating // Attach current star rating
+    // Check if user is logged in
+    if (!this.filmService.isLoggedIn()) {
+      alert('Please log in to post a review');
+      return;
+    }
+
+    // Validate required fields
+    if (!this.newReview.title?.trim() || !this.newReview.content?.trim()) {
+      alert('Please fill in both title and content');
+      return;
+    }
+
+    const payload: any = {
+      title: this.newReview.title.trim(),
+      content: this.newReview.content.trim(),
     };
+
+    // Only include rating if it's valid (1-5)
+    if (this.overallRating && this.overallRating >= 1 && this.overallRating <= 5) {
+      payload.rating = this.overallRating;
+    }
     
-    this.filmService.createReview(this.imdbId, payload).subscribe(() => {
-      this.showReviewDialog = false;
-      this.newReview = { title: '', content: '' }; // Reset
-      // Optionally reload reviews here
+    this.filmService.createReview(this.imdbId, payload).subscribe({
+      next: () => {
+        this.showReviewDialog = false;
+        this.newReview = { title: '', content: '' }; // Reset
+        this.loadReviews(); // refresh list
+        console.log('Review posted successfully');
+      },
+      error: (err) => {
+        console.error('Error creating review:', err);
+        // Show user-friendly error message
+        let errorMsg = 'Failed to post review. Please try again.';
+        if (err.error?.detail) {
+          errorMsg = err.error.detail;
+        } else if (err.error?.rating) {
+          errorMsg = `Rating error: ${err.error.rating[0]}`;
+        } else if (err.error?.title) {
+          errorMsg = `Title error: ${err.error.title[0]}`;
+        } else if (err.error?.content) {
+          errorMsg = `Content error: ${err.error.content[0]}`;
+        } else if (err.status === 401) {
+          errorMsg = 'Please log in to post a review';
+        }
+        alert(errorMsg);
+      }
     });
   }
 

@@ -74,17 +74,19 @@
       </button>
     </div>
 
-    <p-button
-      label="Filter"
-      icon="pi pi-filter"
-      (click)="toggleFilterMenu()"
-      styleClass="filter-btn"
-    ></p-button>
-  </div>
-
-  <div class="filter-menu" *ngIf="filterMenuOpen">
-    <div class="filter-option" *ngFor="let genre of genres" (click)="filterByGenre(genre)">
-      {{ genre }}
+    <div class="filter-wrapper">
+      <p-button
+        label="Filter"
+        icon="pi pi-filter"
+        (click)="toggleFilterMenu()"
+        styleClass="filter-btn"
+      ></p-button>
+      
+      <div class="filter-menu" *ngIf="filterMenuOpen">
+        <div class="filter-option" *ngFor="let genre of genres" (click)="filterByGenre(genre)">
+          {{ genre }}
+        </div>
+      </div>
     </div>
   </div>
 

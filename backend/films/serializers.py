@@ -163,14 +163,6 @@ class ListSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "user", "created_at", "updated_at"]
 
 
-class ListCreateUpdateSerializer(serializers.ModelSerializer):
-    """Serializer for creating/updating lists."""
-
-    class Meta:
-        model = List
-        fields = ["title", "description", "is_public"]
-
-
 class ListItemCreateSerializer(serializers.Serializer):
     """Serializer for adding a film to a list."""
 
@@ -273,7 +265,7 @@ class ListCreateUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = List
-        fields = ["title", "description", "is_public"]
+        fields = ["title", "description"]
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -282,9 +274,27 @@ class ReviewSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username", read_only=True)
     film_title = serializers.CharField(source="film.title", read_only=True)
     film_imdb_id = serializers.CharField(source="film.imdb_id", read_only=True)
+    film_year = serializers.IntegerField(source="film.year", read_only=True)
+    film_poster_url = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
     contains_spoiler = serializers.BooleanField(read_only=True)
     content = serializers.SerializerMethodField()  # Override to handle spoiler hiding
+    
+    def get_film_poster_url(self, obj):
+        """Get poster URL from film.poster_url or from full_json metadata."""
+        if obj.film.poster_url:
+            return obj.film.poster_url
+        
+        # Fallback: extract from full_json metadata
+        if obj.film.full_json:
+            metadata = obj.film.full_json.get("metadata", {})
+            primary_image = metadata.get("primaryImage")
+            if isinstance(primary_image, dict):
+                return primary_image.get("url")
+            elif isinstance(primary_image, str):
+                return primary_image
+        
+        return None
 
     class Meta:
         model = Review
@@ -295,6 +305,8 @@ class ReviewSerializer(serializers.ModelSerializer):
             "film",
             "film_title",
             "film_imdb_id",
+            "film_year",
+            "film_poster_url",
             "title",
             "content",
             "rating",
@@ -426,10 +438,54 @@ class WatchedFilmSerializer(serializers.ModelSerializer):
     """Serializer for watched films."""
 
     username = serializers.CharField(source="user.username", read_only=True)
-    film_title = serializers.CharField(source="film.title", read_only=True)
+    film_title = serializers.SerializerMethodField()
     film_imdb_id = serializers.CharField(source="film.imdb_id", read_only=True)
-    film_year = serializers.IntegerField(source="film.year", read_only=True)
-    film_poster_url = serializers.URLField(source="film.poster_url", read_only=True)
+    film_year = serializers.SerializerMethodField()
+    film_poster_url = serializers.SerializerMethodField()
+    
+    def get_film_title(self, obj):
+        """Get film title from film.title or from full_json metadata."""
+        if obj.film.title:
+            return obj.film.title
+        
+        # Fallback: extract from full_json metadata
+        if obj.film.full_json:
+            metadata = obj.film.full_json.get("metadata", {})
+            title = metadata.get("primaryTitle") or metadata.get("title")
+            if title:
+                return title
+        
+        return None
+    
+    def get_film_year(self, obj):
+        """Get film year from film.year or from full_json metadata."""
+        if obj.film.year:
+            return obj.film.year
+        
+        # Fallback: extract from full_json metadata
+        if obj.film.full_json:
+            metadata = obj.film.full_json.get("metadata", {})
+            year = metadata.get("startYear") or metadata.get("year")
+            if year:
+                return year
+        
+        return None
+    
+    def get_film_poster_url(self, obj):
+        """Get poster URL from film.poster_url or from full_json metadata."""
+        if obj.film.poster_url:
+            return obj.film.poster_url
+        
+        # Fallback: extract from full_json metadata
+        if obj.film.full_json:
+            metadata = obj.film.full_json.get("metadata", {})
+            primary_image = metadata.get("primaryImage")
+            if isinstance(primary_image, dict):
+                return primary_image.get("url")
+            elif isinstance(primary_image, str):
+                return primary_image
+        
+        return None
 
     class Meta:
         model = WatchedFilm

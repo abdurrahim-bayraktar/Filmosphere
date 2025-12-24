@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
-from films.models import WatchedFilm, Rating, Review
+from films.models import WatchedFilm, Rating, Review, Mood
 from api.serializers import RecommendationChatSerializer
 
 from drf_spectacular.utils import extend_schema, OpenApiResponse
@@ -363,6 +363,7 @@ class RecommendationChatView(APIView):
         watched_qs = WatchedFilm.objects.filter(user=user).select_related("film").order_by("-id")[:50]
         ratings_qs = Rating.objects.filter(user=user).select_related("film").order_by("-id")[:50]
         reviews_qs = Review.objects.filter(user=user).select_related("film").order_by("-id")[:30]
+        moods_qs = Mood.objects.filter(user=user).select_related("film").order_by("-id")[:30]
 
         watched = []
         for w in watched_qs:
@@ -383,12 +384,23 @@ class RecommendationChatView(APIView):
                 txt = (getattr(rv, "content", None) or getattr(rv, "text", "") or "")[:400]
                 reviews.append({"imdb_id": imdb, "text": txt})
 
+        moods = []
+        for m in moods_qs:
+            imdb = _get_imdb_id(m)
+            if imdb:
+                moods.append({
+                    "imdb_id": imdb,
+                    "mood_before": getattr(m, "mood_before", None),
+                    "mood_after": getattr(m, "mood_after", None)
+                })
+
         context = {
             "user_id": user.id,
-            "has_history": bool(watched or ratings or reviews),
+            "has_history": bool(watched or ratings or reviews or moods),
             "watched_imdb_ids": watched,
             "recent_ratings": ratings,
             "recent_reviews": reviews,
+            "recent_moods": moods,
         }
 
         # ✅ recommendation prompt
@@ -396,7 +408,7 @@ class RecommendationChatView(APIView):
             "You are a movie recommendation assistant.\n"
             "You MUST return ONLY valid JSON. No markdown. No extra text.\n"
             "Return 3-5 movie recommendations.\n"
-            "Use the user's history if available (watched, ratings, reviews).\n"
+            "Use the user's history if available (watched films, ratings, reviews, mood tracking).\n"
             "If the user has no history, do cold-start based on the user's message.\n"
             "Never reveal spoilers or plot twists.\n"
             "Keep it short.\n"
