@@ -19,7 +19,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.services import IMDbService, KinoCheckService
-from films.models import Badge, CommentFlag, Film, List, ListItem, Mood, Rating, Review, ReviewLike, UserBadge, WatchedFilm
+from films.models import Badge, CommentFlag, Film, List, ListItem, Mood, ModerationLog, Rating, RecommendationLog, Review, ReviewLike, UserBadge, WatchedFilm
 from films.serializers import (
     BadgeSerializer,
     FollowSerializer,
@@ -733,17 +733,17 @@ class FilmReviewsListView(ListAPIView):
         except Film.DoesNotExist:
             return Review.objects.none()
 
-        # Filter out rejected comments, only show approved or pending
+        # Only show approved reviews (pending/rejected are hidden from public)
         queryset = Review.objects.filter(
             film=film,
-            moderation_status__in=["approved", "pending"]
+            moderation_status="approved"
         ).select_related("user", "film")
         
-        # If admin, show all including rejected
+        # If admin, show all including pending/rejected for moderation
         if self.request.user.is_authenticated and self.request.user.is_staff:
             queryset = Review.objects.filter(film=film).select_related("user", "film")
         
-        return queryset
+        return queryset.order_by("-created_at")
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -782,39 +782,104 @@ class ReviewCreateView(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         review = serializer.save(user=request.user, film=film)
 
-        # FR06.2: Auto-detect spoilers using LLM
-        if not review.is_spoiler:  # Only check if user didn't manually mark it
-            try:
-                from core.services.deepseek_service import DeepSeekService
-                deepseek_service = DeepSeekService()
-                is_spoiler = deepseek_service.check_spoiler(film.title, review.content)
-                if is_spoiler:
-                    review.is_auto_detected_spoiler = True
-                    review.save(update_fields=["is_auto_detected_spoiler"])
-            except Exception as e:
-                logger.error(f"Error detecting spoiler: {e}")
-                # Continue even if spoiler detection fails
-
-        # Comment moderation with LLM and blacklist
+        # DeepSeek Analysis: Check for spoilers AND inappropriate content
         try:
             from core.services.deepseek_service import DeepSeekService
+            from django.conf import settings
+            
             deepseek_service = DeepSeekService()
             blacklist = getattr(settings, "COMMENT_BLACKLIST", [])
-            moderation_result = deepseek_service.moderate_comment(review.content, blacklist)
             
-            if moderation_result["needs_moderation"]:
+            # Check if DeepSeek API key is configured
+            api_key = getattr(settings, "DEEPSEEK_API_KEY", None)
+            if not api_key:
+                logger.warning("DeepSeek API key not configured - skipping AI moderation, using basic blacklist only")
+                # Only check blacklist if no API key
+                comment_lower = review.content.lower()
+                has_blacklisted = any(word.lower() in comment_lower for word in blacklist)
+                if has_blacklisted:
+                    review.moderation_status = "pending"
+                    review.moderation_reason = "Contains blacklisted words"
+                    review.save(update_fields=["moderation_status", "moderation_reason"])
+                else:
+                    review.moderation_status = "approved"
+                    review.save(update_fields=["moderation_status"])
+                return
+            
+            # 1. Check for spoilers (only if user didn't manually mark it)
+            is_spoiler = False
+            if not review.is_spoiler:
+                try:
+                    is_spoiler = deepseek_service.check_spoiler(film.title, review.content)
+                    if is_spoiler:
+                        review.is_auto_detected_spoiler = True
+                except Exception as e:
+                    logger.error(f"Error detecting spoiler: {e}")
+                    # Continue without spoiler detection if it fails
+            
+            # 2. Check for inappropriate content (profanity, racism, sexism, etc.)
+            try:
+                moderation_result = deepseek_service.moderate_comment(review.content, blacklist)
+            except Exception as e:
+                logger.error(f"Error calling DeepSeek moderation API: {e}")
+                # If API call fails, only check blacklist
+                comment_lower = review.content.lower()
+                has_blacklisted = any(word.lower() in comment_lower for word in blacklist)
+                if has_blacklisted:
+                    review.moderation_status = "pending"
+                    review.moderation_reason = "Contains blacklisted words"
+                    review.save(update_fields=["moderation_status", "moderation_reason"])
+                else:
+                    # No blacklisted words, approve it
+                    review.moderation_status = "approved"
+                    review.save(update_fields=["moderation_status"])
+                return
+            
+            content_type = moderation_result.get("content_type", "none")
+            needs_moderation = moderation_result.get("needs_moderation", False)
+            
+            logger.info(f"DeepSeek moderation result for review {review.id}: needs_moderation={needs_moderation}, content_type={content_type}, is_spoiler={is_spoiler}")
+            
+            # If inappropriate content detected (profanity, racism, sexism, etc.), flag for admin review
+            if needs_moderation and content_type not in ["none", ""]:
+                # Flag for admin review - contains profanity, racism, sexism, etc.
                 review.moderation_status = "pending"
-                review.moderation_reason = moderation_result.get("reason", "Content flagged for review")
-                review.save(update_fields=["moderation_status", "moderation_reason"])
+                review.moderation_reason = moderation_result.get("reason", f"Content flagged: {content_type}")
+                logger.info(f"Review {review.id} flagged for moderation: {review.moderation_reason}")
+                review.save(update_fields=["moderation_status", "moderation_reason", "is_auto_detected_spoiler"])
+            elif is_spoiler:
+                # Only spoiler detected - approve but mark as spoiler (will be blurred in frontend)
+                review.moderation_status = "approved"
+                review.is_auto_detected_spoiler = True
+                logger.info(f"Review {review.id} approved with spoiler tag")
+                review.save(update_fields=["moderation_status", "is_auto_detected_spoiler"])
             else:
-                # Auto-approve if no issues detected
+                # No issues - auto-approve
+                review.moderation_status = "approved"
+                logger.info(f"Review {review.id} auto-approved")
+                review.save(update_fields=["moderation_status"])
+                
+        except Exception as e:
+            logger.error(f"Unexpected error in DeepSeek analysis: {e}")
+            # If there's an unexpected error, check blacklist at least
+            try:
+                from django.conf import settings
+                blacklist = getattr(settings, "COMMENT_BLACKLIST", [])
+                comment_lower = review.content.lower()
+                has_blacklisted = any(word.lower() in comment_lower for word in blacklist)
+                if has_blacklisted:
+                    review.moderation_status = "pending"
+                    review.moderation_reason = "Contains blacklisted words"
+                    review.save(update_fields=["moderation_status", "moderation_reason"])
+                else:
+                    # No blacklisted words, approve it (better than blocking everything)
+                    review.moderation_status = "approved"
+                    review.save(update_fields=["moderation_status"])
+            except Exception as e2:
+                logger.error(f"Error in fallback blacklist check: {e2}")
+                # Last resort: approve it (better than blocking everything)
                 review.moderation_status = "approved"
                 review.save(update_fields=["moderation_status"])
-        except Exception as e:
-            logger.error(f"Error moderating comment: {e}")
-            # Default to pending if moderation fails
-            review.moderation_status = "pending"
-            review.save(update_fields=["moderation_status"])
 
         # Check and award badges (FR05.2)
         try:
@@ -1861,12 +1926,44 @@ class UnflagCommentView(APIView):
 
 
 class AdminModerateCommentView(APIView):
-    """Admin endpoint to approve or reject comments."""
+    """Admin endpoint to approve or reject comments with DeepSeek analysis."""
 
     permission_classes = [IsAuthenticated]
 
+    def get(self, request: Request, review_id: int, *args: Any, **kwargs: Any) -> Response:
+        """Get DeepSeek moderation analysis for a review (admin only)."""
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Only staff members can access moderation analysis."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            review = Review.objects.get(id=review_id)
+        except Review.DoesNotExist:
+            return Response(
+                {"detail": "Review not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Get DeepSeek moderation analysis
+        from core.services.deepseek_service import DeepSeekService
+        from django.conf import settings
+        
+        deepseek_service = DeepSeekService()
+        blacklist = getattr(settings, "MODERATION_BLACKLIST", [])
+        
+        moderation_result = deepseek_service.moderate_comment(review.content, blacklist)
+        
+        return Response({
+            "review_id": review.id,
+            "deepseek_analysis": moderation_result,
+            "suggested_action": "reject" if moderation_result.get("needs_moderation", False) else "approve",
+            "current_status": review.moderation_status
+        }, status=status.HTTP_200_OK)
+
     def post(self, request: Request, review_id: int, *args: Any, **kwargs: Any) -> Response:
-        """Approve or reject a comment (admin only)."""
+        """Approve or reject a comment (admin only) with optional DeepSeek analysis."""
         if not request.user.is_staff:
             return Response(
                 {"detail": "Only staff members can moderate comments."},
@@ -1883,6 +1980,22 @@ class AdminModerateCommentView(APIView):
 
         action = request.data.get("action")  # "approve" or "reject"
         reason = request.data.get("reason", "")
+        use_deepseek = request.data.get("use_deepseek", False)  # Optional: get DeepSeek analysis first
+
+        # If use_deepseek is True, get analysis before moderating
+        deepseek_analysis = None
+        if use_deepseek:
+            from core.services.deepseek_service import DeepSeekService
+            from django.conf import settings
+            
+            deepseek_service = DeepSeekService()
+            blacklist = getattr(settings, "MODERATION_BLACKLIST", [])
+            deepseek_analysis = deepseek_service.moderate_comment(review.content, blacklist)
+            
+            # Auto-suggest action based on DeepSeek analysis if no action provided
+            if not action and deepseek_analysis.get("needs_moderation", False):
+                action = "reject"
+                reason = reason or deepseek_analysis.get("reason", "Flagged by DeepSeek moderation")
 
         if action == "approve":
             review.moderation_status = "approved"
@@ -1901,11 +2014,15 @@ class AdminModerateCommentView(APIView):
         review.save(update_fields=["moderation_status", "moderation_reason", "moderated_by", "moderated_at"])
 
         serializer = ReviewSerializer(review, context={"request": request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        response_data = serializer.data
+        if deepseek_analysis:
+            response_data["deepseek_analysis"] = deepseek_analysis
+        
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 class AdminFlaggedCommentsView(ListAPIView):
-    """Get all flagged comments for admin review."""
+    """Get all flagged comments for admin review with optional DeepSeek analysis."""
 
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticated]
@@ -1932,3 +2049,642 @@ class AdminFlaggedCommentsView(ListAPIView):
         context = super().get_serializer_context()
         context["request"] = self.request
         return context
+
+    def list(self, request, *args, **kwargs):
+        """Override list to add DeepSeek analysis if requested."""
+        include_deepseek = request.query_params.get("include_deepseek", "false").lower() == "true"
+        
+        response = super().list(request, *args, **kwargs)
+        
+        if include_deepseek:
+            from core.services.deepseek_service import DeepSeekService
+            from django.conf import settings
+            
+            deepseek_service = DeepSeekService()
+            blacklist = getattr(settings, "MODERATION_BLACKLIST", [])
+            
+            # Add DeepSeek analysis to each review
+            reviews_with_analysis = []
+            for review_data in response.data.get("results", response.data if isinstance(response.data, list) else []):
+                try:
+                    review_id = review_data.get("id")
+                    if review_id:
+                        review = Review.objects.get(id=review_id)
+                        analysis = deepseek_service.moderate_comment(review.content, blacklist)
+                        review_data["deepseek_analysis"] = analysis
+                        review_data["deepseek_suggested_action"] = "reject" if analysis.get("needs_moderation", False) else "approve"
+                except Review.DoesNotExist:
+                    pass
+                except Exception as e:
+                    logger.error(f"Error getting DeepSeek analysis for review {review_id}: {e}")
+                
+                reviews_with_analysis.append(review_data)
+            
+            if isinstance(response.data, list):
+                response.data = reviews_with_analysis
+            else:
+                response.data["results"] = reviews_with_analysis
+        
+        return response
+
+
+class AdminRecentReviewsView(ListAPIView):
+    """Get recent reviews for admin dashboard."""
+
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if not self.request.user.is_staff:
+            return Review.objects.none()
+
+        # Get recent reviews, ordered by creation date
+        limit = int(self.request.query_params.get("limit", 30))
+        queryset = Review.objects.all().select_related("user", "film").order_by("-created_at")
+        return queryset[:limit]
+
+    def list(self, request, *args, **kwargs):
+        """Return recent reviews with proper formatting."""
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True, context={"request": request})
+        
+        # Format response for frontend
+        reviews_data = []
+        for review_data in serializer.data:
+            reviews_data.append({
+                "id": review_data.get("id"),
+                "username": review_data.get("username", "Unknown"),
+                "film_title": review_data.get("film_title", "Unknown Film"),
+                "content": review_data.get("content", ""),
+                "created_at": review_data.get("created_at"),
+                "moderation_status": review_data.get("moderation_status", "pending"),
+                "flagged_count": review_data.get("flagged_count", 0),
+                "rating": review_data.get("rating"),
+            })
+        
+        return Response(reviews_data, status=status.HTTP_200_OK)
+
+
+# ==================== ADMIN ENDPOINTS ====================
+
+class AdminStatsView(APIView):
+    """Get admin dashboard statistics."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Get admin statistics."""
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Only staff members can access admin statistics."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        stats = {
+            "total_users": User.objects.count(),
+            "total_films": Film.objects.count(),
+            "total_reviews": Review.objects.count(),
+            "total_ratings": Rating.objects.count(),
+            "total_watched": WatchedFilm.objects.count(),
+            "total_lists": List.objects.count(),
+            "total_badges": Badge.objects.count(),
+            "pending_reviews": Review.objects.filter(moderation_status="pending").count(),
+            "flagged_reviews": Review.objects.filter(flagged_count__gt=0).count(),
+        }
+
+        return Response(stats, status=status.HTTP_200_OK)
+
+
+class AdminUsersView(ListAPIView):
+    """Get all users for admin management."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if not self.request.user.is_staff:
+            return User.objects.none()
+
+        queryset = User.objects.all().order_by("-date_joined")
+        
+        # Search functionality
+        search_term = self.request.query_params.get("search", "")
+        if search_term:
+            queryset = queryset.filter(
+                models.Q(username__icontains=search_term) |
+                models.Q(email__icontains=search_term) |
+                models.Q(first_name__icontains=search_term) |
+                models.Q(last_name__icontains=search_term)
+            )
+        
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        """Return user list with additional info."""
+        queryset = self.get_queryset()
+        
+        users_data = []
+        for user in queryset:
+            users_data.append({
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "is_active": user.is_active,
+                "is_staff": user.is_staff,
+                "is_superuser": user.is_superuser,
+                "date_joined": user.date_joined.isoformat() if user.date_joined else None,
+                "last_login": user.last_login.isoformat() if user.last_login else None,
+            })
+        
+        return Response(users_data, status=status.HTTP_200_OK)
+
+
+class AdminUserBanView(APIView):
+    """Ban or unban a user."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, user_id: int, *args: Any, **kwargs: Any) -> Response:
+        """Ban or unban a user."""
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Only staff members can ban users."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "User not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Prevent banning yourself
+        if user == request.user:
+            return Response(
+                {"detail": "You cannot ban yourself."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Toggle ban status
+        user.is_active = not user.is_active
+        user.save(update_fields=["is_active"])
+
+        return Response({
+            "detail": f"User {'banned' if not user.is_active else 'unbanned'} successfully.",
+            "user_id": user.id,
+            "username": user.username,
+            "is_active": user.is_active
+        }, status=status.HTTP_200_OK)
+
+
+class AdminUserDeleteView(APIView):
+    """Delete a user."""
+
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request: Request, user_id: int, *args: Any, **kwargs: Any) -> Response:
+        """Delete a user."""
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Only staff members can delete users."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "User not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Prevent deleting yourself
+        if user == request.user:
+            return Response(
+                {"detail": "You cannot delete yourself."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        username = user.username
+        user.delete()
+
+        return Response({
+            "detail": f"User {username} deleted successfully."
+        }, status=status.HTTP_200_OK)
+
+
+class AdminFilmsView(ListAPIView):
+    """Get all films for admin management."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if not self.request.user.is_staff:
+            return Film.objects.none()
+
+        queryset = Film.objects.all().order_by("-created_at")
+        
+        # Search functionality
+        search_term = self.request.query_params.get("search", "")
+        if search_term:
+            queryset = queryset.filter(
+                models.Q(title__icontains=search_term) |
+                models.Q(imdb_id__icontains=search_term)
+            )
+        
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        """Return film list."""
+        queryset = self.get_queryset()
+        
+        films_data = []
+        for film in queryset:
+            films_data.append({
+                "id": str(film.id),
+                "title": film.title,
+                "imdb_id": film.imdb_id,
+                "year": film.year,
+                "poster_url": film.poster_url,
+                "created_at": film.created_at.isoformat() if film.created_at else None,
+            })
+        
+        return Response(films_data, status=status.HTTP_200_OK)
+
+
+class AdminFilmCreateView(APIView):
+    """Create a new film by IMDb ID."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Create a film from IMDb ID."""
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Only staff members can create films."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        imdb_id = request.data.get("imdb_id", "").strip()
+        if not imdb_id:
+            return Response(
+                {"detail": "IMDb ID is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not IMDB_ID_PATTERN.match(imdb_id):
+            return Response(
+                {"detail": "Invalid IMDb ID format. Expected format: tt1234567"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Check if film already exists
+        if Film.objects.filter(imdb_id=imdb_id).exists():
+            film = Film.objects.get(imdb_id=imdb_id)
+            return Response(
+                {"detail": "Film already exists.", "film": {
+                    "id": str(film.id),
+                    "title": film.title,
+                    "imdb_id": film.imdb_id,
+                    "year": film.year
+                }},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Use FilmAggregatorService to fetch and create film
+        try:
+            aggregator = FilmAggregatorService()
+            film_data = aggregator.get_or_create_film(imdb_id)
+            
+            return Response({
+                "detail": "Film created successfully.",
+                "film": {
+                    "id": str(film_data.id),
+                    "title": film_data.title,
+                    "imdb_id": film_data.imdb_id,
+                    "year": film_data.year,
+                    "poster_url": film_data.poster_url
+                }
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            logger.error(f"Error creating film {imdb_id}: {e}")
+            return Response(
+                {"detail": f"Failed to create film: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class AdminFilmUpdateView(APIView):
+    """Update a film."""
+
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request: Request, film_id: str, *args: Any, **kwargs: Any) -> Response:
+        """Update a film."""
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Only staff members can update films."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            film = Film.objects.get(id=film_id)
+        except Film.DoesNotExist:
+            return Response(
+                {"detail": "Film not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Update fields
+        if "title" in request.data:
+            film.title = request.data["title"]
+        if "year" in request.data:
+            film.year = request.data["year"]
+        
+        film.save(update_fields=["title", "year", "updated_at"])
+
+        return Response({
+            "detail": "Film updated successfully.",
+            "film": {
+                "id": str(film.id),
+                "title": film.title,
+                "imdb_id": film.imdb_id,
+                "year": film.year
+            }
+        }, status=status.HTTP_200_OK)
+
+
+class AdminFilmDeleteView(APIView):
+    """Delete a film."""
+
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request: Request, film_id: str, *args: Any, **kwargs: Any) -> Response:
+        """Delete a film."""
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Only staff members can delete films."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            film = Film.objects.get(id=film_id)
+        except Film.DoesNotExist:
+            return Response(
+                {"detail": "Film not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        title = film.title
+        film.delete()
+
+        return Response({
+            "detail": f"Film {title} deleted successfully."
+        }, status=status.HTTP_200_OK)
+
+
+class AdminBadgeStatsView(APIView):
+    """Get badge statistics for admin."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Get badge statistics."""
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Only staff members can access badge statistics."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        stats = {
+            "total_badges": Badge.objects.count(),
+            "active_badges": Badge.objects.filter(is_active=True).count() if hasattr(Badge, "is_active") else Badge.objects.count(),
+            "custom_badges": Badge.objects.filter(is_custom=True).count(),
+            "total_awards": UserBadge.objects.count(),
+            "unique_users_with_badges": UserBadge.objects.values("user").distinct().count(),
+        }
+
+        return Response(stats, status=status.HTTP_200_OK)
+
+
+class AdminMoodStatsView(APIView):
+    """Get mood tracking statistics for admin."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Get mood statistics."""
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Only staff members can access mood statistics."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Get all moods
+        all_moods = Mood.objects.all()
+        total_moods = all_moods.count()
+
+        if total_moods == 0:
+            return Response({
+                "before": {"percentages": {}, "total": 0},
+                "after": {"percentages": {}, "total": 0}
+            }, status=status.HTTP_200_OK)
+
+        # Calculate percentages for mood_before
+        before_counts = {}
+        for mood in all_moods:
+            mood_before = mood.mood_before or "neutral"
+            before_counts[mood_before] = before_counts.get(mood_before, 0) + 1
+
+        before_percentages = {
+            mood: round((count / total_moods) * 100, 2)
+            for mood, count in before_counts.items()
+        }
+
+        # Calculate percentages for mood_after
+        after_counts = {}
+        for mood in all_moods:
+            mood_after = mood.mood_after or "neutral"
+            after_counts[mood_after] = after_counts.get(mood_after, 0) + 1
+
+        after_percentages = {
+            mood: round((count / total_moods) * 100, 2)
+            for mood, count in after_counts.items()
+        }
+
+        return Response({
+            "before": {
+                "percentages": before_percentages,
+                "total": total_moods
+            },
+            "after": {
+                "percentages": after_percentages,
+                "total": total_moods
+            }
+        }, status=status.HTTP_200_OK)
+
+
+class AdminLogsView(ListAPIView):
+    """Get system logs (ModerationLog and RecommendationLog) for admin."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if not self.request.user.is_staff:
+            return []
+
+        log_type = self.request.query_params.get("type", "all")  # "moderation", "recommendation", or "all"
+        limit = int(self.request.query_params.get("limit", 100))
+
+        logs = []
+
+        if log_type in ["moderation", "all"]:
+            moderation_logs = ModerationLog.objects.all().order_by("-created_at")[:limit]
+            for log in moderation_logs:
+                logs.append({
+                    "id": log.id,
+                    "type": "moderation",
+                    "level": "WARNING" if not log.allow else "INFO",
+                    "message": f"Moderation {log.direction}: {log.reason or 'No reason provided'}",
+                    "timestamp": log.created_at.isoformat() if log.created_at else None,
+                    "user": log.user.username if log.user else "System",
+                    "direction": log.direction,
+                    "allow": log.allow,
+                    "flags": log.flags or []
+                })
+
+        if log_type in ["recommendation", "all"]:
+            recommendation_logs = RecommendationLog.objects.all().order_by("-created_at")[:limit]
+            for log in recommendation_logs:
+                level = "ERROR" if log.blocked else "INFO"
+                logs.append({
+                    "id": log.id,
+                    "type": "recommendation",
+                    "level": level,
+                    "message": f"Recommendation request: {log.user_message[:100]}..." if len(log.user_message) > 100 else f"Recommendation request: {log.user_message}",
+                    "timestamp": log.created_at.isoformat() if log.created_at else None,
+                    "user": log.user.username if log.user else "Unknown",
+                    "blocked": log.blocked,
+                    "flags": log.flags or []
+                })
+
+        # Sort by timestamp descending
+        logs.sort(key=lambda x: x["timestamp"] or "", reverse=True)
+        return logs[:limit]
+
+    def list(self, request, *args, **kwargs):
+        """Return logs list."""
+        logs = self.get_queryset()
+        return Response(logs, status=status.HTTP_200_OK)
+
+
+class AdminUserActivityView(APIView):
+    """Get user activity logs for admin (reviews, ratings, watched films, lists, etc.)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request, user_id: int, *args: Any, **kwargs: Any) -> Response:
+        """Get all activities for a specific user."""
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Only staff members can access user activities."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "User not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Get all user activities
+        activities = []
+
+        # Recent reviews
+        reviews = Review.objects.filter(user=user).select_related("film").order_by("-created_at")[:20]
+        for review in reviews:
+            activities.append({
+                "type": "review",
+                "action": "created_review",
+                "timestamp": review.created_at.isoformat() if review.created_at else None,
+                "details": {
+                    "review_id": review.id,
+                    "film_title": review.film.title if review.film else "Unknown",
+                    "film_imdb_id": review.film.imdb_id if review.film else None,
+                    "rating": review.rating,
+                    "moderation_status": review.moderation_status,
+                }
+            })
+
+        # Recent ratings
+        ratings = Rating.objects.filter(user=user).select_related("film").order_by("-rated_at")[:20]
+        for rating in ratings:
+            activities.append({
+                "type": "rating",
+                "action": "rated_film",
+                "timestamp": rating.rated_at.isoformat() if rating.rated_at else None,
+                "details": {
+                    "rating_id": rating.id,
+                    "film_title": rating.film.title if rating.film else "Unknown",
+                    "film_imdb_id": rating.film.imdb_id if rating.film else None,
+                    "overall_rating": rating.overall_rating,
+                }
+            })
+
+        # Recent watched films
+        watched = WatchedFilm.objects.filter(user=user).select_related("film").order_by("-watched_at")[:20]
+        for wf in watched:
+            activities.append({
+                "type": "watched",
+                "action": "watched_film",
+                "timestamp": wf.watched_at.isoformat() if wf.watched_at else None,
+                "details": {
+                    "film_title": wf.film.title if wf.film else "Unknown",
+                    "film_imdb_id": wf.film.imdb_id if wf.film else None,
+                }
+            })
+
+        # Recent lists created
+        lists = List.objects.filter(user=user).order_by("-created_at")[:10]
+        for list_obj in lists:
+            activities.append({
+                "type": "list",
+                "action": "created_list",
+                "timestamp": list_obj.created_at.isoformat() if list_obj.created_at else None,
+                "details": {
+                    "list_id": list_obj.id,
+                    "list_title": list_obj.title,
+                    "films_count": list_obj.films_count,
+                }
+            })
+
+        # Recent moods
+        moods = Mood.objects.filter(user=user).select_related("film").order_by("-logged_at")[:20]
+        for mood in moods:
+            activities.append({
+                "type": "mood",
+                "action": "logged_mood",
+                "timestamp": mood.logged_at.isoformat() if mood.logged_at else None,
+                "details": {
+                    "mood_id": mood.id,
+                    "film_title": mood.film.title if mood.film else "Unknown",
+                    "film_imdb_id": mood.film.imdb_id if mood.film else None,
+                    "mood_before": mood.mood_before,
+                    "mood_after": mood.mood_after,
+                }
+            })
+
+        # Sort all activities by timestamp descending
+        activities.sort(key=lambda x: x["timestamp"] or "", reverse=True)
+
+        return Response({
+            "user_id": user.id,
+            "username": user.username,
+            "total_activities": len(activities),
+            "activities": activities[:50]  # Limit to 50 most recent
+        }, status=status.HTTP_200_OK)

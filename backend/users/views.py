@@ -136,9 +136,16 @@ class UserProfileView(RetrieveUpdateAPIView):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def current_user_view(request):
-    """Get current authenticated user's profile."""
-    serializer = UserProfileSerializer(request.user.profile)
-    return Response(serializer.data)
+    """Get current authenticated user's profile with admin status."""
+    profile_serializer = UserProfileSerializer(request.user.profile)
+    data = profile_serializer.data
+    
+    # Add user admin status fields
+    data['is_staff'] = request.user.is_staff
+    data['is_superuser'] = request.user.is_superuser
+    data['user_id'] = request.user.id
+    
+    return Response(data)
 
 
 @api_view(["GET"])

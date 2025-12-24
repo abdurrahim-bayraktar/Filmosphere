@@ -278,7 +278,8 @@
               </div>
               <div class="flagged-content">
                 <strong>User:</strong> {{ item.user }}<br>
-                <strong>Content:</strong> {{ item.content }}
+                <strong>Content:</strong> {{ item.content }}<br>
+                <strong>Reason:</strong> <span style="color: #e50914;">{{ item.reason || 'Flagged for review' }}</span>
               </div>
               <div class="flagged-actions" *ngIf="item.status === 'pending'">
                 <p-button 

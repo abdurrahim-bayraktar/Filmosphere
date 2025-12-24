@@ -108,10 +108,10 @@ export class AdminComponent implements OnInit {
   // Recommendation Engine
   engineStatus = {
     status: 'running', // running, stopped, error
-    lastRun: '2025-12-12 10:30:00',
-    nextRun: '2025-12-12 14:30:00',
-    processedUsers: 1250,
-    recommendationsGenerated: 3420
+    lastRun: '',
+    nextRun: '',
+    processedUsers: 0,
+    recommendationsGenerated: 0
   };
 
   // System Logs
@@ -123,29 +123,8 @@ export class AdminComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // TEMPORARILY COMMENTED OUT FOR PREVIEW - REMOVE COMMENTS TO ENABLE AUTH CHECK
-    // this.checkAuth();
     this.setupMenuItems();
-    
-    // Mock data for preview
-    this.isAdmin = true;
-    this.user = {
-      username: "admin",
-      email: "admin@filmosphere.com",
-      id: 1,
-      profile: {
-        avatar: null
-      }
-    };
-    this.avatarLabel = "A";
-    this.loadAdminStats();
-    this.loadUsers();
-    this.loadRecentReviews();
-    this.loadFilms();
-    this.loadBadgeStats();
-    this.loadMoodStats();
-    this.loadSystemLogs();
-    this.loadMockData();
+    this.checkAuth();
   }
 
   loadUsers() {
@@ -195,8 +174,15 @@ export class AdminComponent implements OnInit {
   }
 
   loadRecentReviews() {
+    const token = localStorage.getItem("access");
+    if (!token) return;
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
     console.log('[ADMIN] Loading recent reviews...');
-    this.http.get("http://127.0.0.1:8000/api/admin/reviews/recent")
+    this.http.get("http://127.0.0.1:8000/api/admin/reviews/recent", { headers })
       .subscribe({
         next: (reviews: any) => {
           console.log('[ADMIN] Recent reviews loaded:', reviews);
@@ -232,8 +218,15 @@ export class AdminComponent implements OnInit {
   }
 
   loadFilms() {
+    const token = localStorage.getItem("access");
+    if (!token) return;
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
     console.log('[ADMIN] Loading films...');
-    this.http.get("http://127.0.0.1:8000/api/admin/films/")
+    this.http.get("http://127.0.0.1:8000/api/admin/films/", { headers })
       .subscribe({
         next: (films: any) => {
           console.log('[ADMIN] Films loaded:', films);
@@ -257,8 +250,15 @@ export class AdminComponent implements OnInit {
   }
 
   loadBadgeStats() {
+    const token = localStorage.getItem("access");
+    if (!token) return;
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
     console.log('[ADMIN] Loading badge stats...');
-    this.http.get("http://127.0.0.1:8000/api/admin/badges/stats")
+    this.http.get("http://127.0.0.1:8000/api/admin/badges/stats", { headers })
       .subscribe({
         next: (stats: any) => {
           console.log('[ADMIN] Badge stats loaded:', stats);
@@ -281,8 +281,15 @@ export class AdminComponent implements OnInit {
   }
 
   loadMoodStats() {
+    const token = localStorage.getItem("access");
+    if (!token) return;
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
     console.log(`[ADMIN] Loading mood stats (${this.moodType})...`);
-    this.http.get("http://127.0.0.1:8000/api/admin/moods/stats")
+    this.http.get("http://127.0.0.1:8000/api/admin/moods/stats", { headers })
       .subscribe({
         next: (stats: any) => {
           console.log('[ADMIN] Mood stats loaded:', stats);
@@ -324,8 +331,15 @@ export class AdminComponent implements OnInit {
   }
 
   loadAllBadges() {
+    const token = localStorage.getItem("access");
+    if (!token) return;
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
     console.log('[ADMIN] Loading all badges...');
-    this.http.get("http://127.0.0.1:8000/api/badges/")
+    this.http.get("http://127.0.0.1:8000/api/badges/", { headers })
       .subscribe({
         next: (badges: any) => {
           console.log('[ADMIN] All badges loaded:', badges);
@@ -346,8 +360,15 @@ export class AdminComponent implements OnInit {
   }
 
   loadSystemLogs() {
+    const token = localStorage.getItem("access");
+    if (!token) return;
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
     console.log('[ADMIN] Loading system logs...');
-    this.http.get("http://127.0.0.1:8000/api/admin/logs")
+    this.http.get("http://127.0.0.1:8000/api/admin/logs", { headers })
       .subscribe({
         next: (logs: any) => {
           console.log('[ADMIN] System logs loaded:', logs);
@@ -381,13 +402,8 @@ export class AdminComponent implements OnInit {
   }
 
   loadMockData() {
-    // Mock data for other sections (comments, films, etc.)
-    // Most data is now loaded from API, so this is minimal
-
-    this.flaggedContent = [
-      { id: 1, type: 'Review', content: 'Inappropriate language detected', user: 'user123', date: '2025-12-12 10:00:00', status: 'pending' },
-      { id: 2, type: 'Comment', content: 'Spam detected', user: 'spammer', date: '2025-12-11 15:30:00', status: 'reviewed' }
-    ];
+    // All data is now loaded from API - no mock data needed
+    this.flaggedContent = [];
   }
 
   // User Management Methods
@@ -460,12 +476,23 @@ export class AdminComponent implements OnInit {
 
   saveFilm() {
     if (this.editingFilm) {
+      const token = localStorage.getItem("access");
+      if (!token) {
+        alert("Authentication required");
+        return;
+      }
+
+      const headers = new HttpHeaders({
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      });
+
       // Update existing film
       console.log(`[ADMIN] Updating film ${this.editingFilm.id}...`, this.newFilm);
       this.http.put(`http://127.0.0.1:8000/api/admin/films/${this.editingFilm.id}/update`, {
         title: this.newFilm.title,
         year: this.newFilm.year ? parseInt(this.newFilm.year) : null
-      })
+      }, { headers })
         .subscribe({
           next: (response: any) => {
             console.log('[ADMIN] Film updated successfully:', response);
@@ -484,10 +511,21 @@ export class AdminComponent implements OnInit {
         return;
       }
 
+      const token = localStorage.getItem("access");
+      if (!token) {
+        alert("Authentication required");
+        return;
+      }
+
+      const headers = new HttpHeaders({
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      });
+
       console.log(`[ADMIN] Creating film with IMDb ID: ${this.newFilm.imdb_id}...`);
       this.http.post("http://127.0.0.1:8000/api/admin/films/create", {
         imdb_id: this.newFilm.imdb_id.trim()
-      })
+      }, { headers })
         .subscribe({
           next: (response: any) => {
             console.log('[ADMIN] Film created successfully:', response);
@@ -510,8 +548,18 @@ export class AdminComponent implements OnInit {
 
   deleteFilm(film: any) {
     if (confirm(`Delete ${film.title}?`)) {
+      const token = localStorage.getItem("access");
+      if (!token) {
+        alert("Authentication required");
+        return;
+      }
+
+      const headers = new HttpHeaders({
+        Authorization: `Bearer ${token}`
+      });
+
       console.log(`[ADMIN] Deleting film ${film.id} (${film.title})...`);
-      this.http.delete(`http://127.0.0.1:8000/api/admin/films/${film.id}/delete`)
+      this.http.delete(`http://127.0.0.1:8000/api/admin/films/${film.id}/delete`, { headers })
         .subscribe({
           next: (response: any) => {
             console.log('[ADMIN] Film deleted successfully:', response);
@@ -527,29 +575,213 @@ export class AdminComponent implements OnInit {
 
   // Flagged Content Methods
   approveContent(item: any) {
-    console.log('Approving content:', item);
-    // API call here
+    const token = localStorage.getItem("access");
+    if (!token) {
+      alert("Authentication required");
+      return;
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    console.log('[ADMIN] Approving content:', item);
+    this.http.post(`http://127.0.0.1:8000/api/admin/reviews/${item.id}/moderate`, {
+      action: "approve",
+      reason: "Approved by admin"
+    }, { headers })
+      .subscribe({
+        next: (response: any) => {
+          console.log('[ADMIN] Content approved:', response);
+          this.loadFlaggedContent();
+          this.loadRecentReviews();
+        },
+        error: (err) => {
+          console.error('[ADMIN] Failed to approve content:', err);
+          alert(`Failed to approve: ${err.error?.detail || err.message}`);
+        }
+      });
   }
 
   rejectContent(item: any) {
-    if (confirm('Reject this flagged content?')) {
-      console.log('Rejecting content:', item);
-      // API call here
+    if (confirm('Reject this flagged content? It will be permanently deleted.')) {
+      const token = localStorage.getItem("access");
+      if (!token) {
+        alert("Authentication required");
+        return;
+      }
+
+      const headers = new HttpHeaders({
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      });
+
+      console.log('[ADMIN] Rejecting content:', item);
+      this.http.post(`http://127.0.0.1:8000/api/admin/reviews/${item.id}/moderate`, {
+        action: "reject",
+        reason: "Rejected by admin"
+      }, { headers })
+        .subscribe({
+          next: (response: any) => {
+            console.log('[ADMIN] Content rejected:', response);
+            this.loadFlaggedContent();
+            this.loadRecentReviews();
+          },
+          error: (err) => {
+            console.error('[ADMIN] Failed to reject content:', err);
+            alert(`Failed to reject: ${err.error?.detail || err.message}`);
+          }
+        });
     }
+  }
+
+  loadFlaggedContent() {
+    const token = localStorage.getItem("access");
+    if (!token) return;
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
+    console.log('[ADMIN] Loading flagged content...');
+    // Get pending reviews (flagged by DeepSeek or users)
+    this.http.get("http://127.0.0.1:8000/api/admin/reviews/flagged?status=pending", { headers })
+      .subscribe({
+        next: (reviews: any) => {
+          console.log('[ADMIN] Flagged content loaded:', reviews);
+          if (Array.isArray(reviews)) {
+            this.flaggedContent = reviews.map((review: any) => ({
+              id: review.id,
+              type: 'Review',
+              content: (review.content || review.title || 'No content').substring(0, 200),
+              user: review.username || review.user?.username || 'Unknown',
+              date: review.created_at,
+              status: review.moderation_status || 'pending',
+              reason: review.moderation_reason || review.flagged_count > 0 ? `Flagged by ${review.flagged_count} user(s)` : 'Pending moderation'
+            }));
+          } else if (reviews.results) {
+            this.flaggedContent = reviews.results.map((review: any) => ({
+              id: review.id,
+              type: 'Review',
+              content: (review.content || review.title || 'No content').substring(0, 200),
+              user: review.username || review.user?.username || 'Unknown',
+              date: review.created_at,
+              status: review.moderation_status || 'pending',
+              reason: review.moderation_reason || review.flagged_count > 0 ? `Flagged by ${review.flagged_count} user(s)` : 'Pending moderation'
+            }));
+          } else {
+            this.flaggedContent = [];
+          }
+          console.log(`[ADMIN] Loaded ${this.flaggedContent.length} flagged items`);
+        },
+        error: (err) => {
+          console.error("[ADMIN] Failed to load flagged content:", err);
+          this.flaggedContent = [];
+        }
+      });
+  }
+
+  loadRecommendationEngineStats() {
+    const token = localStorage.getItem("access");
+    if (!token) return;
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
+    console.log('[ADMIN] Loading recommendation engine stats...');
+    // Get all recommendation logs for stats
+    this.http.get("http://127.0.0.1:8000/api/admin/logs?type=recommendation&limit=1000", { headers })
+      .subscribe({
+        next: (allLogs: any) => {
+          console.log('[ADMIN] Recommendation logs loaded:', allLogs);
+          
+          const recommendationLogs = Array.isArray(allLogs) ? allLogs : (allLogs.results || []);
+          
+          // Calculate stats
+          const uniqueUsers = new Set(recommendationLogs.map((log: any) => log.user || log.user_id).filter(Boolean));
+          const recommendationsGenerated = recommendationLogs.filter((log: any) => !log.blocked && (log.type === 'recommendation' || log.message?.includes('Recommendation'))).length;
+          
+          // Get last run time (most recent log)
+          const lastLog = recommendationLogs.length > 0 ? recommendationLogs[0] : null;
+          const lastRun = lastLog?.timestamp || lastLog?.created_at || '';
+          
+          // Format last run date
+          let formattedLastRun = 'Never';
+          if (lastRun) {
+            try {
+              const lastRunDate = new Date(lastRun);
+              formattedLastRun = lastRunDate.toLocaleString('en-US', { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+              }).replace(',', '');
+            } catch (e) {
+              formattedLastRun = lastRun;
+            }
+          }
+          
+          // Calculate next run (assuming daily runs, add 24 hours)
+          let formattedNextRun = 'Not scheduled';
+          if (lastRun) {
+            try {
+              const lastRunDate = new Date(lastRun);
+              lastRunDate.setHours(lastRunDate.getHours() + 24);
+              formattedNextRun = lastRunDate.toLocaleString('en-US', { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+              }).replace(',', '');
+            } catch (e) {
+              formattedNextRun = 'Not scheduled';
+            }
+          }
+          
+          this.engineStatus = {
+            status: 'running',
+            lastRun: formattedLastRun,
+            nextRun: formattedNextRun,
+            processedUsers: uniqueUsers.size,
+            recommendationsGenerated: recommendationsGenerated
+          };
+          
+          console.log('[ADMIN] Recommendation engine stats:', this.engineStatus);
+        },
+        error: (err) => {
+          console.error('[ADMIN] Failed to load recommendation stats:', err);
+          // Set default values on error
+          this.engineStatus = {
+            status: 'error',
+            lastRun: 'Error loading',
+            nextRun: 'Error loading',
+            processedUsers: 0,
+            recommendationsGenerated: 0
+          };
+        }
+      });
   }
 
   // Recommendation Engine Methods
   startEngine() {
     console.log('Starting recommendation engine');
     this.engineStatus.status = 'running';
-    // API call here
+    // API call here (if you implement engine control endpoint)
   }
 
   stopEngine() {
     if (confirm('Stop the recommendation engine?')) {
       console.log('Stopping recommendation engine');
       this.engineStatus.status = 'stopped';
-      // API call here
+      // API call here (if you implement engine control endpoint)
     }
   }
 
@@ -562,8 +794,6 @@ export class AdminComponent implements OnInit {
     ];
   }
 
-  // TEMPORARILY COMMENTED OUT FOR PREVIEW - REMOVE COMMENTS TO ENABLE AUTH CHECK
-  /*
   checkAuth() {
     const token = localStorage.getItem("access");
     
@@ -581,44 +811,64 @@ export class AdminComponent implements OnInit {
     this.http.get("http://127.0.0.1:8000/api/auth/me/", { headers })
       .subscribe({
         next: (res: any) => {
+          console.log("[ADMIN] User data received:", res);
           this.user = res;
-          this.avatarImage = res.profile?.avatar || null;
-          this.avatarLabel = res.username[0]?.toUpperCase() || "U";
-          // Check if user is admin (you may need to adjust this based on your backend)
-          this.isAdmin = res.is_staff || res.is_superuser || false;
+          this.avatarImage = res.profile_picture_url || res.profile?.profile_picture_url || res.profile?.avatar || null;
+          this.avatarLabel = (res.username || res.user?.username || "U")[0]?.toUpperCase() || "U";
+          
+          // Check if user is admin - check both direct fields and nested user object
+          const isStaff = res.is_staff || res.user?.is_staff || false;
+          const isSuperuser = res.is_superuser || res.user?.is_superuser || false;
+          this.isAdmin = isStaff || isSuperuser;
+          
+          console.log("[ADMIN] Admin check:", { isStaff, isSuperuser, isAdmin: this.isAdmin });
           
           if (this.isAdmin) {
+            // Load all admin data
             this.loadAdminStats();
+            this.loadUsers();
+            this.loadRecentReviews();
+            this.loadFilms();
+            this.loadBadgeStats();
+            this.loadMoodStats();
+            this.loadSystemLogs();
+            this.loadFlaggedContent();
+            this.loadRecommendationEngineStats();
           } else {
             // Redirect non-admin users
-            alert("Access denied. Admin privileges required.");
+            alert("Access denied. Admin privileges required. Please contact an administrator.");
             this.router.navigate(['/home']);
           }
         },
         error: (err) => {
           console.error("Auth error:", err);
+          alert("Authentication failed. Please login again.");
           this.router.navigate(['/']);
         }
       });
   }
-  */
 
   loadAdminStats() {
-    // Temporarily allow access without authentication for testing
-    console.log("Calling API without auth: http://127.0.0.1:8000/api/admin/stats/");
-    this.http.get("http://127.0.0.1:8000/api/admin/stats/")
+    const token = localStorage.getItem("access");
+    if (!token) return;
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
+    console.log("[ADMIN] Loading admin stats...");
+    this.http.get("http://127.0.0.1:8000/api/admin/stats/", { headers })
       .subscribe({
         next: (stats: any) => {
-          console.log("API response:", stats);
+          console.log("[ADMIN] Stats loaded:", stats);
           this.adminStats = {
-            totalUsers: stats.total_users,
-            totalFilms: stats.total_films,
-            totalReviews: stats.total_reviews
+            totalUsers: stats.total_users || 0,
+            totalFilms: stats.total_films || 0,
+            totalReviews: stats.total_reviews || 0
           };
         },
         error: (err) => {
-          console.error("Failed to load admin stats:", err);
-          // Fallback to mock data if API fails
+          console.error("[ADMIN] Failed to load admin stats:", err);
           this.adminStats = {
             totalUsers: 0,
             totalFilms: 0,

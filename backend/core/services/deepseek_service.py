@@ -277,26 +277,46 @@ Do not include any explanation, just "YES" or "NO"."""
         """Build a prompt for comment moderation."""
         blacklist_text = ", ".join(blacklist) if blacklist else "None specified"
         
-        return f"""You are a content moderation system for film review comments.
+        return f"""You are a content moderation system for film review comments. You MUST be strict and detect ALL inappropriate content.
 
 Comment to moderate:
 {comment_text}
 
 Blacklisted words/phrases: {blacklist_text}
 
-Analyze this comment and determine if it:
-1. Contains any blacklisted words or phrases
-2. Contains inappropriate content (spam, harassment, hate speech, etc.)
-3. Violates community guidelines
+Analyze this comment and determine if it contains:
+1. Profanity/swearing (küfür) - words like "bullshit", "fuck", "shit", "damn", etc.
+2. Racism (racist content) - discriminatory content based on race
+3. Sexism (sexist content) - discriminatory content based on gender
+4. Hate speech - content that attacks or incites hatred
+5. Harassment or bullying - threatening or abusive language
+6. Spam - repetitive or promotional content
+7. Any blacklisted words or phrases
+8. Other inappropriate content
 
-Respond with a JSON object in this exact format:
+IMPORTANT RULES:
+- Spoilers (like "character dies", "ending reveals", plot twists) are ALLOWED and should NOT trigger moderation
+- Only flag for inappropriate language, hate speech, discrimination, or spam
+- Be strict with profanity - flag words like "bullshit", "fuck", "shit", "damn", "hell" as profanity
+- If content contains profanity OR inappropriate language, it MUST be flagged
+
+Respond with a JSON object in this exact format (NO markdown, just JSON):
 {{
-    "needs_moderation": true/false,
-    "reason": "Brief reason if needs_moderation is true",
-    "detected_words": ["list", "of", "blacklisted", "words", "found"]
+    "needs_moderation": true,
+    "reason": "Contains profanity" or "Racist content detected" or "Sexist language" etc.,
+    "detected_words": ["bullshit", "fuck", etc.],
+    "content_type": "profanity"
 }}
 
-If the comment is appropriate, set needs_moderation to false."""
+OR if appropriate:
+{{
+    "needs_moderation": false,
+    "reason": "",
+    "detected_words": [],
+    "content_type": "none"
+}}
+
+content_type can be: "profanity", "racism", "sexism", "hate_speech", "harassment", "spam", "other", or "none"."""
 
     def _parse_moderation_response(self, response: Dict[str, Any]) -> Dict[str, Any]:
         """Parse DeepSeek API response for moderation."""
@@ -316,16 +336,23 @@ If the comment is appropriate, set needs_moderation to false."""
             # Parse JSON
             result = json.loads(content)
             
-            return {
+            parsed_result = {
                 "needs_moderation": result.get("needs_moderation", False),
                 "reason": result.get("reason", ""),
                 "detected_words": result.get("detected_words", []),
+                "content_type": result.get("content_type", "none"),
             }
+            
+            # Log for debugging
+            logger.info(f"DeepSeek moderation parsed: {parsed_result}")
+            
+            return parsed_result
         except (json.JSONDecodeError, KeyError, IndexError) as e:
             logger.error(f"Error parsing moderation response: {e}")
             return {
                 "needs_moderation": False,
                 "reason": "",
                 "detected_words": [],
+                "content_type": "none",
             }
 

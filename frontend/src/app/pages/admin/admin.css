@@ -194,17 +194,25 @@
 /* Admin Actions Grid */
 .admin-actions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
   margin-top: 2rem;
+}
+
+/* Responsive: On smaller screens, show 1 column */
+@media (max-width: 1200px) {
+  .admin-actions-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .action-card {
   background: #111;
   border: 1px solid #333;
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 2rem;
   transition: transform 0.2s, box-shadow 0.2s;
+  min-height: 300px;
 }
 
 .action-card:hover {
@@ -219,11 +227,12 @@
 
 .card-title {
   color: #e50914;
-  font-size: 1.2rem;
-  margin: 0 0 1rem 0;
+  font-size: 1.4rem;
+  margin: 0 0 1.5rem 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-weight: 600;
 }
 
 .card-title i {
@@ -248,7 +257,7 @@
 }
 
 .user-list {
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
 }
 
@@ -385,7 +394,7 @@
 
 /* Recent Comments */
 .comment-list {
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
 }
 
@@ -459,7 +468,7 @@
 }
 
 .film-list {
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
 }
 
@@ -534,7 +543,7 @@
 
 /* Flagged Content */
 .flagged-list {
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
 }
 
