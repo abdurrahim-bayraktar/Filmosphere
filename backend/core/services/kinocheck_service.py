@@ -66,3 +66,31 @@ class KinoCheckService:
         except Exception as e:
             logger.error(f"KinoCheck ID error: {e}")
             return None
+        
+
+    def get_kinocheck_url_by_imdb_id(self, imdb_id: str, language: str = "en") -> Optional[str]:
+        """
+        Fetches the KinoCheck Trailer URL for a specific movie using its IMDb ID.
+        """
+        headers = self._get_headers()
+        params = {
+            "imdb_id": imdb_id,
+            "language": language
+        }
+
+        try:
+            data = self.http_client.get("/movies", headers=headers, params=params)
+            
+            if isinstance(data, dict):
+                # SAFE ACCESS: 
+                # Use (data.get("trailer") or {}) to handle if the value is None
+                trailer_data = data.get("trailer") or {}
+                
+                return trailer_data.get("url")
+            
+            return None
+
+        except Exception as e:
+            # Note: Make sure 'logger' is imported or defined in this file
+            logger.error(f"KinoCheck trailer lookup error for IMDb ID {imdb_id}: {e}")
+            return None

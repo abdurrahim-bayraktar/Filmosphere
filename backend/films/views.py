@@ -1560,8 +1560,44 @@ class KinoCheckMovieByIdView(APIView):
                 {"detail": "Failed to fetch movie"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+        
+class MovieUrlView(APIView):
+    # Add 'imdb_id' to the method signature matches the variable in urls.py
+    def get(self, request, imdb_id):
+        
+        # 1. Validation is simpler: if the URL matched, imdb_id exists.
+        if not imdb_id:
+            return Response(
+                {"error": "IMDb ID is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
+        service = KinoCheckService()
+        
+        # 2. Add a try/except block to catch that 'NoneType' error from the service
+        try:
+            kino_url = service.get_kinocheck_url_by_imdb_id(imdb_id)
+        except AttributeError:
+            # This catches the 'NoneType object has no attribute get' error
+            # occurring inside the service if the API response was empty
+            return Response(
+                {"error": "External service returned invalid data"},
+                status=status.HTTP_502_BAD_GATEWAY
+            )
+        except Exception as e:
+            # Catch other unexpected errors
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
+        if kino_url:
+            return Response({"kinocheck_url": kino_url})
+        else:
+            return Response(
+                {"error": "Movie not found or API error"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
 # Following System Views
 class FollowUserView(APIView):
     """Follow or unfollow a user."""

@@ -330,22 +330,7 @@
                 <strong>Recommendations Generated:</strong> {{ engineStatus.recommendationsGenerated }}
               </div>
             </div>
-            <div class="engine-actions">
-              <p-button 
-                *ngIf="engineStatus.status !== 'running'"
-                label="Start Engine" 
-                icon="pi pi-play" 
-                severity="success"
-                (onClick)="startEngine()">
-              </p-button>
-              <p-button 
-                *ngIf="engineStatus.status === 'running'"
-                label="Stop Engine" 
-                icon="pi pi-stop" 
-                severity="danger"
-                (onClick)="stopEngine()">
-              </p-button>
-            </div>
+            
           </div>
         </div>
       </div>

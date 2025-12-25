@@ -239,7 +239,32 @@ export class FilmDetailComponent implements OnInit {
       });
     }
   }
+  watchTrailer() {
+    if (!this.imdbId) {
+      console.warn('No IMDB ID available to fetch trailer.');
+      return;
+    }
 
+    const url = `http://127.0.0.1:8000/api/kinocheck-url/${this.imdbId}/`;
+
+    // Optional: Add a loading state here if you want to show a spinner
+    // this.isLoadingTrailer = true;
+
+    this.http.get<{ kinocheck_url: string }>(url).subscribe({
+      next: (response) => {
+        if (response && response.kinocheck_url) {
+          // Open in a new tab
+          window.open(response.kinocheck_url, '_blank');
+        } else {
+          alert('Trailer not available for this film.');
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching trailer:', err);
+        alert('Could not fetch trailer link.');
+      }
+    });
+  }
   loadReviews() {
     this.filmService.getFilmReviews(this.imdbId).subscribe({
       next: (data: any) => {
