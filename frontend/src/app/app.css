@@ -1,0 +1,13 @@
+/* Ana uygulama container - siyah arka plan */
+:host {
+  display: block;
+  background: #000 !important;
+  min-height: 100vh;
+}
+
+app-root {
+  display: block;
+  background: #000 !important;
+  min-height: 100vh;
+}
+

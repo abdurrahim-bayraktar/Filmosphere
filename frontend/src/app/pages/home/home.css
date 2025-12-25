@@ -12,6 +12,18 @@
   border-bottom: 1px solid #333;
 }
 
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
 .logo {
   margin: 0;
   color: red;
@@ -86,6 +98,11 @@
 .nav-link i {
   margin-right: 10px;
   font-size: 25px;
+  color: inherit !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  font-family: 'primeicons' !important;
 }
 
 .nav-link:hover {
@@ -100,9 +117,17 @@
 /* =========================
    HOME CONTAINER
    ========================= */
+
+/* Ana sayfa wrapper - tüm sayfa siyah */
+:host {
+  display: block;
+  background: #000 !important;
+  min-height: 100vh;
+}
+
 .home-container {
   padding: 30px 40px;
-  background: #000;
+  background: #000 !important;
   min-height: calc(100vh - 120px);
 }
 
@@ -123,6 +148,7 @@
   margin-top: 40px;
   padding: 0 40px;
   padding-bottom: 40px;
+  background: #000 !important;
 }
 
 /* Films Section (Left) */
@@ -231,6 +257,7 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
+  background: transparent;
 }
 
 .comment-user-info {
@@ -268,6 +295,8 @@
   font-size: 0.9rem;
   line-height: 1.6;
   margin: 0 0 10px 0;
+  padding: 12px;      /* isteğe bağlı, daha rahat okunsun diye */
+  border-radius: 6px; /* isteğe bağlı, hafif yuvarlak köşe */
 }
 
 .comment-footer {
@@ -315,6 +344,7 @@
   text-align: center;
   padding: 0 40px;
   overflow: hidden;
+  background: #000;
 }
 
 .hero-content {
@@ -471,41 +501,77 @@
 /* =========================
    PROFILE POPOVER
    ========================= */
-:host ::ng-deep .p-popover {
-  background: #111;
-  border: 1px solid #333;
-  border-radius: 4px;
-  padding: 0;
+:host ::ng-deep .profile-dropdown-panel.p-popover,
+:host ::ng-deep .p-popover.profile-dropdown-panel {
+  background: #1a1a1a !important;
+  border: 1px solid #333 !important;
+  border-radius: 8px !important;
+  padding: 0 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+  min-width: 200px !important;
 }
 
-:host ::ng-deep .p-popover .p-menu {
-  background: transparent;
-  border: none;
-  padding: 5px 0;
+:host ::ng-deep .profile-dropdown-panel .p-popover-arrow,
+:host ::ng-deep .p-popover.profile-dropdown-panel .p-popover-arrow {
+  border-bottom-color: #1a1a1a !important;
+  border-top-color: #1a1a1a !important;
 }
 
-:host ::ng-deep .p-popover .p-menuitem-link {
+:host ::ng-deep .profile-dropdown-panel .p-popover-arrow::before,
+:host ::ng-deep .p-popover.profile-dropdown-panel .p-popover-arrow::before {
+  border-bottom-color: #333 !important;
+  border-top-color: #333 !important;
+}
+
+:host ::ng-deep .profile-dropdown-panel .p-menu,
+:host ::ng-deep .p-popover.profile-dropdown-panel .p-menu {
+  background: transparent !important;
+  border: none !important;
+  padding: 6px 0 !important;
+}
+
+:host ::ng-deep .profile-dropdown-panel .p-menuitem-link,
+:host ::ng-deep .p-popover.profile-dropdown-panel .p-menuitem-link {
+  color: #ddd !important;
+  padding: 12px 16px !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  text-decoration: none !important;
+  border-radius: 0 !important;
+}
+
+:host ::ng-deep .profile-dropdown-panel .p-menuitem-link:hover,
+:host ::ng-deep .p-popover.profile-dropdown-panel .p-menuitem-link:hover {
+  background-color: #e50914 !important;
   color: #fff !important;
-  padding: 10px 15px;
-  transition: background-color 0.2s;
-  display: flex;
-  align-items: center;
 }
 
-:host ::ng-deep .p-popover .p-menuitem-link:hover {
-  background-color: #e50914;
+:host ::ng-deep .profile-dropdown-panel .p-menuitem-icon,
+:host ::ng-deep .p-popover.profile-dropdown-panel .p-menuitem-icon {
+  margin-right: 0 !important;
+  font-size: 1rem !important;
+  color: inherit !important;
+  width: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
-:host ::ng-deep .p-popover .p-menuitem-icon {
-  margin-right: 6px;
-  font-size: 1.1rem;
+:host ::ng-deep .profile-dropdown-panel .p-menu-separator,
+:host ::ng-deep .p-popover.profile-dropdown-panel .p-menu-separator {
+  border-top: 1px solid #333 !important;
+  margin: 6px 0 !important;
 }
 
-:host ::ng-deep .p-popover .p-menu-separator {
-  border-top: 1px solid #333;
-  margin: 5px 0;
-}
-
-:host ::ng-deep .p-popover .p-menuitem:last-child .p-menuitem-link {
+:host ::ng-deep .profile-dropdown-panel .p-menuitem:last-child .p-menuitem-link,
+:host ::ng-deep .p-popover.profile-dropdown-panel .p-menuitem:last-child .p-menuitem-link {
   color: #ff5555 !important;
+}
+
+:host ::ng-deep .profile-dropdown-panel .p-menuitem:last-child .p-menuitem-link:hover,
+:host ::ng-deep .p-popover.profile-dropdown-panel .p-menuitem:last-child .p-menuitem-link:hover {
+  background-color: #ff3333 !important;
+  color: #fff !important;
 }

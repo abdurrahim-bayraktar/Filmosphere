@@ -23,6 +23,18 @@
   align-items: center;
 }
 
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
 .logo {
   color: #e50914;
   font-size: 1.8rem;
@@ -54,6 +66,14 @@
 .nav-link.active {
   color: #e50914;
   background: #1a1a1a;
+}
+
+.nav-link i {
+  color: inherit !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  font-family: 'primeicons' !important;
 }
 
 .navbar-right {

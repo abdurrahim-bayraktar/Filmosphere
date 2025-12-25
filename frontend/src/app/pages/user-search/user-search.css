@@ -12,6 +12,18 @@
   border-bottom: 1px solid #333;
 }
 
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
 .logo {
   margin: 0;
   color: red;
@@ -86,6 +98,11 @@
 .nav-link i {
   margin-right: 10px;
   font-size: 25px;
+  color: inherit !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  font-family: 'primeicons' !important;
 }
 
 .nav-link:hover {

@@ -225,8 +225,17 @@ export class FilmDetailComponent implements OnInit {
       });
 
       this.filmService.getUserMood(this.imdbId).subscribe({
-        next: (mood) => this.userMood = mood,
-        error: (e) => console.log('Could not fetch mood (likely 401)', e)
+        next: (mood) => {
+          this.userMood = mood || {};
+        },
+        error: (e) => {
+          // 404 is normal if user hasn't logged a mood yet
+          if (e.status === 404) {
+            this.userMood = {};
+          } else {
+            console.log('Could not fetch mood:', e);
+          }
+        }
       });
     }
   }
@@ -490,9 +499,33 @@ export class FilmDetailComponent implements OnInit {
 
 
   saveMood() {
-    this.filmService.logMood(this.imdbId, this.userMood).subscribe(() => {
-      console.log('Mood updated');
-    });
+    // Only save if at least one mood is selected
+    if (this.userMood.mood_before || this.userMood.mood_after) {
+      this.filmService.logMood(this.imdbId, this.userMood).subscribe({
+        next: () => {
+          console.log('Mood updated');
+        },
+        error: (err) => {
+          console.error('Error saving mood:', err);
+        }
+      });
+    }
+  }
+
+  getMoodIcon(moodValue: string): string {
+    const iconMap: { [key: string]: string } = {
+      'happy': 'pi pi-smile',
+      'sad': 'pi pi-frown',
+      'excited': 'pi pi-star-fill',
+      'calm': 'pi pi-heart',
+      'anxious': 'pi pi-exclamation-triangle',
+      'bored': 'pi pi-minus-circle',
+      'energetic': 'pi pi-bolt',
+      'relaxed': 'pi pi-check-circle',
+      'stressed': 'pi pi-times-circle',
+      'neutral': 'pi pi-circle'
+    };
+    return iconMap[moodValue] || 'pi pi-circle';
   }
 
   openReviewDialog() {

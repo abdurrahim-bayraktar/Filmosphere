@@ -401,6 +401,35 @@ export class AdminComponent implements OnInit {
       });
   }
 
+  downloadSystemLogs() {
+    if (this.systemLogs.length === 0) {
+      alert('No logs to download');
+      return;
+    }
+
+    // Create JSON content
+    const jsonContent = JSON.stringify(this.systemLogs, null, 2);
+    
+    // Create blob and download
+    const blob = new Blob([jsonContent], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // Generate filename with current date
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+    link.download = `system-logs-${dateStr}-${timeStr}.json`;
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    console.log(`[ADMIN] Downloaded ${this.systemLogs.length} system logs`);
+  }
+
   loadMockData() {
     // All data is now loaded from API - no mock data needed
     this.flaggedContent = [];

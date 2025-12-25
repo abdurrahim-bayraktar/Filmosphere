@@ -2142,6 +2142,44 @@ class AdminFlaggedCommentsView(ListAPIView):
         return response
 
 
+class TopLikedReviewsView(ListAPIView):
+    """Get top most liked reviews across all films."""
+
+    serializer_class = ReviewSerializer
+    permission_classes = []
+
+    def get_queryset(self):
+        # Get top 5 most liked approved reviews, excluding spoilers
+        limit = int(self.request.query_params.get("limit", 5))
+        queryset = Review.objects.filter(
+            moderation_status="approved",
+            is_spoiler=False,
+            is_auto_detected_spoiler=False
+        ).select_related("user", "film").order_by("-likes_count", "-created_at")
+        return queryset[:limit]
+
+    def list(self, request, *args, **kwargs):
+        """Return top liked reviews with proper formatting."""
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True, context={"request": request})
+        
+        # Format response for frontend
+        reviews_data = []
+        for review_data in serializer.data:
+            reviews_data.append({
+                "id": review_data.get("id"),
+                "username": review_data.get("username", "Unknown"),
+                "film_title": review_data.get("film_title", "Unknown Film"),
+                "content": review_data.get("content", ""),
+                "created_at": review_data.get("created_at"),
+                "likes_count": review_data.get("likes_count", 0),
+                "moderation_status": review_data.get("moderation_status", "approved"),
+                "rating": review_data.get("rating"),
+            })
+        
+        return Response(reviews_data, status=status.HTTP_200_OK)
+
+
 class AdminRecentReviewsView(ListAPIView):
     """Get recent reviews for admin dashboard."""
 

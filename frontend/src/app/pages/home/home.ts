@@ -293,10 +293,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   loadTopComments() {
-    // Fetch reviews from multiple popular films and get most liked ones
-    // We'll fetch reviews from a few popular films and sort by likes
-    const popularFilmIds = ['tt1375666', 'tt0468569', 'tt0111161', 'tt0137523', 'tt0816692']; // Inception, Dark Knight, Shawshank, Fight Club, Interstellar
-    
+    // Fetch top 5 most liked reviews from all films
     const token = localStorage.getItem("access");
     let headers: HttpHeaders | { [key: string]: string } = {};
     if (token) {
@@ -305,33 +302,18 @@ export class HomeComponent implements OnInit, OnDestroy {
       });
     }
 
-    const reviewObservables = popularFilmIds.map(imdbId =>
-      this.http.get(`http://127.0.0.1:8000/api/films/${imdbId}/reviews`, { headers })
-    );
-
-    forkJoin(reviewObservables).subscribe({
-      next: (results: any[]) => {
-        const allComments: any[] = [];
-        results.forEach((reviews: any) => {
-          if (reviews && Array.isArray(reviews)) {
-            allComments.push(...reviews);
-          } else if (reviews && reviews.results && Array.isArray(reviews.results)) {
-            allComments.push(...reviews.results);
-          }
-        });
-
-        // Filter to exclude flagged reviews (not approved) and spoiler reviews
-        // Sort by likes_count descending and take top 10
-        this.topComments = allComments
-          .filter(comment => 
-            comment.moderation_status === 'approved' && 
-            !comment.contains_spoiler
-          )
-          .sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0))
-          .slice(0, 10);
+    this.http.get(`http://127.0.0.1:8000/api/reviews/top-liked?limit=5`, { headers }).subscribe({
+      next: (results: any) => {
+        // The API returns an array of top liked reviews
+        if (Array.isArray(results)) {
+          this.topComments = results;
+        } else {
+          this.topComments = [];
+        }
       },
       error: (err) => {
         console.error('Error loading comments:', err);
+        this.topComments = [];
       }
     });
   }

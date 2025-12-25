@@ -13,6 +13,13 @@
 .navbar-left {
   display: flex;
   align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
 }
 
 .logo {
@@ -237,6 +244,21 @@
 
 .card-title i {
   font-size: 1.1rem;
+}
+
+.card-title-with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.card-title-with-action .card-title {
+  margin-bottom: 0;
+}
+
+.download-logs-btn {
+  margin-left: auto;
 }
 
 .card-content {
@@ -620,7 +642,7 @@
   background: #0a0a0a;
   padding: 1rem;
   border-radius: 6px;
-  font-family: 'Courier New', monospace;
+  font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .log-item {

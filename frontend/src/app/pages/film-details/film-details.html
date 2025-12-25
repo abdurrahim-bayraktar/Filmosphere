@@ -1,6 +1,7 @@
 <!-- Navbar -->
 <div class="navbar">
   <div class="navbar-left">
+    <img src="assets/img/logo.png" alt="Filmosphere Logo" class="logo-img" />
     <h1 class="logo" routerLink="/home" style="cursor: pointer;">FILMOSPHERE</h1>
   </div>
 
@@ -48,7 +49,7 @@
 <p-popover 
   #profileMenu 
   appendTo="body" 
-  [style]="{width: '230px'}" 
+  [style]="{width: '230px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '8px'}" 
   styleClass="profile-dropdown-panel"
 >
   <p-menu [model]="menuItems"></p-menu>
@@ -64,210 +65,237 @@
   </div>
 
   <div class="container mx-auto px-4 relative z-10 -mt-32">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-
-      <div class="lg:col-span-3 flex flex-col gap-6">
-        
-        <div class="poster-card rounded-lg border border-gray-700/50 shadow-2xl overflow-hidden aspect-[2/3]">
+    
+    <!-- Top Section: Poster + Details -->
+    <div class="flex flex-col lg:flex-row gap-6 mb-8">
+      <!-- Poster on Left -->
+      <div class="flex-shrink-0">
+        <div class="poster-original rounded-lg border border-gray-700/50 shadow-2xl overflow-hidden">
           <img [src]="film.posterUrl || film.metadata?.primaryImage?.url || 'https://via.placeholder.com/300x450'" 
                [alt]="film.title" 
-               class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+               class="poster-image" />
         </div>
+      </div>
 
-        <div class="grid grid-cols-2 gap-2">
-            <button pButton 
-                    [icon]="isWatched ? 'pi pi-eye' : 'pi pi-eye-slash'" 
-                    [label]="isWatched ? 'Watched' : 'Watch'" 
-                    [class]="isWatched ? 'p-button-success' : 'p-button-outlined p-button-secondary'"
-                    class="w-full text-sm font-bold action-btn"
-                    (click)="toggleWatched()">
-            </button>
-            <button pButton icon="pi pi-pencil" label="Review" 
-                    class="p-button-outlined p-button-secondary w-full text-sm font-bold action-btn"
-                    (click)="openReviewDialog()">
-            </button>
-            <button pButton icon="pi pi-list" label="Add to List" 
-                    class="p-button-outlined p-button-secondary w-full text-sm font-bold action-btn"
-                    (click)="openListDialog()">
-            </button>
-        </div>
+      <!-- Details on Right of Poster -->
+      <div class="flex-1 flex flex-col gap-6">
+        <div class="header-content">
+          <h1 class="text-4xl md:text-5xl font-serif font-bold text-white mb-4 leading-tight">
+            {{ film.title }} 
+            <span class="text-gray-500 text-2xl font-sans font-light"> {{ film.year }}</span>
+          </h1>
 
-        <div class="bg-[#1e2328] p-4 rounded border border-gray-700 text-center">
-            <span class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-2 block">Your Rating</span>
-            <div class="flex flex-col items-center gap-2">
-                <p-rating [(ngModel)]="overallRating" 
-                          (onRate)="openRatingDialog($event.value)" 
-                          styleClass="blue-stars scale-110">
-                </p-rating>
-                <button *ngIf="overallRating > 0" 
-                        (click)="openRatingDialog()"
-                        class="text-xs text-blue-400 hover:text-white transition-colors mt-1">
-                    Edit details
-                </button>
+          <div class="movie-details bg-[#1e2328] p-4 rounded-lg border border-gray-700/50 mb-4">
+            <div class="flex flex-col gap-3">
+              <div *ngIf="film.director" class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 uppercase w-20">Director:</span>
+                <span class="text-sm text-white font-semibold">{{ film.director }}</span>
+              </div>
+              <div *ngIf="film.duration" class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 uppercase w-20">Duration:</span>
+                <span class="text-sm text-gray-300">{{ film.duration }}</span>
+              </div>
+              <div *ngIf="film.genres && film.genres.length > 0" class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 uppercase w-20">Genres:</span>
+                <div class="flex gap-2 flex-wrap">
+                  <p-tag *ngFor="let genre of film.genres" [value]="genre" styleClass="custom-tag"></p-tag>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 uppercase w-20">Avg Rating:</span>
+                <div class="flex items-center gap-2">
+                  <p-rating [ngModel]="film.rating_statistics.overall" [readonly]="true" styleClass="gold-stars text-sm"></p-rating>
+                  <span class="text-xs text-gray-500">({{ film.rating_statistics.total_ratings }} ratings)</span>
+                </div>
+              </div>
             </div>
-        </div>
+          </div>
 
-        <div class="bg-[#1e2328] p-4 rounded border border-gray-700">
-             <h3 class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-3 border-b border-gray-700 pb-2">Mood Tracker</h3>
-             <div class="flex flex-col gap-3">
-                 <div class="flex justify-between items-center">
-                     <span class="text-sm text-gray-400">Before</span>
-                     <p-select [options]="moodOptions" [(ngModel)]="userMood.mood_before" 
-                               (onChange)="saveMood()" placeholder="-" 
-                               styleClass="p-select-sm custom-dropdown w-24">
-                     </p-select>
-                 </div>
-                 <div class="flex justify-between items-center">
-                     <span class="text-sm text-gray-400">After</span>
-                     <p-select [options]="moodOptions" [(ngModel)]="userMood.mood_after" 
-                               (onChange)="saveMood()" placeholder="-"
-                               styleClass="p-select-sm custom-dropdown w-24">
-                     </p-select>
-                 </div>
-             </div>
-        </div>
-
-        <div class="synopsis pt-4 border-t border-gray-800">
-            <h3 class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-2">Synopsis</h3>
+          <div class="synopsis">
+            <h3 class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3">Synopsis</h3>
             <p class="text-sm text-gray-300 leading-relaxed font-serif opacity-90 text-justify break-words">
-                {{ film.description }}
+              {{ film.description }}
             </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons, Mood Tracker, Your Rating - Same Line (1/3 each) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <!-- Action Buttons (1/3) -->
+      <div class="bg-[#1e2328] p-4 rounded-lg border border-gray-700/50 shadow-lg">
+        <h3 class="text-xs text-gray-400 uppercase tracking-widest font-bold mb-3 border-b border-gray-700/50 pb-2">Actions</h3>
+        <div class="action-buttons-vertical">
+          <button pButton 
+                  [icon]="isWatched ? 'pi pi-eye' : 'pi pi-eye-slash'" 
+                  [label]="isWatched ? 'Watched' : 'Watch'" 
+                  [class]="isWatched ? 'p-button-success' : 'p-button-outlined p-button-secondary'"
+                  class="action-btn-wide"
+                  (click)="toggleWatched()">
+          </button>
+          <button pButton icon="pi pi-pencil" label="Review" 
+                  class="p-button-outlined p-button-secondary action-btn-wide"
+                  (click)="openReviewDialog()">
+          </button>
+          <button pButton icon="pi pi-list" label="Add to List" 
+                  class="p-button-outlined p-button-secondary action-btn-wide"
+                  (click)="openListDialog()">
+          </button>
+        </div>
+      </div>
+
+      <!-- Mood Tracker (1/3) -->
+      <div class="bg-[#1e2328] p-4 rounded-lg border border-gray-700/50 shadow-lg">
+        <h3 class="text-xs text-gray-400 uppercase tracking-widest font-bold mb-3 border-b border-gray-700/50 pb-2">Mood Tracker</h3>
+        
+        <!-- Before Mood -->
+        <div class="mb-4">
+          <label class="text-xs text-gray-400 uppercase tracking-wide mb-2 block">Before</label>
+          <div class="mood-grid-text">
+            <button *ngFor="let mood of moodOptions" 
+                    type="button"
+                    class="mood-btn-text"
+                    [class.active]="userMood.mood_before === mood.value"
+                    (click)="userMood.mood_before = mood.value; saveMood()">
+              {{ mood.label }}
+            </button>
+          </div>
         </div>
 
-      </div> 
-                <div class="lg:col-span-9 pt-0 lg:pt-12 flex flex-col gap-8 min-w-0">
+        <!-- After Mood -->
+        <div>
+          <label class="text-xs text-gray-400 uppercase tracking-wide mb-2 block">After</label>
+          <div class="mood-grid-text">
+            <button *ngFor="let mood of moodOptions" 
+                    type="button"
+                    class="mood-btn-text"
+                    [class.active]="userMood.mood_after === mood.value"
+                    (click)="userMood.mood_after = mood.value; saveMood()">
+              {{ mood.label }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Your Rating (1/3) -->
+      <div class="bg-[#1e2328] p-4 rounded-lg border border-gray-700/50 shadow-lg text-center">
+        <span class="text-xs text-gray-400 uppercase tracking-widest font-bold mb-3 block">Your Rating</span>
+        <div class="flex flex-col items-center gap-2">
+          <p-rating [(ngModel)]="overallRating" 
+                    (onRate)="openRatingDialog($event.value)" 
+                    styleClass="blue-stars scale-110">
+          </p-rating>
+          <button *ngIf="overallRating > 0" 
+                  (click)="openRatingDialog()"
+                  class="text-xs text-blue-400 hover:text-white transition-colors mt-1 underline">
+            Edit details
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Section: Cast (left half) + Reviews (right half) -->
+    <div class="flex flex-col lg:flex-row gap-8 items-start">
+      <!-- Cast & Crew Section (Left Half) -->
+      <div class="flex-1 w-full lg:w-1/2">
+        <h2 class="section-title">Cast & Crew</h2>
+        <div class="cast-grid">
+          <div *ngFor="let actor of film.cast" class="cast-card">
+            <div class="cast-image-wrapper">
+              <img [src]="actor.profileUrl || 'assets/placeholder-person.png'" 
+                   [alt]="actor.name" 
+                   class="cast-image" 
+                   loading="lazy"
+                   onerror="this.src='assets/placeholder-person.png'" />
+            </div>
+            <div class="cast-info">
+              <div class="cast-name">{{ actor.name }}</div>
+              <div class="cast-role">{{ actor.role }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Section (Right Half) -->
+      <div class="flex-1 w-full lg:w-1/2">
+        <h2 class="section-title">
+          Reviews <span class="text-gray-500 text-lg">({{reviews.length || 0}})</span>
+        </h2>
+        
+        <div class="reviews-container">
+          <div *ngIf="!reviews?.length" class="text-center py-12 border-2 border-dashed border-[#333] rounded-xl bg-black/50">
+            <p class="text-gray-500">No reviews yet. Be the first to write one!</p>
+          </div>
+
+          <div *ngFor="let review of reviews" class="review-box">
+            <!-- Header with user info and metadata -->
+            <div class="review-header">
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                <!-- Avatar -->
+                <div class="review-avatar">
+                  {{ review.username?.charAt(0)?.toUpperCase() || 'U' }}
+                </div>
                 
-                <div class="header-content border-b border-gray-800 pb-6">
-                    <h1 class="text-4xl md:text-6xl font-serif font-bold text-white mb-2 leading-tight">
-                        {{ film.title }} 
-                        <span class="text-gray-500 text-3xl font-sans font-light"> {{ film.year }}</span>
-                    </h1>
-
-                    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm md:text-base text-gray-400 mt-3">
-                        <span *ngIf="film.director" class="flex items-center gap-2">
-                            Directed by <span class="text-white font-semibold hover:text-blue-400 cursor-pointer transition-colors">{{ film.director }}</span>
-                        </span>
-                        <span *ngIf="film.duration" class="bg-gray-800 px-2 py-0.5 rounded text-xs text-gray-300">{{ film.duration }}</span>
-                        
-                        <div class="flex gap-2 ml-auto">
-                            <p-tag *ngFor="let genre of film.genres" [value]="genre" styleClass="custom-tag"></p-tag>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-3 mt-4 bg-gray-900/50 w-fit px-3 py-1 rounded-full border border-gray-800">
-                        <span class="text-xs uppercase font-bold text-green-500">Avg Rating</span>
-                        <p-rating [ngModel]="film.rating_statistics.overall" [readonly]="true" styleClass="gold-stars text-sm"></p-rating>
-                        <span class="text-xs text-gray-500 border-l border-gray-700 pl-3">{{ film.rating_statistics.total_ratings }} ratings</span>
-                    </div>
+                <!-- User info and title -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="review-username">
+                      {{ review.username || 'Anonymous' }}
+                    </span>
+                    <span class="text-xs text-gray-600">•</span>
+                    <span class="review-date">
+                      {{ review.created_at | date:'mediumDate' }}
+                    </span>
+                  </div>
+                  
+                  <h3 *ngIf="review.title" class="review-title">
+                    {{ review.title }}
+                  </h3>
                 </div>
-
-                <!-- Cast & Crew Section -->
-                <div class="mt-8 w-full">
-                    <h2 class="text-2xl font-bold text-white mb-4 uppercase tracking-wider border-b border-[#333] pb-2">Cast & Crew</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 w-full">
-                        <div *ngFor="let actor of film.cast" class="cast-card bg-[#1a1a1a] rounded border border-[#333] group overflow-hidden hover:border-[#e50914] transition-all duration-200">
-                            <div class="portrait-ratio bg-gray-800 relative w-full pt-[150%]">
-                                <img [src]="actor.profileUrl || 'assets/placeholder-person.png'" [alt]="actor.name" class="absolute top-0 left-0 w-full h-full object-cover" loading="lazy" />
-                            </div>
-                            <div class="p-3 text-center">
-                                <div class="font-bold text-gray-200 text-sm truncate">{{ actor.name }}</div>
-                                <div class="text-xs text-gray-500 truncate mt-1">{{ actor.role }}</div>
-                            </div>
-                        </div>
-                    </div>
+              </div>
+              
+              <!-- Rating -->
+              <div class="flex items-center gap-3 flex-shrink-0">
+                <div *ngIf="review.rating" class="flex items-center">
+                  <p-rating [ngModel]="review.rating" [readonly]="true" styleClass="tiny-stars"></p-rating>
                 </div>
+              </div>
+            </div>
 
-                <!-- Reviews Section -->
-                <div class="mt-8 w-full">
-                    <div class="flex items-center justify-between mb-4 border-b border-[#333] pb-2">
-                        <h2 class="text-2xl font-bold text-white uppercase tracking-wider">
-                            Reviews <span class="text-gray-500 text-lg">({{reviews.length || 0}})</span>
-                        </h2>
-                    </div>
-                    
-                    <div class="space-y-4 w-full">
-                        
-                        <div *ngIf="!reviews?.length" class="text-center py-12 border-2 border-dashed border-[#333] rounded-xl bg-black/50 w-full">
-                            <p class="text-gray-500">No reviews yet. Be the first to write one!</p>
-                        </div>
-
-                        <div *ngFor="let review of reviews" class="w-full bg-[#111] border border-[#333] rounded-lg p-5 hover:border-[#555] transition-all duration-200">
-                            
-                            <!-- Header with user info and metadata -->
-                            <div class="flex items-start justify-between mb-4 pb-3 border-b border-[#333]">
-                                <div class="flex items-center gap-3 flex-1 min-w-0">
-                                    <!-- Avatar -->
-                                    <div class="w-10 h-10 rounded-full bg-[#e50914] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                                        {{ review.username?.charAt(0)?.toUpperCase() || 'U' }}
-                                    </div>
-                                    
-                                    <!-- User info and title -->
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <span class="font-bold text-white text-base">
-                                                {{ review.username || 'Anonymous' }}
-                                            </span>
-                                            <span class="text-xs text-gray-600">•</span>
-                                            <span class="text-xs text-gray-500">
-                                                {{ review.created_at | date:'mediumDate' }}
-                                            </span>
-                                        </div>
-                                        
-                                        <h3 *ngIf="review.title" class="text-sm font-semibold text-gray-400 truncate">
-                                            {{ review.title }}
-                                        </h3>
-                                    </div>
-                                </div>
-                                
-                                <!-- Rating and spoiler badge -->
-                                <div class="flex items-center gap-3 flex-shrink-0">
-                                    <div *ngIf="review.rating" class="flex items-center">
-                                        <p-rating [ngModel]="review.rating" [readonly]="true" styleClass="tiny-stars"></p-rating>
-                                    </div>
-                                    
-                                    <span *ngIf="review.contains_spoiler" class="text-[10px] uppercase font-bold text-[#e50914] border border-[#e50914]/50 bg-[#e50914]/10 px-2 py-1 rounded">
-                                        ⚠️ Spoiler
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Review content -->
-                            <div class="mb-4">
-                                <!-- Spoiler warning -->
-                                <div *ngIf="review.contains_spoiler && !review.isRevealed" 
-                                    class="bg-[#e50914]/10 border-2 border-[#e50914]/50 rounded-lg p-4 text-center cursor-pointer hover:border-[#e50914] hover:bg-[#e50914]/20 transition-all duration-200"
-                                    (click)="toggleSpoiler(review)">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <i class="pi pi-eye-slash text-[#e50914] text-lg"></i>
-                                        <span class="text-[#e50914] font-bold text-sm uppercase tracking-wide">Spoiler Warning</span>
-                                    </div>
-                                    <span class="text-gray-500 text-xs mt-2 block">Click to reveal content</span>
-                                </div>
-
-                                <!-- Actual content -->
-                                <p *ngIf="!review.contains_spoiler || review.isRevealed" 
-                                   class="text-gray-300 text-sm leading-relaxed whitespace-pre-line">
-                                    {{ review.content }}
-                                </p>
-                            </div>
-
-                            <!-- Footer with like button -->
-                            <div class="flex items-center justify-between pt-3 border-t border-[#333]">
-                                <button (click)="toggleLike(review)" 
-                                        [disabled]="!isLoggedIn()"
-                                        class="flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        [ngClass]="review.is_liked ? 'bg-[#e50914]/20 text-[#e50914] hover:bg-[#e50914]/30' : 'text-gray-500 hover:text-[#e50914] hover:bg-[#e50914]/10'">
-                                    <i class="pi text-base" [ngClass]="review.is_liked ? 'pi-heart-fill' : 'pi-heart'"></i>
-                                    <span class="text-xs font-medium">{{ review.likes_count || 0 }}</span>
-                                </button>
-                            </div>
-
-                        </div>
-                        
-                    </div>
+            <!-- Review content with blur for spoilers -->
+            <div class="review-content">
+              <div *ngIf="review.contains_spoiler && !review.isRevealed" 
+                   class="spoiler-blur"
+                   (click)="toggleSpoiler(review)">
+                <p class="blurred-text">{{ review.content }}</p>
+                <div class="spoiler-overlay">
+                  <i class="pi pi-eye-slash"></i>
+                  <span>Click to reveal spoiler</span>
                 </div>
+              </div>
 
-                </div> </div> </div> 
+              <p *ngIf="!review.contains_spoiler || review.isRevealed" 
+                 class="review-text">
+                {{ review.content }}
+              </p>
+            </div>
+
+            <!-- Footer with like button -->
+            <div class="review-footer">
+              <button (click)="toggleLike(review)" 
+                      [disabled]="!isLoggedIn()"
+                      class="like-button"
+                      [ngClass]="review.is_liked ? 'liked' : ''">
+                <i class="pi" [ngClass]="review.is_liked ? 'pi-heart-fill' : 'pi-heart'"></i>
+                <span>{{ review.likes_count || 0 }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> 
 
 <p-dialog header="Write a Review"
           [(visible)]="showReviewDialog"

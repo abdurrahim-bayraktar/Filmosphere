@@ -1,5 +1,6 @@
 <div class="navbar">
   <div class="navbar-left">
+    <img src="assets/img/logo.png" alt="Filmosphere Logo" class="logo-img" />
     <h1 class="logo" routerLink="/home" style="cursor: pointer;">FILMOSPHERE</h1>
   </div>
 
@@ -351,9 +352,18 @@
 
       <!-- System Logs -->
       <div class="action-card full-width">
-        <h3 class="card-title">
-          <i class="pi pi-file"></i> System Logs
-        </h3>
+        <div class="card-title-with-action">
+          <h3 class="card-title">
+            <i class="pi pi-file"></i> System Logs
+          </h3>
+          <button pButton 
+                  icon="pi pi-download" 
+                  label="Download Logs" 
+                  class="p-button-outlined p-button-sm download-logs-btn"
+                  (click)="downloadSystemLogs()"
+                  [disabled]="systemLogs.length === 0">
+          </button>
+        </div>
         <div class="card-content">
           <div class="logs-container">
             <div class="log-item" *ngFor="let log of systemLogs">

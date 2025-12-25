@@ -19,6 +19,8 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  background: #000 !important;
+  color: #fff;
 }
 
 html {
@@ -26,6 +28,7 @@ html {
   padding: 0;
   width: 100%;
   box-sizing: border-box;
+  background: #000 !important;
 }
 
 *, *::before, *::after {
@@ -47,6 +50,21 @@ button, input, textarea {
 }
 
 /* =========================
+   PRIMEICONS FIX - Icon'ların görünmesi için
+   ========================= */
+.pi, [class^="pi-"], [class*=" pi-"] {
+  font-family: 'primeicons' !important;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: inline-block;
+}
+
+/* =========================
    NAVBAR - TÜM YAZILAR BOLD VE AYNI BOYUT
    ========================= */
 .navbar .logo {
@@ -63,5 +81,105 @@ button, input, textarea {
 .navbar .username {
   font-weight: 700 !important;
   font-size: 15px !important;
+}
+
+/* Navbar icon'larının görünmesi için */
+.navbar .pi {
+  color: inherit !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* =========================
+   PROFILE DROPDOWN MENU - GLOBAL STYLES (ULTRA STRONG)
+   ========================= */
+body ::ng-deep .p-popover.profile-dropdown-panel,
+body ::ng-deep .profile-dropdown-panel.p-popover,
+body ::ng-deep [class*="profile-dropdown-panel"].p-popover {
+  background: #1a1a1a !important;
+  background-color: #1a1a1a !important;
+  border: 1px solid #333 !important;
+  border-color: #333 !important;
+  border-radius: 8px !important;
+  padding: 0 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+  min-width: 200px !important;
+}
+
+body ::ng-deep .p-popover.profile-dropdown-panel .p-popover-content,
+body ::ng-deep .profile-dropdown-panel.p-popover .p-popover-content {
+  background: #1a1a1a !important;
+  background-color: #1a1a1a !important;
+  padding: 0 !important;
+}
+
+body ::ng-deep .p-popover.profile-dropdown-panel .p-popover-arrow,
+body ::ng-deep .profile-dropdown-panel.p-popover .p-popover-arrow {
+  border-bottom-color: #1a1a1a !important;
+  border-top-color: #1a1a1a !important;
+}
+
+body ::ng-deep .p-popover.profile-dropdown-panel .p-popover-arrow::before,
+body ::ng-deep .profile-dropdown-panel.p-popover .p-popover-arrow::before {
+  border-bottom-color: #333 !important;
+  border-top-color: #333 !important;
+}
+
+body ::ng-deep .p-popover.profile-dropdown-panel .p-menu,
+body ::ng-deep .profile-dropdown-panel.p-popover .p-menu {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  padding: 6px 0 !important;
+}
+
+body ::ng-deep .p-popover.profile-dropdown-panel .p-menuitem-link,
+body ::ng-deep .profile-dropdown-panel.p-popover .p-menuitem-link {
+  color: #ddd !important;
+  padding: 12px 16px !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  text-decoration: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+body ::ng-deep .p-popover.profile-dropdown-panel .p-menuitem-link:hover,
+body ::ng-deep .profile-dropdown-panel.p-popover .p-menuitem-link:hover {
+  background-color: #e50914 !important;
+  background: #e50914 !important;
+  color: #fff !important;
+}
+
+body ::ng-deep .p-popover.profile-dropdown-panel .p-menuitem-icon,
+body ::ng-deep .profile-dropdown-panel.p-popover .p-menuitem-icon {
+  margin-right: 0 !important;
+  font-size: 1rem !important;
+  color: inherit !important;
+  width: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+body ::ng-deep .p-popover.profile-dropdown-panel .p-menu-separator,
+body ::ng-deep .profile-dropdown-panel.p-popover .p-menu-separator {
+  border-top: 1px solid #333 !important;
+  margin: 6px 0 !important;
+}
+
+body ::ng-deep .p-popover.profile-dropdown-panel .p-menuitem:last-child .p-menuitem-link,
+body ::ng-deep .profile-dropdown-panel.p-popover .p-menuitem:last-child .p-menuitem-link {
+  color: #ff5555 !important;
+}
+
+body ::ng-deep .p-popover.profile-dropdown-panel .p-menuitem:last-child .p-menuitem-link:hover,
+body ::ng-deep .profile-dropdown-panel.p-popover .p-menuitem:last-child .p-menuitem-link:hover {
+  background-color: #ff3333 !important;
+  background: #ff3333 !important;
+  color: #fff !important;
 }
 

@@ -1,5 +1,6 @@
 <div class="navbar">
   <div class="navbar-left">
+    <img src="assets/img/logo.png" alt="Filmosphere Logo" class="logo-img" />
     <h1 class="logo" routerLink="/home" style="cursor: pointer;">FILMOSPHERE</h1>
   </div>
 
@@ -51,7 +52,7 @@
 <p-popover 
   #profileMenu 
   appendTo="body" 
-  [style]="{width: '230px'}" 
+  [style]="{width: '230px', background: '#1a1a1a', border: '1px solid #333', borderRadius: '8px'}" 
   styleClass="profile-dropdown-panel"
 >
   <p-menu [model]="menuItems"></p-menu>

@@ -22,6 +22,18 @@
   border-bottom: 1px solid #333;
 }
 
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
 .logo {
   margin: 0;
   color: #e50914;
@@ -84,6 +96,11 @@
 .nav-link i {
   margin-right: 8px;
   font-size: 1.1rem;
+  color: inherit !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  font-family: 'primeicons' !important;
 }
 
 .nav-link:hover {
@@ -132,12 +149,27 @@
   background: linear-gradient(to bottom, transparent 0%, #000 90%);
 }
 
-/* --- Poster --- */
-.poster-card {
+/* --- Poster (Original Ratio) --- */
+.poster-original {
   width: 230px;
   border: 1px solid #333;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.poster-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+}
+
+.poster-original:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(229, 9, 20, 0.2);
 }
 
 /* --- Typography --- */
@@ -152,17 +184,52 @@
   display: inline-block;
 }
 
-/* --- PrimeNG Button Overrides --- */
-/* Action Buttons (Watch/Like) - Outlined style */
-:host ::ng-deep .action-btn.p-button.p-button-outlined {
+/* --- Action Buttons (Wider, Vertical) --- */
+.action-buttons-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+:host ::ng-deep .action-btn-wide.p-button {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.9rem !important;
+    height: auto !important;
+    min-height: 40px !important;
+    width: 100% !important;
+}
+
+:host ::ng-deep .action-btn-wide.p-button .p-button-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+:host ::ng-deep .action-btn-wide.p-button .p-button-icon {
+    font-size: 0.9rem !important;
+    margin-right: 0.5rem !important;
+}
+
+:host ::ng-deep .compact-btn.p-button.p-button-outlined {
     color: #ccc !important;
     border: 1px solid #444 !important;
     background: rgba(0,0,0,0.5) !important;
 }
-:host ::ng-deep .action-btn.p-button.p-button-outlined:hover {
+
+:host ::ng-deep .compact-btn.p-button.p-button-outlined:hover {
     color: white !important;
     border-color: #e50914 !important;
     background: #111 !important;
+}
+
+:host ::ng-deep .compact-btn.p-button.p-button-success {
+    background: #22c55e !important;
+    border-color: #22c55e !important;
+    color: white !important;
+}
+
+:host ::ng-deep .compact-btn.p-button.p-button-success:hover {
+    background: #16a34a !important;
+    border-color: #16a34a !important;
 }
 
 /* List Button - Secondary style */
@@ -314,37 +381,47 @@
     color: #ccc !important;
 }
 
-/* --- Select (formerly Dropdown) Overrides --- */
-:host ::ng-deep .custom-dropdown {
-    background: #222;
-    border: 1px solid #444;
+/* --- Mood Tracker (Text Buttons) --- */
+.mood-grid-text {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
 }
 
-/* Update selector from .p-dropdown-label to .p-select-label */
-:host ::ng-deep .custom-dropdown .p-select-label {
+.mood-btn-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 32px;
     color: #ddd;
-    font-size: 0.9rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
 }
 
-:host ::ng-deep .custom-dropdown:not(.p-disabled):hover {
-    border-color: #666;
-}
-
-/* Update selector from .p-dropdown-panel to .p-select-overlay (or p-select-list) */
-:host ::ng-deep .p-select-overlay {
+.mood-btn-text:hover {
     background: #222;
-    border: 1px solid #444;
+    border-color: #555;
+    transform: translateY(-1px);
+    color: #fff;
 }
 
-/* Update item selectors */
-:host ::ng-deep .p-select-overlay .p-select-option {
-    color: #ddd;
-}
-
-:host ::ng-deep .p-select-overlay .p-select-option:hover,
-:host ::ng-deep .p-select-overlay .p-select-option.p-focus {
-    background: #333;
+.mood-btn-text.active {
+    background: #e50914;
+    border-color: #e50914;
+    box-shadow: 0 2px 8px rgba(229, 9, 20, 0.3);
     color: white;
+    font-weight: 600;
 }
 
 /* --- Dialog Overrides --- */
@@ -358,35 +435,88 @@
     border-bottom: 1px solid #222;
 }
 
-/* --- UNIVERSAL ASPECT RATIO FIX --- */
-/* This forces a 2:3 aspect ratio (Posters/Portraits) */
-.portrait-ratio {
-    position: relative;
+/* --- Cast Grid --- */
+.cast-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
     width: 100%;
-    /* Padding-top % is based on width. 150% = 2:3 ratio */
-    padding-top: 150%; 
-    background-color: #1a1a1a;
-    overflow: hidden;
 }
 
-.portrait-ratio img {
-    position: absolute;
-    top: 0;
-    left: 0;
+.cast-card {
+    background: #1a1a1a;
+    border-radius: 8px;
+    border: 1px solid #333;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.cast-card:hover {
+    border-color: #e50914;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(229, 9, 20, 0.2);
+}
+
+.cast-image-wrapper {
+    width: 100%;
+    height: 210px;
+    overflow: hidden;
+    background: #1a1a1a;
+    position: relative;
+}
+
+.cast-image {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Ensures image fills box without stretching */
+    object-fit: cover;
+    object-position: center;
     display: block;
 }
 
-/* Update Poster Card to be fluid, not fixed width */
-.poster-card {
-  width: 100%; /* Changed from 230px to fit the grid column */
-  max-width: 300px; /* Optional cap */
-  border: 1px solid #333;
-  border-radius: 8px;
-  overflow: hidden;
-  margin: 0 auto; /* Center it */
+.cast-info {
+    padding: 12px;
+    text-align: center;
+}
+
+.cast-name {
+    font-weight: 600;
+    color: #e5e7eb;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cast-role {
+    color: #9ca3af;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Responsive mood grid */
+@media (max-width: 768px) {
+    .mood-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .mood-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .cast-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 12px;
+    }
+    
+    .cast-image-wrapper {
+        height: 180px;
+    }
 }
 
 /* Make the text container neat */
@@ -527,4 +657,218 @@
 .actions-right {
   display: flex;
   gap: 10px;
+}
+
+/* Section Titles - Aligned */
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #333;
+  height: 60px;
+  display: flex;
+  align-items: flex-end;
+}
+
+/* --- Review Box Styles --- */
+.review-box {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+  min-height: 180px;
+}
+
+.review-box:hover {
+  border-color: #555;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.review-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #333;
+}
+
+.review-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e50914;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.review-username {
+  font-weight: 700;
+  color: white;
+  font-size: 0.875rem;
+}
+
+.review-date {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.review-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #9ca3af;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-content {
+  margin-bottom: 16px;
+  min-height: 80px;
+  position: relative;
+}
+
+.review-text {
+  color: #d1d5db;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  white-space: pre-line;
+  margin: 0;
+}
+
+/* Spoiler Blur Effect */
+.spoiler-blur {
+  position: relative;
+  cursor: pointer;
+  border-radius: 6px;
+  overflow: visible;
+  min-height: 120px;
+  padding: 16px;
+  background: rgba(229, 9, 20, 0.05);
+  border: 2px dashed rgba(229, 9, 20, 0.4);
+  margin: 8px 0;
+}
+
+.blurred-text {
+  color: #d1d5db;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  white-space: pre-line;
+  margin: 0;
+  filter: blur(12px);
+  user-select: none;
+  pointer-events: none;
+  opacity: 0.4;
+  position: relative;
+  z-index: 1;
+}
+
+.spoiler-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(17, 17, 17, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #e50914;
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 2;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+}
+
+.spoiler-overlay:hover {
+  background: rgba(17, 17, 17, 0.95);
+  border: 2px solid rgba(229, 9, 20, 0.5);
+}
+
+.spoiler-overlay i {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+
+.review-footer {
+  display: flex;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #333;
+}
+
+.like-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.like-button:hover:not(:disabled) {
+  color: #e50914;
+  background: rgba(229, 9, 20, 0.1);
+}
+
+.like-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.like-button.liked {
+  color: #e50914;
+  background: rgba(229, 9, 20, 0.2);
+}
+
+.like-button.liked:hover {
+  background: rgba(229, 9, 20, 0.3);
+}
+
+/* Reviews Container */
+.reviews-container {
+  max-height: calc(100vh - 400px);
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.reviews-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.reviews-container::-webkit-scrollbar-track {
+  background: #111;
+  border-radius: 3px;
+}
+
+.reviews-container::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 3px;
+}
+
+.reviews-container::-webkit-scrollbar-thumb:hover {
+  background: #e50914;
 }
