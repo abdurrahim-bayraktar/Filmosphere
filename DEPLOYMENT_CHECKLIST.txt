@@ -1,0 +1,159 @@
+═══════════════════════════════════════════════════════════════
+   🎬 FILMOSPHERE DEPLOYMENT CHECKLIST 
+═══════════════════════════════════════════════════════════════
+
+PRE-DEPLOYMENT (Local)
+══════════════════════════════════════════════════════════════
+[ ] Backend runs locally (python manage.py runserver)
+[ ] Frontend runs locally (npm start)
+[ ] All tests pass
+[ ] Code committed to git
+[ ] .gitignore is configured (no sensitive data)
+
+GITHUB SETUP
+══════════════════════════════════════════════════════════════
+[ ] GitHub repository created
+[ ] Code pushed to main branch
+      git add .
+      git commit -m "Ready for deployment"
+      git push -u origin main
+
+PLATFORM SETUP (Choose One)
+══════════════════════════════════════════════════════════════
+Option A - Render (Recommended)
+   [ ] Account created at render.com
+   [ ] New Blueprint selected
+   [ ] GitHub repository connected
+   [ ] render.yaml detected
+
+Option B - Railway
+   [ ] Account created at railway.app
+   [ ] New Project created
+   [ ] GitHub repository connected
+   [ ] Auto-detection verified
+
+ENVIRONMENT VARIABLES (Backend Service)
+══════════════════════════════════════════════════════════════
+Required:
+[ ] SECRET_KEY - Generated/set
+[ ] DJANGO_SETTINGS_MODULE - set to "config.settings_prod"
+[ ] ALLOWED_HOSTS - set to "*" (update later)
+
+Optional (for full features):
+[ ] DEEPSEEK_API_KEY - (if you have one)
+[ ] WATCHMODE_API_KEY - (if you have one)
+
+DEPLOYMENT
+══════════════════════════════════════════════════════════════
+[ ] Backend service deploying
+[ ] Frontend service deploying
+[ ] Wait 5-10 minutes for completion
+[ ] Check logs for errors
+[ ] Backend URL obtained: ___________________________
+[ ] Frontend URL obtained: __________________________
+
+POST-DEPLOYMENT
+══════════════════════════════════════════════════════════════
+[ ] Update frontend API URL in:
+      frontend/src/environments/environment.prod.ts
+[ ] Commit and push frontend change:
+      git add frontend/src/environments/environment.prod.ts
+      git commit -m "Update API URL"
+      git push
+[ ] Wait for frontend re-deployment (~2 min)
+
+TESTING
+══════════════════════════════════════════════════════════════
+Backend Tests:
+[ ] API root accessible: https://your-backend-url.onrender.com/api/
+[ ] Admin panel accessible: /admin
+[ ] Can register new user: POST /api/users/register/
+[ ] Can login: POST /api/users/login/
+[ ] Can fetch films: GET /api/films/
+
+Frontend Tests:
+[ ] Homepage loads
+[ ] Can search for films
+[ ] Can view film details
+[ ] Can register new account
+[ ] Can login
+[ ] UI looks correct
+[ ] No console errors
+
+ADMIN SETUP
+══════════════════════════════════════════════════════════════
+[ ] Open Shell in backend service dashboard
+[ ] Run: python manage.py createsuperuser
+[ ] Username: _____________________
+[ ] Email: _______________________
+[ ] Password: ____________________
+[ ] Access admin: https://your-backend-url.onrender.com/admin
+[ ] Can login to admin panel
+
+SECURITY (Before Real Users)
+══════════════════════════════════════════════════════════════
+[ ] Change SECRET_KEY to strong random value
+[ ] Update ALLOWED_HOSTS with actual domain
+[ ] Update CORS_ALLOWED_ORIGINS with frontend URL only
+[ ] Verify DEBUG=False in production
+[ ] Run: python manage.py check --deploy
+[ ] Review and fix security warnings
+
+OPTIONAL UPGRADES
+══════════════════════════════════════════════════════════════
+For Production:
+[ ] Upgrade to PostgreSQL (database persistence)
+[ ] Enable paid tier (no cold starts)
+[ ] Add custom domain
+[ ] Enable HTTPS security settings
+[ ] Set up monitoring/alerts
+[ ] Configure backups
+
+FINAL VERIFICATION
+══════════════════════════════════════════════════════════════
+[ ] Frontend live at: _________________________________
+[ ] Backend live at: __________________________________
+[ ] Admin accessible at: _______________________________
+[ ] All core features working
+[ ] Mobile responsive (test on phone)
+[ ] Share with team for feedback
+
+MONITORING
+══════════════════════════════════════════════════════════════
+[ ] Bookmark dashboard: https://dashboard.render.com
+[ ] Check logs regularly
+[ ] Monitor error rates
+[ ] Watch usage hours (750 free/month)
+
+NOTES
+══════════════════════════════════════════════════════════════
+Date Deployed: ______________
+Frontend URL: _______________________________________________
+Backend URL: ________________________________________________
+Admin User: _________________________________________________
+Issues/To-Do:
+
+
+
+
+
+
+═══════════════════════════════════════════════════════════════
+   🎉 CONGRATULATIONS! YOUR APP IS LIVE! 
+═══════════════════════════════════════════════════════════════
+
+Next Steps:
+• Share with users
+• Gather feedback
+• Monitor performance
+• Plan features
+• Scale as needed
+
+Need help? Check:
+• QUICK_START.md - Quick deployment guide
+• DEPLOYMENT_GUIDE.md - Comprehensive documentation
+• DEPLOYMENT_SUMMARY.md - Technical overview
+• Render Dashboard Logs - Real-time debugging
+
+═══════════════════════════════════════════════════════════════
+

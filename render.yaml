@@ -1,0 +1,31 @@
+services:
+  # Backend API
+  - type: web
+    name: filmosphere-backend
+    env: python
+    buildCommand: "cd backend && chmod +x build.sh && ./build.sh"
+    startCommand: "cd backend && gunicorn config.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings_prod
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: WATCHMODE_API_KEY
+        sync: false
+
+  # Frontend
+  - type: web
+    name: filmosphere-frontend
+    env: node
+    buildCommand: "cd frontend && npm install && npm run build"
+    startCommand: "cd frontend && npx http-server dist/frontend-app/browser -p $PORT"
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.0
+
