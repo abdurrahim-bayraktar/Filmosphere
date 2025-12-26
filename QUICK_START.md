@@ -82,6 +82,46 @@ python manage.py createsuperuser
 
 ---
 
+## Troubleshooting
+
+### Error: "requirements.txt not found" during deployment
+
+If you see a Docker-related error about requirements.txt:
+
+**Solution**: Render is trying to use Docker instead of native build. This is now fixed in `render.yaml`.
+
+1. **Commit the updated render.yaml:**
+   ```bash
+   git add render.yaml
+   git commit -m "Fix Docker detection for Render"
+   git push
+   ```
+
+2. **Redeploy**: Render will auto-deploy with the fix
+
+**Alternative**: Deploy each service manually (see below)
+
+### Manual Deployment (If Blueprint Doesn't Work)
+
+**Backend:**
+1. Dashboard → **New +** → **Web Service**
+2. Connect GitHub repo
+3. **Root Directory**: `backend`
+4. **Build Command**: `chmod +x build.sh && ./build.sh`
+5. **Start Command**: `gunicorn config.wsgi:application`
+6. Add environment variables (SECRET_KEY, etc.)
+7. Deploy
+
+**Frontend:**
+1. Dashboard → **New +** → **Web Service**
+2. Connect GitHub repo
+3. **Root Directory**: `frontend`
+4. **Build Command**: `npm install && npm run build`
+5. **Start Command**: `npx http-server dist/frontend-app/browser -p $PORT`
+6. Deploy
+
+---
+
 ## Need Help?
 
 See full guide: [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
