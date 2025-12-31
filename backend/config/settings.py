@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     "films.apps.FilmsConfig",
 ]
 
-AUTH_USER_MODEL = "users.User"
+# Note: Using Django's built-in User model (not a custom one)
+# AUTH_USER_MODEL = "users.User"  # Removed - no custom User model exists
 
 
 # ----------------------------------------------------

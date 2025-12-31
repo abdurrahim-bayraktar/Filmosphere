@@ -2,7 +2,13 @@
 Production settings for Filmosphere
 """
 import os
+from pathlib import Path
+
+# Import base settings
 from .settings import *
+
+# Ensure AUTH_USER_MODEL is not set (uses Django's default User)
+# This fixes the "users.User not found" error
 
 # Security
 DEBUG = False
