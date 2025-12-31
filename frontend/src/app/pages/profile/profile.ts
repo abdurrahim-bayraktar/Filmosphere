@@ -16,6 +16,7 @@ import { PopoverModule } from 'primeng/popover';
 import { Popover } from 'primeng/popover';
 import { MenuItem } from 'primeng/api';
 import { FilmService } from '../../services/film.service';
+import { API_URL } from '../../config/api.config';
 
 @Component({
   selector: 'app-profile',
@@ -193,7 +194,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       Authorization: `Bearer ${token}`
     });
 
-    this.http.get("http://127.0.0.1:8000/api/auth/me/", { headers })
+    this.http.get("${API_URL}/auth/me/", { headers })
       .subscribe({
         next: (res: any) => {
           // Backend returns profile_picture_url directly in serializer.data
@@ -235,8 +236,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
 
     const profileUrl = this.username === 'me' 
-      ? "http://127.0.0.1:8000/api/auth/me/"
-      : `http://127.0.0.1:8000/api/profile/${this.username}/`;
+      ? "${API_URL}/auth/me/"
+      : `${API_URL}/profile/${this.username}/`;
 
     this.http.get(profileUrl, { headers })
       .subscribe({
@@ -299,7 +300,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
 
     // Try to get follow status, fallback to counting from followers/following lists
-    this.http.get(`http://127.0.0.1:8000/api/users/${this.username}/follow-status`, { headers })
+    this.http.get(`${API_URL}/users/${this.username}/follow-status`, { headers })
       .subscribe({
         next: (res: any) => {
           this.followersCount = res.followers_count || 0;
@@ -311,13 +312,13 @@ export class ProfileComponent implements OnInit, OnDestroy {
         },
         error: () => {
           // Fallback: count from lists
-          this.http.get(`http://127.0.0.1:8000/api/profile/${this.username}/followers/`)
+          this.http.get(`${API_URL}/profile/${this.username}/followers/`)
             .subscribe({
               next: (res: any) => {
                 this.followersCount = (res.results || res || []).length;
               }
             });
-          this.http.get(`http://127.0.0.1:8000/api/profile/${this.username}/following/`)
+          this.http.get(`${API_URL}/profile/${this.username}/following/`)
             .subscribe({
               next: (res: any) => {
                 this.followingCount = (res.results || res || []).length;
@@ -330,7 +331,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   // === LOAD WATCHED FILMS ===============================================
   loadWatchedFilms() {
     this.loadingWatchedFilms = true;
-    this.http.get(`http://127.0.0.1:8000/api/users/${this.username}/watched`)
+    this.http.get(`${API_URL}/users/${this.username}/watched`)
       .subscribe({
         next: (res: any) => {
           const items = res.results || res || [];
@@ -368,7 +369,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       if (!film.film_poster_url || film.film_poster_url === '/assets/default-poster.jpg') {
         const imdbId = film.film_imdb_id;
         if (imdbId) {
-          this.http.get(`http://127.0.0.1:8000/api/films/${imdbId}`, { headers })
+          this.http.get(`${API_URL}/films/${imdbId}`, { headers })
             .subscribe({
               next: (filmData: any) => {
                 const posterUrl = filmData.metadata?.primaryImage?.url || 
@@ -407,7 +408,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     // Get user's ratings - only if viewing own profile or if endpoint allows
     if (this.isOwnProfile()) {
-      this.http.get(`http://127.0.0.1:8000/api/profile/${this.username}/ratings/`, { headers })
+      this.http.get(`${API_URL}/profile/${this.username}/ratings/`, { headers })
         .subscribe({
           next: (res: any) => {
             this.userRatings = res.results || res || [];
@@ -451,8 +452,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     
     this.loadingLists = true;
     const url = this.username === 'me' 
-      ? `http://127.0.0.1:8000/api/lists/` 
-      : `http://127.0.0.1:8000/api/profile/${this.username}/lists/`;
+      ? `${API_URL}/lists/` 
+      : `${API_URL}/profile/${this.username}/lists/`;
     
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${localStorage.getItem('access') || ''}`
@@ -475,7 +476,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   // === LOAD USER BADGES ================================================
   loadUserBadges() {
     this.loadingBadges = true;
-    this.http.get(`http://127.0.0.1:8000/api/users/${this.username}/badges`)
+    this.http.get(`${API_URL}/users/${this.username}/badges`)
       .subscribe({
         next: (res: any) => {
           this.userBadges = res.results || res || [];
@@ -491,7 +492,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   // === LOAD USER REVIEWS ===============================================
   loadUserReviews() {
     this.loadingReviews = true;
-    this.http.get(`http://127.0.0.1:8000/api/profile/${this.username}/reviews/`)
+    this.http.get(`${API_URL}/profile/${this.username}/reviews/`)
       .subscribe({
         next: (res: any) => {
           const items = res.results || res || [];
@@ -527,7 +528,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       if (!review.film_poster_url || review.film_poster_url === '/assets/default-poster.jpg') {
         const imdbId = review.film_imdb_id;
         if (imdbId) {
-          this.http.get(`http://127.0.0.1:8000/api/films/${imdbId}`, { headers })
+          this.http.get(`${API_URL}/films/${imdbId}`, { headers })
             .subscribe({
               next: (filmData: any) => {
                 const posterUrl = filmData.metadata?.primaryImage?.url || 
@@ -554,7 +555,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   // === LOAD FOLLOWERS ===================================================
   loadFollowers() {
-    this.http.get(`http://127.0.0.1:8000/api/profile/${this.username}/followers/`)
+    this.http.get(`${API_URL}/profile/${this.username}/followers/`)
       .subscribe({
         next: (res: any) => {
           this.followersList = res.results || res || [];
@@ -565,7 +566,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   // === LOAD FOLLOWING ===================================================
   loadFollowing() {
-    this.http.get(`http://127.0.0.1:8000/api/profile/${this.username}/following/`)
+    this.http.get(`${API_URL}/profile/${this.username}/following/`)
       .subscribe({
         next: (res: any) => {
           this.followingList = res.results || res || [];
@@ -654,7 +655,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     console.log('Payload:', payload);
 
     // Always use profile endpoint for PATCH (auth/me only supports GET)
-    const url = `http://127.0.0.1:8000/api/profile/${profileUsername}/`;
+    const url = `${API_URL}/profile/${profileUsername}/`;
     console.log('URL:', url);
 
     // Try to save with current token
@@ -902,7 +903,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         return;
       }
 
-      this.http.post("http://127.0.0.1:8000/api/auth/token/refresh/", {
+      this.http.post("${API_URL}/auth/token/refresh/", {
         refresh: refreshToken
       }).subscribe({
         next: (res: any) => {
@@ -962,7 +963,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     console.log('Payload:', payload);
 
     // Always use profile endpoint for PATCH (auth/me only supports GET)
-    const url = `http://127.0.0.1:8000/api/profile/${profileUsername}/`;
+    const url = `${API_URL}/profile/${profileUsername}/`;
     console.log('URL:', url);
 
     // Try to save with current token
@@ -1148,7 +1149,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     if (this.isFollowing) {
       // Unfollow
-      this.http.delete(`http://127.0.0.1:8000/api/users/${this.username}/follow`, { headers })
+      this.http.delete(`${API_URL}/users/${this.username}/follow`, { headers })
         .subscribe({
           next: () => {
             this.isFollowing = false;
@@ -1161,7 +1162,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 const newHeaders = new HttpHeaders({
                   Authorization: `Bearer ${newToken}`
                 });
-                this.http.delete(`http://127.0.0.1:8000/api/users/${this.username}/follow`, { headers: newHeaders })
+                this.http.delete(`${API_URL}/users/${this.username}/follow`, { headers: newHeaders })
                   .subscribe({
                     next: () => {
                       this.isFollowing = false;
@@ -1184,7 +1185,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         });
     } else {
       // Follow
-      this.http.post(`http://127.0.0.1:8000/api/users/${this.username}/follow`, {}, { headers })
+      this.http.post(`${API_URL}/users/${this.username}/follow`, {}, { headers })
         .subscribe({
           next: () => {
             this.isFollowing = true;
@@ -1197,7 +1198,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 const newHeaders = new HttpHeaders({
                   Authorization: `Bearer ${newToken}`
                 });
-                this.http.post(`http://127.0.0.1:8000/api/users/${this.username}/follow`, {}, { headers: newHeaders })
+                this.http.post(`${API_URL}/users/${this.username}/follow`, {}, { headers: newHeaders })
                   .subscribe({
                     next: () => {
                       this.isFollowing = true;
@@ -1326,3 +1327,4 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
   }
 }
+

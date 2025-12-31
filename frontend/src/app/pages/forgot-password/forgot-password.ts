@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
+import { API_URL } from '../../config/api.config';
 
 @Component({
   selector: 'app-forgot-password',
@@ -20,7 +21,7 @@ export class ForgotPasswordComponent {
   constructor(private router: Router, private http: HttpClient) {}
 
   sendResetCode() {
-    this.http.post("http://127.0.0.1:8000/api/auth/forgot-password/", {
+    this.http.post("${API_URL}/auth/forgot-password/", {
       email: this.email
     }).subscribe({
       next: (res: any) => {
@@ -37,3 +38,4 @@ export class ForgotPasswordComponent {
     this.router.navigate(['/']);
   }
 }
+

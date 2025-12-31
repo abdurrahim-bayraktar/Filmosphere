@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { FilmDetail, UserRating, WatchedStatus, UserMood, Review, ReviewRequest } from '../models/film.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FilmService {
-  private apiUrl = 'http://127.0.0.1:8000/api'; // Adjust to your Django URL
+  private apiUrl = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {}
 

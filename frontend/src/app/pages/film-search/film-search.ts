@@ -10,6 +10,7 @@ import { MenuModule } from 'primeng/menu';
 import { PopoverModule } from 'primeng/popover';
 import { Popover } from 'primeng/popover';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { API_URL } from '../../config/api.config';
 
 @Component({
   selector: 'app-film-search',
@@ -111,7 +112,7 @@ export class FilmSearch implements OnInit, OnDestroy {
     const token = localStorage.getItem("access");
     if (!token) return;
 
-    this.http.get("http://127.0.0.1:8000/api/auth/me/", {
+    this.http.get("${API_URL}/auth/me/", {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
       next: (res: any) => {
@@ -204,3 +205,4 @@ export class FilmSearch implements OnInit, OnDestroy {
     });
   }
 }
+

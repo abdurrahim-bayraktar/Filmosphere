@@ -12,6 +12,7 @@ import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http'
 import { InputTextModule } from 'primeng/inputtext';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { API_URL } from '../../config/api.config';
 
 @Component({
   selector: 'app-user-search',
@@ -115,7 +116,7 @@ export class UserSearchComponent implements OnInit, OnDestroy {
     const token = localStorage.getItem("access");
     if (!token) return;
 
-    this.http.get("http://127.0.0.1:8000/api/auth/me/", {
+    this.http.get("${API_URL}/auth/me/", {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
       next: (res: any) => {
@@ -151,7 +152,7 @@ export class UserSearchComponent implements OnInit, OnDestroy {
 
   performSearch(query: string) {
     this.loading = true;
-    this.http.get(`http://127.0.0.1:8000/api/users/search/?q=${encodeURIComponent(query)}`)
+    this.http.get(`${API_URL}/users/search/?q=${encodeURIComponent(query)}`)
       .subscribe({
         next: (res: any) => {
           this.users = res.results || [];
@@ -186,7 +187,7 @@ export class UserSearchComponent implements OnInit, OnDestroy {
         return;
       }
 
-      this.http.get(`http://127.0.0.1:8000/api/users/${username}/follow-status`, { headers })
+      this.http.get(`${API_URL}/users/${username}/follow-status`, { headers })
         .subscribe({
           next: (res: any) => {
             this.followStatuses[username] = res.is_following || false;
@@ -213,7 +214,7 @@ export class UserSearchComponent implements OnInit, OnDestroy {
 
     if (isFollowing) {
       // Unfollow
-      this.http.delete(`http://127.0.0.1:8000/api/users/${username}/follow`, { headers })
+      this.http.delete(`${API_URL}/users/${username}/follow`, { headers })
         .subscribe({
           next: () => {
             this.followStatuses[username] = false;
@@ -225,7 +226,7 @@ export class UserSearchComponent implements OnInit, OnDestroy {
         });
     } else {
       // Follow
-      this.http.post(`http://127.0.0.1:8000/api/users/${username}/follow`, {}, { headers })
+      this.http.post(`${API_URL}/users/${username}/follow`, {}, { headers })
         .subscribe({
           next: () => {
             this.followStatuses[username] = true;
@@ -246,4 +247,5 @@ export class UserSearchComponent implements OnInit, OnDestroy {
     this.router.navigate(['/film-search']);
   }
 }
+
 

@@ -15,6 +15,7 @@ import { Popover } from 'primeng/popover';
 import { MenuItem } from 'primeng/api';
 
 import { FilmService } from '../../services/film.service';
+import { API_URL } from '../../config/api.config';
 
 @Component({
   selector: 'app-list-management',
@@ -101,7 +102,7 @@ export class ListManagementComponent implements OnInit {
       Authorization: `Bearer ${token}`
     });
 
-    this.http.get("http://127.0.0.1:8000/api/auth/me/", { headers })
+    this.http.get("${API_URL}/auth/me/", { headers })
       .subscribe({
         next: (res: any) => {
           this.navbarAvatarImage = res.profile_picture_url || res.profile?.profile_picture_url || null;
@@ -229,4 +230,5 @@ export class ListManagementComponent implements OnInit {
     this.router.navigate(['/home']);
   }
 }
+
 

@@ -8,6 +8,7 @@ import { MenuItem } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { PopoverModule } from 'primeng/popover';
 import { Popover } from 'primeng/popover';
+import { API_URL } from '../../config/api.config';
 
 type ChatMessage = {
   role: 'user' | 'assistant';
@@ -60,7 +61,7 @@ export class RecommendationChatComponent implements OnInit {
   isAdmin = false;
   menuItems: MenuItem[] = [];
 
-  private API_URL = 'http://127.0.0.1:8000/api/recommendations/chat/';
+  private API_URL = '${API_URL}/recommendations/chat/';
 
   constructor(
     private http: HttpClient,
@@ -106,7 +107,7 @@ export class RecommendationChatComponent implements OnInit {
     const token = localStorage.getItem("access");
     if (!token) return;
 
-    this.http.get("http://127.0.0.1:8000/api/auth/me/", {
+    this.http.get("${API_URL}/auth/me/", {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
       next: (res: any) => {
@@ -248,3 +249,4 @@ export class RecommendationChatComponent implements OnInit {
       });
   }
 }
+

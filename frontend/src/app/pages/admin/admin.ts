@@ -17,6 +17,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { TagModule } from 'primeng/tag';
 import { BadgeModule } from 'primeng/badge';
 import { ProgressBarModule } from 'primeng/progressbar';
+import { API_URL } from '../../config/api.config';
 
 @Component({
   selector: 'app-admin',
@@ -134,7 +135,7 @@ export class AdminComponent implements OnInit {
     }) : new HttpHeaders();
 
     // Build search query if search term exists
-    let url = "http://127.0.0.1:8000/api/admin/users/";
+    let url = "${API_URL}/admin/users/";
     if (this.userSearchTerm) {
       url += `?search=${encodeURIComponent(this.userSearchTerm)}`;
     }
@@ -182,7 +183,7 @@ export class AdminComponent implements OnInit {
     });
 
     console.log('[ADMIN] Loading recent reviews...');
-    this.http.get("http://127.0.0.1:8000/api/admin/reviews/recent", { headers })
+    this.http.get("${API_URL}/admin/reviews/recent", { headers })
       .subscribe({
         next: (reviews: any) => {
           console.log('[ADMIN] Recent reviews loaded:', reviews);
@@ -226,7 +227,7 @@ export class AdminComponent implements OnInit {
     });
 
     console.log('[ADMIN] Loading films...');
-    this.http.get("http://127.0.0.1:8000/api/admin/films/", { headers })
+    this.http.get("${API_URL}/admin/films/", { headers })
       .subscribe({
         next: (films: any) => {
           console.log('[ADMIN] Films loaded:', films);
@@ -258,7 +259,7 @@ export class AdminComponent implements OnInit {
     });
 
     console.log('[ADMIN] Loading badge stats...');
-    this.http.get("http://127.0.0.1:8000/api/admin/badges/stats", { headers })
+    this.http.get("${API_URL}/admin/badges/stats", { headers })
       .subscribe({
         next: (stats: any) => {
           console.log('[ADMIN] Badge stats loaded:', stats);
@@ -289,7 +290,7 @@ export class AdminComponent implements OnInit {
     });
 
     console.log(`[ADMIN] Loading mood stats (${this.moodType})...`);
-    this.http.get("http://127.0.0.1:8000/api/admin/moods/stats", { headers })
+    this.http.get("${API_URL}/admin/moods/stats", { headers })
       .subscribe({
         next: (stats: any) => {
           console.log('[ADMIN] Mood stats loaded:', stats);
@@ -339,7 +340,7 @@ export class AdminComponent implements OnInit {
     });
 
     console.log('[ADMIN] Loading all badges...');
-    this.http.get("http://127.0.0.1:8000/api/badges/", { headers })
+    this.http.get("${API_URL}/badges/", { headers })
       .subscribe({
         next: (badges: any) => {
           console.log('[ADMIN] All badges loaded:', badges);
@@ -368,7 +369,7 @@ export class AdminComponent implements OnInit {
     });
 
     console.log('[ADMIN] Loading system logs...');
-    this.http.get("http://127.0.0.1:8000/api/admin/logs", { headers })
+    this.http.get("${API_URL}/admin/logs", { headers })
       .subscribe({
         next: (logs: any) => {
           console.log('[ADMIN] System logs loaded:', logs);
@@ -448,7 +449,7 @@ export class AdminComponent implements OnInit {
       });
 
       console.log(`[ADMIN] Attempting to ${action} user ${user.id} (${user.username})...`);
-      this.http.post(`http://127.0.0.1:8000/api/admin/users/${user.id}/ban`, {}, { headers })
+      this.http.post(`${API_URL}/admin/users/${user.id}/ban`, {}, { headers })
         .subscribe({
           next: (response: any) => {
             console.log(`[ADMIN] ${action} successful:`, response);
@@ -471,7 +472,7 @@ export class AdminComponent implements OnInit {
       }) : new HttpHeaders();
 
       console.log(`[ADMIN] Attempting to delete user ${user.id} (${user.username})...`);
-      this.http.delete(`http://127.0.0.1:8000/api/admin/users/${user.id}/delete`, { headers })
+      this.http.delete(`${API_URL}/admin/users/${user.id}/delete`, { headers })
         .subscribe({
           next: (response: any) => {
             console.log('[ADMIN] Delete successful:', response);
@@ -518,7 +519,7 @@ export class AdminComponent implements OnInit {
 
       // Update existing film
       console.log(`[ADMIN] Updating film ${this.editingFilm.id}...`, this.newFilm);
-      this.http.put(`http://127.0.0.1:8000/api/admin/films/${this.editingFilm.id}/update`, {
+      this.http.put(`${API_URL}/admin/films/${this.editingFilm.id}/update`, {
         title: this.newFilm.title,
         year: this.newFilm.year ? parseInt(this.newFilm.year) : null
       }, { headers })
@@ -552,7 +553,7 @@ export class AdminComponent implements OnInit {
       });
 
       console.log(`[ADMIN] Creating film with IMDb ID: ${this.newFilm.imdb_id}...`);
-      this.http.post("http://127.0.0.1:8000/api/admin/films/create", {
+      this.http.post("${API_URL}/admin/films/create", {
         imdb_id: this.newFilm.imdb_id.trim()
       }, { headers })
         .subscribe({
@@ -588,7 +589,7 @@ export class AdminComponent implements OnInit {
       });
 
       console.log(`[ADMIN] Deleting film ${film.id} (${film.title})...`);
-      this.http.delete(`http://127.0.0.1:8000/api/admin/films/${film.id}/delete`, { headers })
+      this.http.delete(`${API_URL}/admin/films/${film.id}/delete`, { headers })
         .subscribe({
           next: (response: any) => {
             console.log('[ADMIN] Film deleted successfully:', response);
@@ -616,7 +617,7 @@ export class AdminComponent implements OnInit {
     });
 
     console.log('[ADMIN] Approving content:', item);
-    this.http.post(`http://127.0.0.1:8000/api/admin/reviews/${item.id}/moderate`, {
+    this.http.post(`${API_URL}/admin/reviews/${item.id}/moderate`, {
       action: "approve",
       reason: "Approved by admin"
     }, { headers })
@@ -647,7 +648,7 @@ export class AdminComponent implements OnInit {
       });
 
       console.log('[ADMIN] Rejecting content:', item);
-      this.http.post(`http://127.0.0.1:8000/api/admin/reviews/${item.id}/moderate`, {
+      this.http.post(`${API_URL}/admin/reviews/${item.id}/moderate`, {
         action: "reject",
         reason: "Rejected by admin"
       }, { headers })
@@ -675,7 +676,7 @@ export class AdminComponent implements OnInit {
 
     console.log('[ADMIN] Loading flagged content...');
     // Get pending reviews (flagged by DeepSeek or users)
-    this.http.get("http://127.0.0.1:8000/api/admin/reviews/flagged?status=pending", { headers })
+    this.http.get("${API_URL}/admin/reviews/flagged?status=pending", { headers })
       .subscribe({
         next: (reviews: any) => {
           console.log('[ADMIN] Flagged content loaded:', reviews);
@@ -721,7 +722,7 @@ export class AdminComponent implements OnInit {
 
     console.log('[ADMIN] Loading recommendation engine stats...');
     // Get all recommendation logs for stats
-    this.http.get("http://127.0.0.1:8000/api/admin/logs?type=recommendation&limit=1000", { headers })
+    this.http.get("${API_URL}/admin/logs?type=recommendation&limit=1000", { headers })
       .subscribe({
         next: (allLogs: any) => {
           console.log('[ADMIN] Recommendation logs loaded:', allLogs);
@@ -840,7 +841,7 @@ export class AdminComponent implements OnInit {
     });
 
     // Check if user is authenticated and get user info
-    this.http.get("http://127.0.0.1:8000/api/auth/me/", { headers })
+    this.http.get("${API_URL}/auth/me/", { headers })
       .subscribe({
         next: (res: any) => {
           console.log("[ADMIN] User data received:", res);
@@ -890,7 +891,7 @@ export class AdminComponent implements OnInit {
     });
 
     console.log("[ADMIN] Loading admin stats...");
-    this.http.get("http://127.0.0.1:8000/api/admin/stats/", { headers })
+    this.http.get("${API_URL}/admin/stats/", { headers })
       .subscribe({
         next: (stats: any) => {
           console.log("[ADMIN] Stats loaded:", stats);
@@ -922,3 +923,4 @@ export class AdminComponent implements OnInit {
     this.router.navigate(['/home']);
   }
 }
+

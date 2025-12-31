@@ -20,6 +20,7 @@ import { Popover } from 'primeng/popover';
 import { HttpClient } from '@angular/common/http';
 import { FilmService } from '../../services/film.service';
 import { FilmDetail, UserRating, UserMood, RATING_ASPECTS, Review } from '../../models/film.model';
+import { API_URL } from '../../config/api.config';
 
 @Component({
   selector: 'app-film-detail',
@@ -130,7 +131,7 @@ export class FilmDetailComponent implements OnInit {
     const token = localStorage.getItem('access');
     if (!token) return;
 
-    this.http.get('http://127.0.0.1:8000/api/auth/me/', {
+    this.http.get('${API_URL}/auth/me/', {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
       next: (res: any) => {
@@ -245,7 +246,7 @@ export class FilmDetailComponent implements OnInit {
       return;
     }
 
-    const url = `http://127.0.0.1:8000/api/kinocheck-url/${this.imdbId}/`;
+    const url = `${API_URL}/kinocheck-url/${this.imdbId}/`;
 
     // Optional: Add a loading state here if you want to show a spinner
     // this.isLoadingTrailer = true;
@@ -311,7 +312,7 @@ export class FilmDetailComponent implements OnInit {
 
     const headers = { 'Authorization': `Bearer ${token}` };
 
-    this.http.post(`http://127.0.0.1:8000/api/reviews/${review.id}/like`, {}, { headers })
+    this.http.post(`${API_URL}/reviews/${review.id}/like`, {}, { headers })
       .subscribe({
         next: (response: any) => {
           // Update the review with the new data from the server
@@ -616,3 +617,4 @@ export class FilmDetailComponent implements OnInit {
   }
 
 }
+

@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
+import { API_URL } from '../../config/api.config';
 
 @Component({
   selector: 'app-signup',
@@ -49,7 +50,7 @@ export class SignupComponent {
       password_confirm: this.confirmPassword
     };
 
-    this.http.post("http://127.0.0.1:8000/api/auth/register/", payload)
+    this.http.post(`${API_URL}/auth/register/`, payload)
       .subscribe({
         next: (res) => {
           this.successMessage = "Account has been created successfully!";

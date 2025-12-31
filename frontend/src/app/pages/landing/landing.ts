@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+import { API_URL } from '../../config/api.config';
 
 @Component({
   selector: 'app-landing',
@@ -29,7 +30,7 @@ export class LandingComponent {
       password: this.password
     };
 
-    this.http.post<any>("http://127.0.0.1:8000/api/auth/login/", payload)
+    this.http.post<any>(`${API_URL}/auth/login/`, payload)
       .subscribe({
         next: (res) => {
           // ------------------------------

@@ -13,6 +13,7 @@ import { PopoverModule } from 'primeng/popover';
 import { Popover } from 'primeng/popover';
 import { forkJoin } from 'rxjs';
 import { SearchService } from '../../services/search.service';
+import { API_URL } from '../../config/api.config';
 
 
 interface FilmSearchResult {
@@ -146,7 +147,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     const token = localStorage.getItem("access");
     if (!token) return;
 
-    this.http.get("http://127.0.0.1:8000/api/auth/me/", {
+    this.http.get("${API_URL}/auth/me/", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .subscribe({
@@ -273,7 +274,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
 
     // Try to fetch from a popular films endpoint or use search
-    this.http.get<{ results?: FilmSearchResult[] }>("http://127.0.0.1:8000/api/search/?q=popular", { headers })
+    this.http.get<{ results?: FilmSearchResult[] }>("${API_URL}/search/?q=popular", { headers })
       .subscribe({
         next: (res) => {
           if (res.results && res.results.length > 0) {
@@ -302,7 +303,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       });
     }
 
-    this.http.get(`http://127.0.0.1:8000/api/reviews/top-liked?limit=5`, { headers }).subscribe({
+    this.http.get(`${API_URL}/reviews/top-liked?limit=5`, { headers }).subscribe({
       next: (results: any) => {
         // The API returns an array of top liked reviews
         if (Array.isArray(results)) {
@@ -338,3 +339,4 @@ export class HomeComponent implements OnInit, OnDestroy {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   }
 }
+
