@@ -21,6 +21,9 @@ urlpatterns = [
     path("", api_root, name="api-root"),  # Root URL
     path("admin/", admin.site.urls),
 
+    # API - includes recommendations/chat
+    path("api/", include("api.urls")),
+
     # USERS
     path("api/", include("users.urls")),
 
