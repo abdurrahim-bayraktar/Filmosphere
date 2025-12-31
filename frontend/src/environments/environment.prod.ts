@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://filmosphere.onrender.com',
+  apiBaseUrl: 'https://filmosphere.onrender.com/api',
 };
