@@ -57,7 +57,7 @@ export class UserSearchComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadUser();
-    
+
     // Setup debounced search
     this.searchSubject.pipe(
       debounceTime(300), // Wait 300ms after user stops typing
@@ -116,7 +116,7 @@ export class UserSearchComponent implements OnInit, OnDestroy {
     const token = localStorage.getItem("access");
     if (!token) return;
 
-    this.http.get("${API_URL}/auth/me/", {
+    this.http.get(`${API_URL}/auth/me/`, {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
       next: (res: any) => {

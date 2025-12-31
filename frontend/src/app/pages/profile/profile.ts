@@ -41,7 +41,7 @@ import { API_URL } from '../../config/api.config';
 export class ProfileComponent implements OnInit, OnDestroy {
 
   @ViewChild('profileMenu') profileMenu!: Popover;
-  
+
   private routerSubscription?: Subscription;
 
   user: any = { profile: {} };
@@ -52,7 +52,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   navbarAvatarImage: string | null = null;
   navbarUsername: string = "";
   isAdmin = false;
-  
+
   menuItems: MenuItem[] = [];
 
   editMode = false;
@@ -74,7 +74,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   userBadges: any[] = [];
   userReviews: any[] = [];
   userRatings: any[] = [];
-  
+
   // Loading states
   loadingProfile = true;
   loadingWatchedFilms = false;
@@ -104,11 +104,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
   ];
 
   constructor(
-    private http: HttpClient, 
+    private http: HttpClient,
     private router: Router,
     private route: ActivatedRoute,
     private filmService: FilmService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.route.params.subscribe(params => {
@@ -117,7 +117,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       this.loadNavbarUser();
       this.setupMenuItems();
     });
-    
+
     // Reload data when navigating to profile page (e.g., after rating a film or creating a list)
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -148,7 +148,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         }
       });
   }
-  
+
   ngOnDestroy() {
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
@@ -184,7 +184,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.navbarUsername = usr.username || usr.user?.username || "Guest";
         this.isAdmin = !!(usr.is_staff || usr.is_superuser);
         this.setupMenuItems();
-      } catch {}
+      } catch { }
     }
 
     const token = localStorage.getItem("access");
@@ -194,7 +194,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       Authorization: `Bearer ${token}`
     });
 
-    this.http.get("${API_URL}/auth/me/", { headers })
+    this.http.get(`${API_URL}/auth/me/`, { headers })
       .subscribe({
         next: (res: any) => {
           // Backend returns profile_picture_url directly in serializer.data
@@ -222,7 +222,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   loadUser() {
     this.loadingProfile = true;
     const token = localStorage.getItem("access");
-    
+
     // If no token and not viewing own profile, try to get from cache or show error
     if (!token && this.username !== 'me') {
       // For viewing other users without auth, we'd need a public endpoint
@@ -235,8 +235,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
       ...(token ? { Authorization: `Bearer ${token}` } : {})
     });
 
-    const profileUrl = this.username === 'me' 
-      ? "${API_URL}/auth/me/"
+    const profileUrl = this.username === 'me'
+      ? `${API_URL}/auth/me/`
       : `${API_URL}/profile/${this.username}/`;
 
     this.http.get(profileUrl, { headers })
@@ -258,16 +258,16 @@ export class ProfileComponent implements OnInit, OnDestroy {
               lists_count: res.lists_count || 0
             }
           };
-          
+
           // Extract username from response
           if (res.username) {
             this.username = res.username;
           } else if (res.user?.username) {
             this.username = res.user.username;
           }
-          
+
           console.log('Username set to:', this.username);
-          
+
           this.avatarImage = res.profile_picture_url || null;
           this.avatarLabel = (this.username[0] || "U").toUpperCase();
           this.bioToEdit = res.bio || "";
@@ -280,7 +280,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           this.loadUserLists();
           this.loadUserBadges();
           this.loadUserReviews();
-          
+
           this.loadingProfile = false;
         },
         error: (err) => {
@@ -372,12 +372,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
           this.http.get(`${API_URL}/films/${imdbId}`, { headers })
             .subscribe({
               next: (filmData: any) => {
-                const posterUrl = filmData.metadata?.primaryImage?.url || 
-                                 filmData.posterUrl || 
-                                 filmData.poster_url;
+                const posterUrl = filmData.metadata?.primaryImage?.url ||
+                  filmData.posterUrl ||
+                  filmData.poster_url;
                 if (posterUrl) {
                   // Update the film in the array
-                  const filmIndex = this.watchedFilms.findIndex((f: any) => 
+                  const filmIndex = this.watchedFilms.findIndex((f: any) =>
                     f.film_imdb_id === imdbId
                   );
                   if (filmIndex !== -1) {
@@ -449,16 +449,16 @@ export class ProfileComponent implements OnInit, OnDestroy {
       this.loadingLists = false;
       return;
     }
-    
+
     this.loadingLists = true;
-    const url = this.username === 'me' 
-      ? `${API_URL}/lists/` 
+    const url = this.username === 'me'
+      ? `${API_URL}/lists/`
       : `${API_URL}/profile/${this.username}/lists/`;
-    
+
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${localStorage.getItem('access') || ''}`
     });
-    
+
     this.http.get(url, { headers })
       .subscribe({
         next: (res: any) => {
@@ -531,12 +531,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
           this.http.get(`${API_URL}/films/${imdbId}`, { headers })
             .subscribe({
               next: (filmData: any) => {
-                const posterUrl = filmData.metadata?.primaryImage?.url || 
-                                 filmData.posterUrl || 
-                                 filmData.poster_url;
+                const posterUrl = filmData.metadata?.primaryImage?.url ||
+                  filmData.posterUrl ||
+                  filmData.poster_url;
                 if (posterUrl) {
                   // Update the review in the array
-                  const reviewIndex = this.userReviews.findIndex((r: any) => 
+                  const reviewIndex = this.userReviews.findIndex((r: any) =>
                     r.film_imdb_id === imdbId && r.id === review.id
                   );
                   if (reviewIndex !== -1) {
@@ -605,7 +605,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     // File upload would require backend changes to support multipart/form-data
     this.avatarModalVisible = false;
     this.profilePictureFile = null;
-    
+
     // If you want to implement file upload, you'd need:
     // 1. Backend endpoint that accepts multipart/form-data
     // 2. Upload file to storage service (S3, etc.)
@@ -640,7 +640,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         try {
           const usr = JSON.parse(cached);
           profileUsername = usr.username || usr.user?.username || 'me';
-        } catch {}
+        } catch { }
       }
     }
 
@@ -705,7 +705,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           console.error('Error saving profile:', err);
           console.error('Error status:', err.status);
           console.error('Error details:', err.error);
-          
+
           // If token expired, try to refresh and retry
           if (err.status === 401 || (err.error?.detail && err.error.detail.includes("token"))) {
             console.log('Token expired, refreshing...');
@@ -717,9 +717,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 Authorization: `Bearer ${newToken}`,
                 "Content-Type": "application/json"
               });
-              
+
               this.http.patch(url, payload, { headers })
-    .subscribe({
+                .subscribe({
                   next: (res: any) => {
                     console.log('Profile saved after refresh:', res);
                     // Backend returns serializer.data directly, so update from response
@@ -751,7 +751,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
                         console.error('Error updating cache:', e);
                       }
                     }
-        this.editMode = false;
+                    this.editMode = false;
                     this.loadUser();
                   },
                   error: (retryErr) => {
@@ -768,8 +768,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
             const errorMsg = err.error?.detail || err.error?.message || err.message || "Failed to save biography";
             alert(`Error: ${errorMsg}. Status: ${err.status || 'Unknown'}`);
           }
-      }
-    });
+        }
+      });
   }
 
   // === AVATAR SELECT ======================================================
@@ -830,7 +830,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         // Create canvas to resize and compress
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        
+
         if (!ctx) {
           this.uploadError = 'Error processing image. Please try again.';
           return;
@@ -859,11 +859,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
         // Draw and compress
         ctx.drawImage(img, 0, 0, width, height);
-        
+
         // Convert to base64 with compression (0.85 quality for JPEG)
         const quality = 0.85;
         const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        
+
         this.uploadedFile = dataUrl;
         // Clear selected avatar and URL input when file is uploaded
         this.selectedAvatar = null;
@@ -903,7 +903,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         return;
       }
 
-      this.http.post("${API_URL}/auth/token/refresh/", {
+      this.http.post(`${API_URL}/auth/token/refresh/`, {
         refresh: refreshToken
       }).subscribe({
         next: (res: any) => {
@@ -939,7 +939,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         try {
           const usr = JSON.parse(cached);
           profileUsername = usr.username || usr.user?.username || 'me';
-        } catch {}
+        } catch { }
       }
     }
 
@@ -984,7 +984,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           if (this.isOwnProfile()) {
             this.navbarAvatarImage = updatedUrl;
           }
-          
+
           // Update localStorage cache so other pages see the updated profile picture
           const cached = localStorage.getItem("user_profile");
           if (cached) {
@@ -999,7 +999,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
               console.error('Error updating cache:', e);
             }
           }
-          
+
           this.avatarModalVisible = false;
           // Clear upload state after successful save
           this.uploadedFile = null;
@@ -1018,7 +1018,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           console.error('Error saving avatar:', err);
           console.error('Error status:', err.status);
           console.error('Error details:', err.error);
-          
+
           // If token expired, try to refresh and retry
           if (err.status === 401 || (err.error?.detail && err.error.detail.includes("token"))) {
             console.log('Token expired, refreshing...');
@@ -1030,9 +1030,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 Authorization: `Bearer ${newToken}`,
                 "Content-Type": "application/json"
               });
-              
+
               this.http.patch(url, payload, { headers })
-    .subscribe({
+                .subscribe({
                   next: (res: any) => {
                     console.log('Avatar saved after refresh:', res);
                     // Backend returns serializer.data directly, so update from response
@@ -1043,7 +1043,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
                     if (this.isOwnProfile()) {
                       this.navbarAvatarImage = updatedUrl;
                     }
-                    
+
                     // Update localStorage cache so other pages see the updated profile picture
                     const cached = localStorage.getItem("user_profile");
                     if (cached) {
@@ -1059,7 +1059,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
                       }
                     }
 
-        this.avatarModalVisible = false;
+                    this.avatarModalVisible = false;
                     // Clear upload state after successful save
                     this.uploadedFile = null;
                     this.uploadedFileName = '';
@@ -1093,8 +1093,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 errorMsg = err.error.message;
               } else if (err.error.profile_picture_url) {
                 // Django validation error
-                errorMsg = Array.isArray(err.error.profile_picture_url) 
-                  ? err.error.profile_picture_url.join(', ') 
+                errorMsg = Array.isArray(err.error.profile_picture_url)
+                  ? err.error.profile_picture_url.join(', ')
                   : err.error.profile_picture_url;
               }
             } else if (err.message) {
@@ -1102,8 +1102,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
             }
             alert(`Error: ${errorMsg}. Status: ${err.status || 'Unknown'}`);
           }
-      }
-    });
+        }
+      });
   }
 
   // === NAVIGATION ==========================================================

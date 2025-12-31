@@ -147,7 +147,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     const token = localStorage.getItem("access");
     if (!token) return;
 
-    this.http.get("${API_URL}/auth/me/", {
+    this.http.get(`${API_URL}/auth/me/`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .subscribe({
@@ -274,7 +274,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
 
     // Try to fetch from a popular films endpoint or use search
-    this.http.get<{ results?: FilmSearchResult[] }>("${API_URL}/search/?q=popular", { headers })
+    this.http.get<{ results?: FilmSearchResult[] }>(`${API_URL}/search/?q=popular`, { headers })
       .subscribe({
         next: (res) => {
           if (res.results && res.results.length > 0) {

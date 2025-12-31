@@ -18,10 +18,10 @@ export class ForgotPasswordComponent {
   email: string = "";
   sentCode: string | null = null;
 
-  constructor(private router: Router, private http: HttpClient) {}
+  constructor(private router: Router, private http: HttpClient) { }
 
   sendResetCode() {
-    this.http.post("${API_URL}/auth/forgot-password/", {
+    this.http.post(`${API_URL}/auth/forgot-password/`, {
       email: this.email
     }).subscribe({
       next: (res: any) => {

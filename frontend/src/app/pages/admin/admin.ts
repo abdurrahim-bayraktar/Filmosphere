@@ -43,7 +43,7 @@ import { API_URL } from '../../config/api.config';
   styleUrl: './admin.css'
 })
 export class AdminComponent implements OnInit {
-  
+
   @ViewChild('profileMenu') profileMenu!: Popover;
 
   user: any = null;
@@ -51,7 +51,7 @@ export class AdminComponent implements OnInit {
   avatarLabel: string = "";
   avatarImage: string | null = null;
   menuItems: MenuItem[] = [];
-  
+
   adminStats: any = {
     totalUsers: 0,
     totalFilms: 0,
@@ -121,7 +121,7 @@ export class AdminComponent implements OnInit {
   constructor(
     private http: HttpClient,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.setupMenuItems();
@@ -135,7 +135,7 @@ export class AdminComponent implements OnInit {
     }) : new HttpHeaders();
 
     // Build search query if search term exists
-    let url = "${API_URL}/admin/users/";
+    let url = `${API_URL}/admin/users/`;
     if (this.userSearchTerm) {
       url += `?search=${encodeURIComponent(this.userSearchTerm)}`;
     }
@@ -183,7 +183,7 @@ export class AdminComponent implements OnInit {
     });
 
     console.log('[ADMIN] Loading recent reviews...');
-    this.http.get("${API_URL}/admin/reviews/recent", { headers })
+    this.http.get(`${API_URL}/admin/reviews/recent`, { headers })
       .subscribe({
         next: (reviews: any) => {
           console.log('[ADMIN] Recent reviews loaded:', reviews);
@@ -227,7 +227,7 @@ export class AdminComponent implements OnInit {
     });
 
     console.log('[ADMIN] Loading films...');
-    this.http.get("${API_URL}/admin/films/", { headers })
+    this.http.get(`${API_URL}/admin/films/`, { headers })
       .subscribe({
         next: (films: any) => {
           console.log('[ADMIN] Films loaded:', films);
@@ -259,7 +259,7 @@ export class AdminComponent implements OnInit {
     });
 
     console.log('[ADMIN] Loading badge stats...');
-    this.http.get("${API_URL}/admin/badges/stats", { headers })
+    this.http.get(`${API_URL}/admin/badges/stats`, { headers })
       .subscribe({
         next: (stats: any) => {
           console.log('[ADMIN] Badge stats loaded:', stats);
@@ -290,14 +290,14 @@ export class AdminComponent implements OnInit {
     });
 
     console.log(`[ADMIN] Loading mood stats (${this.moodType})...`);
-    this.http.get("${API_URL}/admin/moods/stats", { headers })
+    this.http.get(`${API_URL}/admin/moods/stats`, { headers })
       .subscribe({
         next: (stats: any) => {
           console.log('[ADMIN] Mood stats loaded:', stats);
-          
+
           // Get the appropriate data based on selected type
           const selectedData = this.moodType === 'before' ? stats.before : stats.after;
-          
+
           if (selectedData && selectedData.percentages) {
             this.moodData = {
               happy: selectedData.percentages.happy || 0,
@@ -340,7 +340,7 @@ export class AdminComponent implements OnInit {
     });
 
     console.log('[ADMIN] Loading all badges...');
-    this.http.get("${API_URL}/badges/", { headers })
+    this.http.get(`${API_URL}/badges/`, { headers })
       .subscribe({
         next: (badges: any) => {
           console.log('[ADMIN] All badges loaded:', badges);
@@ -369,7 +369,7 @@ export class AdminComponent implements OnInit {
     });
 
     console.log('[ADMIN] Loading system logs...');
-    this.http.get("${API_URL}/admin/logs", { headers })
+    this.http.get(`${API_URL}/admin/logs`, { headers })
       .subscribe({
         next: (logs: any) => {
           console.log('[ADMIN] System logs loaded:', logs);
@@ -410,24 +410,24 @@ export class AdminComponent implements OnInit {
 
     // Create JSON content
     const jsonContent = JSON.stringify(this.systemLogs, null, 2);
-    
+
     // Create blob and download
     const blob = new Blob([jsonContent], { type: 'application/json' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    
+
     // Generate filename with current date
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
     const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
     link.download = `system-logs-${dateStr}-${timeStr}.json`;
-    
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
-    
+
     console.log(`[ADMIN] Downloaded ${this.systemLogs.length} system logs`);
   }
 
@@ -491,11 +491,11 @@ export class AdminComponent implements OnInit {
   openFilmDialog(film?: any) {
     if (film) {
       this.editingFilm = film;
-      this.newFilm = { 
-        title: film.title || '', 
-        imdb_id: film.imdb_id || '', 
-        year: film.year || '', 
-        description: '' 
+      this.newFilm = {
+        title: film.title || '',
+        imdb_id: film.imdb_id || '',
+        year: film.year || '',
+        description: ''
       };
     } else {
       this.editingFilm = null;
@@ -553,7 +553,7 @@ export class AdminComponent implements OnInit {
       });
 
       console.log(`[ADMIN] Creating film with IMDb ID: ${this.newFilm.imdb_id}...`);
-      this.http.post("${API_URL}/admin/films/create", {
+      this.http.post(`${API_URL}/admin/films/create`, {
         imdb_id: this.newFilm.imdb_id.trim()
       }, { headers })
         .subscribe({
@@ -676,7 +676,7 @@ export class AdminComponent implements OnInit {
 
     console.log('[ADMIN] Loading flagged content...');
     // Get pending reviews (flagged by DeepSeek or users)
-    this.http.get("${API_URL}/admin/reviews/flagged?status=pending", { headers })
+    this.http.get(`${API_URL}/admin/reviews/flagged?status=pending`, { headers })
       .subscribe({
         next: (reviews: any) => {
           console.log('[ADMIN] Flagged content loaded:', reviews);
@@ -722,31 +722,31 @@ export class AdminComponent implements OnInit {
 
     console.log('[ADMIN] Loading recommendation engine stats...');
     // Get all recommendation logs for stats
-    this.http.get("${API_URL}/admin/logs?type=recommendation&limit=1000", { headers })
+    this.http.get(`${API_URL}/admin/logs?type=recommendation&limit=1000`, { headers })
       .subscribe({
         next: (allLogs: any) => {
           console.log('[ADMIN] Recommendation logs loaded:', allLogs);
-          
+
           const recommendationLogs = Array.isArray(allLogs) ? allLogs : (allLogs.results || []);
-          
+
           // Calculate stats
           const uniqueUsers = new Set(recommendationLogs.map((log: any) => log.user || log.user_id).filter(Boolean));
           const recommendationsGenerated = recommendationLogs.filter((log: any) => !log.blocked && (log.type === 'recommendation' || log.message?.includes('Recommendation'))).length;
-          
+
           // Get last run time (most recent log)
           const lastLog = recommendationLogs.length > 0 ? recommendationLogs[0] : null;
           const lastRun = lastLog?.timestamp || lastLog?.created_at || '';
-          
+
           // Format last run date
           let formattedLastRun = 'Never';
           if (lastRun) {
             try {
               const lastRunDate = new Date(lastRun);
-              formattedLastRun = lastRunDate.toLocaleString('en-US', { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit', 
-                hour: '2-digit', 
+              formattedLastRun = lastRunDate.toLocaleString('en-US', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit',
                 hour12: false
@@ -755,18 +755,18 @@ export class AdminComponent implements OnInit {
               formattedLastRun = lastRun;
             }
           }
-          
+
           // Calculate next run (assuming daily runs, add 24 hours)
           let formattedNextRun = 'Not scheduled';
           if (lastRun) {
             try {
               const lastRunDate = new Date(lastRun);
               lastRunDate.setHours(lastRunDate.getHours() + 24);
-              formattedNextRun = lastRunDate.toLocaleString('en-US', { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit', 
-                hour: '2-digit', 
+              formattedNextRun = lastRunDate.toLocaleString('en-US', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit',
                 hour12: false
@@ -775,7 +775,7 @@ export class AdminComponent implements OnInit {
               formattedNextRun = 'Not scheduled';
             }
           }
-          
+
           this.engineStatus = {
             status: 'running',
             lastRun: formattedLastRun,
@@ -783,7 +783,7 @@ export class AdminComponent implements OnInit {
             processedUsers: uniqueUsers.size,
             recommendationsGenerated: recommendationsGenerated
           };
-          
+
           console.log('[ADMIN] Recommendation engine stats:', this.engineStatus);
         },
         error: (err) => {
@@ -829,7 +829,7 @@ export class AdminComponent implements OnInit {
 
   checkAuth() {
     const token = localStorage.getItem("access");
-    
+
     if (!token) {
       // Redirect to login if not authenticated
       this.router.navigate(['/']);
@@ -841,22 +841,22 @@ export class AdminComponent implements OnInit {
     });
 
     // Check if user is authenticated and get user info
-    this.http.get("${API_URL}/auth/me/", { headers })
+    this.http.get(`${API_URL}/auth/me/`, { headers })
       .subscribe({
         next: (res: any) => {
           console.log("[ADMIN] User data received:", res);
           this.user = res;
           this.avatarImage = res.profile_picture_url || res.profile?.profile_picture_url || res.profile?.avatar || null;
           this.avatarLabel = (res.username || res.user?.username || "U")[0]?.toUpperCase() || "U";
-          
+
           // Check if user is admin - check both direct fields and nested user object
           const isStaff = res.is_staff || res.user?.is_staff || false;
           const isSuperuser = res.is_superuser || res.user?.is_superuser || false;
           this.isAdmin = isStaff || isSuperuser;
           this.setupMenuItems();
-          
+
           console.log("[ADMIN] Admin check:", { isStaff, isSuperuser, isAdmin: this.isAdmin });
-          
+
           if (this.isAdmin) {
             // Load all admin data
             this.loadAdminStats();
@@ -891,7 +891,7 @@ export class AdminComponent implements OnInit {
     });
 
     console.log("[ADMIN] Loading admin stats...");
-    this.http.get("${API_URL}/admin/stats/", { headers })
+    this.http.get(`${API_URL}/admin/stats/`, { headers })
       .subscribe({
         next: (stats: any) => {
           console.log("[ADMIN] Stats loaded:", stats);

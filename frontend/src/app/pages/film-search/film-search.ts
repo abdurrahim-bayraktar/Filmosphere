@@ -112,7 +112,7 @@ export class FilmSearch implements OnInit, OnDestroy {
     const token = localStorage.getItem("access");
     if (!token) return;
 
-    this.http.get("${API_URL}/auth/me/", {
+    this.http.get(`${API_URL}/auth/me/`, {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
       next: (res: any) => {
@@ -149,22 +149,22 @@ export class FilmSearch implements OnInit, OnDestroy {
   }
 
   onSearch() {
-  const query = this.searchQuery.trim();
-  if (!query) {
-    this.loadAllFilms();
-    return;
-  }
+    const query = this.searchQuery.trim();
+    if (!query) {
+      this.loadAllFilms();
+      return;
+    }
 
-  this.api.searchIMDB(query).subscribe((results: any[]) => {
-    this.films = results.map(item => ({
-      title: item.title,
-      // API'den gelen görseli güvenli bir şekilde alalım
-      poster: item.image?.url || item.image || item.poster || 'assets/no-image.png',
-      genres: [],
-      imdb_id: item.imdb_id
-    }));
-  });
-}
+    this.api.searchIMDB(query).subscribe((results: any[]) => {
+      this.films = results.map(item => ({
+        title: item.title,
+        // API'den gelen görseli güvenli bir şekilde alalım
+        poster: item.image?.url || item.image || item.poster || 'assets/no-image.png',
+        genres: [],
+        imdb_id: item.imdb_id
+      }));
+    });
+  }
 
   onSearchChange() {
     if (!this.searchQuery.trim()) {

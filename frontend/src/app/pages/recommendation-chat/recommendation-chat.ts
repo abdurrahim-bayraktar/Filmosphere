@@ -37,8 +37,8 @@ type ChatApiResponse = {
   selector: 'app-recommendation-chat',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
+    CommonModule,
+    FormsModule,
     HttpClientModule,
     RouterModule,
     AvatarModule,
@@ -61,12 +61,12 @@ export class RecommendationChatComponent implements OnInit {
   isAdmin = false;
   menuItems: MenuItem[] = [];
 
-  private API_URL = '${API_URL}/recommendations/chat/';
+  private API_URL = `${API_URL}/recommendations/chat/`;
 
   constructor(
     private http: HttpClient,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadUser();
@@ -107,7 +107,7 @@ export class RecommendationChatComponent implements OnInit {
     const token = localStorage.getItem("access");
     if (!token) return;
 
-    this.http.get("${API_URL}/auth/me/", {
+    this.http.get(`${API_URL}/auth/me/`, {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
       next: (res: any) => {
@@ -215,7 +215,7 @@ export class RecommendationChatComponent implements OnInit {
           // ✅ NORMAL: message veya items döner
           const message = res?.message;
           const items = res?.items ?? [];
-          
+
           let displayText: string;
           if (message) {
             displayText = message;

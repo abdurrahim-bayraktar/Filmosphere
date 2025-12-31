@@ -39,7 +39,7 @@ export class FilmDetailComponent implements OnInit {
 
   imdbId: string = '';
   film: FilmDetail | null = null;
-  
+
   // User Interaction State
   isWatched: boolean = false;
   userRating: UserRating = {}; // Stores partial updates
@@ -56,7 +56,7 @@ export class FilmDetailComponent implements OnInit {
   showRatingDialog: boolean = false;
   tempRating: UserRating = {}; // Holds changes inside the dialog
   ratingAspects = RATING_ASPECTS; // For the *ngFor loop
-  
+
   // Static Options
   moodOptions = [
     { label: 'Happy', value: 'happy' },
@@ -87,12 +87,12 @@ export class FilmDetailComponent implements OnInit {
     private filmService: FilmService,
     private router: Router,
     private http: HttpClient
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadUser();
     this.route.paramMap.subscribe(params => {
-      this.imdbId = params.get('id') || 'tt1375666'; 
+      this.imdbId = params.get('id') || 'tt1375666';
       this.loadFilmData();
     });
   }
@@ -131,7 +131,7 @@ export class FilmDetailComponent implements OnInit {
     const token = localStorage.getItem('access');
     if (!token) return;
 
-    this.http.get('${API_URL}/auth/me/', {
+    this.http.get(`${API_URL}/auth/me/`, {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
       next: (res: any) => {
@@ -188,21 +188,21 @@ export class FilmDetailComponent implements OnInit {
           // Pass through ratings
           rating_statistics: data.rating_statistics || { overall: 0, total_ratings: 0 },
           // Use a high-res image for backdrop if available, else poster
-          backdropUrl: data.metadata?.primaryImage?.url, 
+          backdropUrl: data.metadata?.primaryImage?.url,
           // Cast mapping (safe check)
           cast: data.credits?.credits
-      // 1. FILTER: Only keep entries where category is 'actor' or 'actress'
-      ?.filter((c: any) => c.category === 'actor' || c.category === 'actress')
-      
-      // 2. SLICE: Get the top 6 actors (matches your 6-column grid)
-      .slice(0, 6)
-      
-      // 3. MAP: Map to your model (keeping the image logic working)
-      .map((c: any) => ({
-          name: c.name?.displayName || 'Unknown',
-          role: c.characters?.[0] || 'Actor',
-          profileUrl: c.name?.primaryImage?.url || null
-      })) || [],
+            // 1. FILTER: Only keep entries where category is 'actor' or 'actress'
+            ?.filter((c: any) => c.category === 'actor' || c.category === 'actress')
+
+            // 2. SLICE: Get the top 6 actors (matches your 6-column grid)
+            .slice(0, 6)
+
+            // 3. MAP: Map to your model (keeping the image logic working)
+            .map((c: any) => ({
+              name: c.name?.displayName || 'Unknown',
+              role: c.characters?.[0] || 'Actor',
+              profileUrl: c.name?.primaryImage?.url || null
+            })) || [],
           reviews: [] // Initialize empty if not provided
         };
 
@@ -273,7 +273,7 @@ export class FilmDetailComponent implements OnInit {
         console.log('Raw data:', data);
         console.log('Is array?', Array.isArray(data));
         console.log('data.results?', data?.results);
-        
+
         // DRF may return a paginated object; normalize to array
         const items = Array.isArray(data) ? data : data?.results || [];
         console.log('Items array:', items);
@@ -331,11 +331,11 @@ export class FilmDetailComponent implements OnInit {
 
 
   getActorName(nameData: any): string {
-      if (!nameData) return 'Unknown';
-      if (typeof nameData === 'string') return nameData;
-      
-      // Check common API locations for the name string
-      return nameData.text || nameData.name || nameData.nameText?.text || 'Unknown';
+    if (!nameData) return 'Unknown';
+    if (typeof nameData === 'string') return nameData;
+
+    // Check common API locations for the name string
+    return nameData.text || nameData.name || nameData.nameText?.text || 'Unknown';
   }
   // Add this helper function to your class to convert seconds to "Xh Ym"
   // Lists methods
@@ -348,7 +348,7 @@ export class FilmDetailComponent implements OnInit {
             const itemImdbId = item.film_imdb_id || item.film?.imdb_id || item.film;
             return itemImdbId && itemImdbId.trim() === this.imdbId.trim();
           }) || false;
-          
+
           return {
             ...list,
             hasFilm: hasFilm
@@ -374,10 +374,10 @@ export class FilmDetailComponent implements OnInit {
       event.preventDefault();
       event.stopPropagation();
     }
-    
+
     const currentState = list.hasFilm;
     const newState = !currentState;
-    
+
     if (currentState) {
       // Remove from list
       this.filmService.removeFilmFromList(list.id, this.imdbId).subscribe({
@@ -445,71 +445,71 @@ export class FilmDetailComponent implements OnInit {
   }
 
   openRatingDialog(initialValue?: number) {
-      // 1. Clone existing rating or start fresh
-      this.tempRating = { ...this.userRating };
-      
-      // 2. If triggered by clicking the sidebar stars, capture that value immediately
-      if (initialValue) {
-        this.tempRating.overall_rating = initialValue;
-      }
+    // 1. Clone existing rating or start fresh
+    this.tempRating = { ...this.userRating };
 
-      this.showRatingDialog = true;
+    // 2. If triggered by clicking the sidebar stars, capture that value immediately
+    if (initialValue) {
+      this.tempRating.overall_rating = initialValue;
+    }
+
+    this.showRatingDialog = true;
 
   }
 
   updateCalculatedAverage() {
-      let sum = 0;
-      let count = 0;
+    let sum = 0;
+    let count = 0;
 
-      this.ratingAspects.forEach(aspect => {
-        // @ts-ignore - access by key dynamically
-        const val = this.tempRating[aspect.key];
-        if (val && val > 0) {
-          sum += val;
-          count++;
-        }
-      });
-
-      if (count > 0) {
-        // Round to nearest 0.5 or 1 depending on preference. 
-        // Math.round(num) for integer, or (Math.round(num * 2) / 2) for half-stars
-        this.tempRating.overall_rating = Math.round(sum / count);
+    this.ratingAspects.forEach(aspect => {
+      // @ts-ignore - access by key dynamically
+      const val = this.tempRating[aspect.key];
+      if (val && val > 0) {
+        sum += val;
+        count++;
       }
+    });
+
+    if (count > 0) {
+      // Round to nearest 0.5 or 1 depending on preference. 
+      // Math.round(num) for integer, or (Math.round(num * 2) / 2) for half-stars
+      this.tempRating.overall_rating = Math.round(sum / count);
+    }
   }
 
   submitRating() {
-      // 1. Construct Payload based on what is filled
-      const payload: UserRating = {};
+    // 1. Construct Payload based on what is filled
+    const payload: UserRating = {};
 
-      // If we have aspects, send them. The backend calculates average, 
-      // but we can send overall_rating too if we want to enforce the UI value.
-      let hasAspects = false;
-      this.ratingAspects.forEach(aspect => {
+    // If we have aspects, send them. The backend calculates average, 
+    // but we can send overall_rating too if we want to enforce the UI value.
+    let hasAspects = false;
+    this.ratingAspects.forEach(aspect => {
+      // @ts-ignore
+      const val = this.tempRating[aspect.key];
+      if (val) {
         // @ts-ignore
-        const val = this.tempRating[aspect.key];
-        if (val) {
-          // @ts-ignore
-          payload[aspect.key] = val;
-          hasAspects = true;
-        }
-      });
-
-      // Always send overall_rating (either user defined or auto-calculated)
-      if (this.tempRating.overall_rating) {
-        payload.overall_rating = this.tempRating.overall_rating;
+        payload[aspect.key] = val;
+        hasAspects = true;
       }
+    });
 
-      // 2. Call API
-      this.filmService.rateFilm(this.imdbId, payload).subscribe({
-        next: () => {
-          this.userRating = { ...this.tempRating }; // Update local state
-          this.overallRating = this.tempRating.overall_rating || 0; // Update sidebar stars
-          this.showRatingDialog = false;
-          console.log('Rating saved successfully');
-        },
-        error: (err) => console.error('Error saving rating', err)
-      });
+    // Always send overall_rating (either user defined or auto-calculated)
+    if (this.tempRating.overall_rating) {
+      payload.overall_rating = this.tempRating.overall_rating;
     }
+
+    // 2. Call API
+    this.filmService.rateFilm(this.imdbId, payload).subscribe({
+      next: () => {
+        this.userRating = { ...this.tempRating }; // Update local state
+        this.overallRating = this.tempRating.overall_rating || 0; // Update sidebar stars
+        this.showRatingDialog = false;
+        console.log('Rating saved successfully');
+      },
+      error: (err) => console.error('Error saving rating', err)
+    });
+  }
 
   deleteRating() {
     this.filmService.deleteRating(this.imdbId).subscribe({
@@ -580,13 +580,13 @@ export class FilmDetailComponent implements OnInit {
     if (this.overallRating && this.overallRating >= 1 && this.overallRating <= 5) {
       payload.rating = this.overallRating;
     }
-    
+
     this.filmService.createReview(this.imdbId, payload).subscribe({
       next: (response: any) => {
         this.showReviewDialog = false;
         this.newReview = { title: '', content: '' }; // Reset
         this.loadReviews(); // refresh list
-        
+
         // Check if review was flagged for moderation
         if (response.moderation_message) {
           alert(response.moderation_message);

@@ -40,7 +40,7 @@ export class ListManagementComponent implements OnInit {
 
   lists: any[] = [];
   loading = true;
-  
+
   // Create/Edit Dialog
   showListDialog = false;
   editingList: any = null;
@@ -59,7 +59,7 @@ export class ListManagementComponent implements OnInit {
     private filmService: FilmService,
     private http: HttpClient,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadNavbarUser();
@@ -92,7 +92,7 @@ export class ListManagementComponent implements OnInit {
         this.navbarUsername = usr.username || usr.user?.username || "Guest";
         this.isAdmin = !!(usr.is_staff || usr.is_superuser);
         this.setupMenuItems();
-      } catch {}
+      } catch { }
     }
 
     const token = localStorage.getItem("access");
@@ -102,7 +102,7 @@ export class ListManagementComponent implements OnInit {
       Authorization: `Bearer ${token}`
     });
 
-    this.http.get("${API_URL}/auth/me/", { headers })
+    this.http.get(`${API_URL}/auth/me/`, { headers })
       .subscribe({
         next: (res: any) => {
           this.navbarAvatarImage = res.profile_picture_url || res.profile?.profile_picture_url || null;

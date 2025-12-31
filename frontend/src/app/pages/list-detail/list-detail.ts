@@ -46,11 +46,11 @@ export class ListDetailComponent implements OnInit {
     private filmService: FilmService,
     private router: Router,
     private http: HttpClient
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadNavbarUser();
-    
+
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
@@ -86,7 +86,7 @@ export class ListDetailComponent implements OnInit {
         this.navbarUsername = usr.username || usr.user?.username || "Guest";
         this.isAdmin = !!(usr.is_staff || usr.is_superuser);
         this.setupMenuItems();
-      } catch {}
+      } catch { }
     }
 
     const token = localStorage.getItem("access");
@@ -96,7 +96,7 @@ export class ListDetailComponent implements OnInit {
       Authorization: `Bearer ${token}`
     });
 
-    this.http.get("${API_URL}/auth/me/", { headers })
+    this.http.get(`${API_URL}/auth/me/`, { headers })
       .subscribe({
         next: (res: any) => {
           this.navbarAvatarImage = res.profile_picture_url || res.profile?.profile_picture_url || null;
@@ -120,7 +120,7 @@ export class ListDetailComponent implements OnInit {
 
   loadList() {
     if (!this.listId) return;
-    
+
     this.loading = true;
     this.filmService.getList(this.listId).subscribe({
       next: (res: any) => {
