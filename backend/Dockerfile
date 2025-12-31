@@ -2,7 +2,8 @@ FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PORT=8000
+    PORT=8000 \
+    DJANGO_SETTINGS_MODULE=config.settings_prod
 
 WORKDIR /app
 
@@ -24,7 +25,15 @@ RUN python manage.py collectstatic --no-input || echo "Static collection skipped
 
 EXPOSE 8000
 
-# Run migrations and start gunicorn
+# Run migrations and start gunicorn with memory-optimized settings
+# - 1 worker (less memory for free tier)
+# - 120s timeout (more time to start)
+# - preload to reduce memory
 CMD python manage.py migrate && \
-    gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2
+    gunicorn config.wsgi:application \
+    --bind 0.0.0.0:$PORT \
+    --workers 1 \
+    --threads 2 \
+    --timeout 120 \
+    --preload
 
