@@ -13,21 +13,27 @@ failed to calculate checksum of ref: "/requirements.txt": not found
 
 ## ✅ The Solution (Already Fixed!)
 
-I've updated `render.yaml` to explicitly disable Docker detection. 
+I've renamed the Docker files so Render won't detect them and will use native Python/Node builds instead.
+
+### What Changed
+
+- `backend/Dockerfile` → `backend/Dockerfile.backup`
+- `backend/docker-compose.yml` → `backend/docker-compose.yml.backup`
+- Updated `render.yaml` to remove Docker references
 
 ### Apply the Fix
 
 ```bash
-# 1. Commit the updated files
-git add render.yaml backend/Dockerfile
-git commit -m "Fix Docker detection for Render deployment"
+# 1. Commit the changes (Docker files are now renamed)
+git add -A
+git commit -m "Fix: Disable Docker detection for native Python builds"
 git push
 
-# 2. Render will automatically redeploy with the fix
+# 2. Render will automatically redeploy with native builds
 # Wait 5-10 minutes and check the logs
 ```
 
-That's it! The deployment should now work correctly.
+That's it! The deployment should now work correctly with native Python/Node environments.
 
 ---
 
@@ -105,29 +111,27 @@ If the Blueprint deployment still doesn't work, deploy each service manually:
 
 ## 🎯 What Changed in the Fix
 
+### Docker Files Renamed
+To prevent Render from auto-detecting Docker:
+
+- `backend/Dockerfile` → `backend/Dockerfile.backup`
+- `backend/docker-compose.yml` → `backend/docker-compose.yml.backup`
+
+These files are preserved with `.backup` extension in case you want to use Docker locally or on other platforms.
+
 ### `render.yaml`
-Added `dockerfilePath: ""` to both services to prevent Docker detection:
+Removed Docker-related configuration to ensure native builds:
 
 ```yaml
 services:
   - type: web
     name: filmosphere-backend
-    env: python
-    dockerfilePath: ""  # ← This line prevents Docker detection
+    env: python  # ← Native Python environment
     buildCommand: "cd backend && chmod +x build.sh && ./build.sh"
     startCommand: "cd backend && gunicorn config.wsgi:application"
 ```
 
-### `backend/Dockerfile`
-Fixed the requirements.txt path for future Docker use (if needed):
-
-```dockerfile
-# Before
-COPY requirements.txt /app/requirements.txt
-
-# After
-COPY requirements.txt ./
-```
+Now Render will use its native Python runtime instead of trying to build Docker images.
 
 ---
 

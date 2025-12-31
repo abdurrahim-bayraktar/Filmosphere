@@ -3,7 +3,6 @@ services:
   - type: web
     name: filmosphere-backend
     env: python
-    dockerfilePath: ""
     buildCommand: "cd backend && chmod +x build.sh && ./build.sh"
     startCommand: "cd backend && gunicorn config.wsgi:application"
     envVars:
@@ -24,7 +23,6 @@ services:
   - type: web
     name: filmosphere-frontend
     env: node
-    dockerfilePath: ""
     buildCommand: "cd frontend && npm install && npm run build"
     startCommand: "cd frontend && npx http-server dist/frontend-app/browser -p $PORT"
     envVars:
