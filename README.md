@@ -2,6 +2,13 @@
 
 A modern full-stack movie discovery and tracking platform built with Django and Angular.
 
+You can access the deployed version right here!
+
+[Filmosphere](https://filmosphere.onrender.com/api/auth/register/)
+
+
+
+
 ## ✨ Features
 
 - 🔍 **Smart Search** - Find movies across multiple databases
